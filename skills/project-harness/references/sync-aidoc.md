@@ -1,0 +1,58 @@
+# Sync workflow
+
+Detect drift between the aiDoc documentation system and the code, then resync incrementally. Mechanical checks run first via `scripts/check_sync.py` (relative to this skill directory); semantic drift is handled by the agent.
+
+## When to trigger
+
+- Architecture changed: layering adjustments, top-level directories added/removed, stack replaced.
+- Backend modules or frontend pages added/removed — `aiDoc/modules/`, `aiDoc/examples/`, `aiDoc/relations/system-map.md` may be stale.
+- aiDoc sub-documents added/removed — the `aiDoc/README.md` routing table and the `AGENTS.md` quick-reference may be stale.
+- Routing tables or examples visibly diverge from real code.
+- Before relying on aiDoc docs for a large task, when their freshness is unknown.
+
+Small changes (one endpoint, one page) do not need full sync — a targeted `--scope` update is enough.
+
+## Step 1: mechanical check
+
+```sh
+python3 <skill-dir>/scripts/check_sync.py <repo-root>
+```
+
+Interpret the report:
+
+| Finding | Meaning | Action |
+|---|---|---|
+| Indexed path missing | Routing table or entries reference a deleted file | Regenerate `aiDoc/README.md`; fix the referencing doc |
+| Unindexed aiDoc file | A doc exists but is not in the routing table | Update `aiDoc/README.md` entries + routing table (same change) |
+| Referenced code path missing | Docs cite moved/deleted source | Regenerate the citing document via `--scope` |
+| Missing example reference | Example's "real reference files" stale | Regenerate that example from current code |
+| Stale `last-updated` vs code mtime | Code changed after the doc's last update | Candidate for `--incremental` regeneration |
+
+The script only proves mechanical facts. A clean report does **not** mean the docs are semantically correct.
+
+## Step 2: semantic drift checklist
+
+Verify by reading code and docs together:
+
+1. **Symbol existence**: class/function names cited in `frontend-backend/boundary.md` and `modules/backend-layer-rules.md` still exist in code (Grep each).
+2. **Contract fidelity**: response/pagination structures in `boundary.md` match the actual serializers; field naming convention matches real payloads.
+3. **Example validity**: each example's "real reference files" exist **and** the example still matches those files' current patterns.
+4. **Routing consistency**: `aiDoc/README.md` routing table and common entries match the actual aiDoc file set; `AGENTS.md`'s "task family → aiDoc area" quick-reference matches existing aiDoc areas.
+5. **Stack accuracy**: `relations/repo-profile.md` matches current manifests (dependencies added/removed).
+6. **Command validity**: commands in `relations/development-workflow.md` and `AGENTS.md` still run (spot-check the risky ones).
+
+## Step 3: resync
+
+Choose the narrowest sufficient mode of the [generate workflow](generate-aidoc.md):
+
+| Drift scope | Mode |
+|---|---|
+| Scattered staleness across areas, uncertain extent | `generate --incremental` |
+| One area (backend / frontend / relations / memory / notes / plans / core) | `generate --scope <area>` |
+| Widespread drift, most docs stale | full `generate` |
+
+Always regenerate `aiDoc/README.md`'s routing table and the `AGENTS.md` quick-reference whenever the aiDoc file set changed — they are cross-file metadata and do not self-heal.
+
+## Step 4: report
+
+Report: mechanical findings (verbatim from the script), semantic findings (file → drift → evidence), files regenerated, and anything intentionally left stale with the reason. Do not report "in sync" for checks that were not actually run.

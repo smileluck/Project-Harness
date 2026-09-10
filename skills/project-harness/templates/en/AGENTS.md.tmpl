@@ -1,0 +1,98 @@
+<!-- last-updated: {{DATE}} -->
+# {{PROJECT_NAME}} — AGENTS.md
+
+## Purpose
+
+This file is the single source of truth for AI collaboration rules in this repository. It carries only the minimal high-level rules every AI must always know, plus operating invariants, the Definition of Done, and coarse routing pointers. Details route into `aiDoc/`.
+
+## Loading Model
+
+- **L0 auto-loaded**: the root `CLAUDE.md` imports this file via `@AGENTS.md` in every session. This file never expands details and never lists the full document inventory.
+- **L1 task routing**: `aiDoc/README.md` is the sole maintained home of the doc index and the "task → must-read docs" routing table. On receiving a task, consult that routing table first to decide which child docs to read.
+- **L2 on-demand deep read**: the concrete `aiDoc/` child documents the routing table points to.
+- **Conflict priority** (for in-repo tasks): `AGENTS.md` > `aiDoc/README.md` > aiDoc child docs > tool adapter files.
+
+## Tool Loading
+
+| Tool | Loading mechanism |
+|---|---|
+| Claude Code | Root `CLAUDE.md` natively imports `@AGENTS.md`; `.claude/commands/` holds project commands only — no rule adapter files |
+| Trae | `.trae/rules/project_rules.md` thin adapter points to `AGENTS.md` |
+| Cursor / Copilot / other | If `@import` is unsupported, create a thin adapter at the tool's native rules path: entry pointers only, never copied rule bodies |
+
+No tool-private directory may hold a copy of project-level rules. This table is the only index of tool adaptation state — register every adapter here.
+
+## Repository Overview
+
+TODO: list each top-level directory and key subdirectory with its responsibility, derived from the real repository layout. Tool directories (`.claude/`, `.trae/`, etc.) are not listed here — their loading mechanism is covered by the table above.
+
+## Engineering Rules
+
+### Architecture
+
+TODO: record the actual layering pattern (e.g. Router → Endpoint → Service → Model), citing real directories. Details live in `aiDoc/modules/backend-layer-rules.md`.
+
+### Contract / Frontend-Backend Collaboration
+
+TODO: record the actual response/request conventions in one or two lines. Details live in `aiDoc/frontend-backend/boundary.md`.
+
+### Modules and Directories
+
+TODO: record the actual module layout rules in one or two lines. Details live in `aiDoc/modules/module-development.md`.
+
+### Example Docs
+
+`aiDoc/examples/` is the explanatory example layer: it shows the standard for organizing and writing each layer. When adding a file to a layer, read the corresponding example first.
+
+### Memory Rules
+
+`aiDoc/memory/long-term/` holds stable cross-session preferences; `aiDoc/memory/business/` holds one record per business requirement, indexed in `aiDoc/memory/project-memory.md`. Temporary drafts are never committed.
+
+### Doc Maintenance
+
+High-level rules live in this file; details live in `aiDoc/`. This file keeps only coarse "task family → aiDoc area" pointers (see Task Routing below). The detailed file-level routing table is maintained solely in `aiDoc/README.md` — never duplicate the full inventory here, or the two copies will drift.
+
+### Code-Reading Constraints
+
+Never read generated, vendored, or cached trees: `node_modules/`, `.venv/`, `__pycache__/`, `vendor/`, `dist/`, `build/`, lock files, and similar. Read source and manifests instead.
+
+## Operating Invariants
+
+- One fact has one maintained home; everywhere else links to it.
+- Rule bodies live only in `AGENTS.md` and `aiDoc/`; tool-private directories hold pointers only.
+- Non-trivial decisions are recorded in `aiDoc/notes/`; multi-step changes are planned in `aiDoc/plans/`.
+- Evidence is proportional to the affected surface: run focused checks for the surface you touched, not the full suite by reflex. Never weaken filters or thresholds to get green.
+- A push, merge, deployment, or interrupted process is not successful until its observable acceptance check passes.
+
+## Definition of Done
+
+- Code follows the layering and module rules documented in `aiDoc/`.
+- Both sides of every changed contract (producer and consumer) are traced and updated; `aiDoc/frontend-backend/boundary.md` is updated when applicable.
+- Required evidence ran and passed; passed / failed / skipped / not-run are reported separately.
+- Decision notes and memory indexes are updated when the change alters behavior, contracts, process, testing strategy, or persistent data.
+- When work is handed off unfinished, the handoff records exact state, changed files, commands run with results, remaining work, blockers, and the next safe action. An interrupted command is never described as completed.
+
+## Task Routing (task family → aiDoc area)
+
+| Task family | Read first |
+|---|---|
+| Backend module / endpoint development | `aiDoc/modules/`, `aiDoc/examples/` |
+| Frontend page / feature development | `aiDoc/frontend-backend/`, `aiDoc/examples/` |
+| Contract / field alignment | `aiDoc/frontend-backend/boundary.md` |
+| Repo structure / tech stack / workflow | `aiDoc/relations/` |
+| Business requirement intake | `aiDoc/memory/business/` |
+| Recording or revisiting a decision | `aiDoc/notes/` |
+| Multi-step or cross-component change | `aiDoc/plans/` |
+
+These are coarse pointers only; the detailed "task → must-read docs" routing table lives in `aiDoc/README.md`. On conflict, this file wins.
+
+## When to Regenerate aiDoc
+
+Regenerate or incrementally update the doc system (via the project-harness generate workflow) when:
+
+- Architecture changes materially: layering shifts, top-level directories added/removed, tech stack replaced
+- Backend modules or frontend pages are added/removed so that `aiDoc/modules/`, `aiDoc/examples/`, or `aiDoc/relations/system-map.md` no longer match the code
+- `aiDoc/` child docs are added/removed, invalidating the routing table in `aiDoc/README.md` and the quick-routing table above — both must be synchronized even if their own last-updated markers are unchanged
+- Routing tables or examples have drifted visibly from the real code
+
+Small changes (a single endpoint or page) need no full regeneration — update only the affected area. After regeneration, verify index and path consistency (every path referenced from `aiDoc/README.md` and the tables above must exist).
