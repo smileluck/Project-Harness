@@ -26,6 +26,7 @@ from pathlib import Path
 # 检查 2：只认这些常见源码顶层目录开头的行内代码（白名单，宁缺毋滥）
 CODE_TOP_DIRS = (
     "src", "app", "pkg", "cmd", "internal", "lib", "server", "client",
+    "tests", "test", "scripts",
 )
 
 # 检查 4：aiDoc 标准区域名

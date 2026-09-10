@@ -113,10 +113,9 @@ Generate files per [aidoc-structure.md](aidoc-structure.md), which defines the t
 | 3 | A | `aiDoc/relations/` (3 files) |
 | 4 | B | `aiDoc/modules/` (2 files) |
 | 5 | C | `aiDoc/contracts/` + `aiDoc/frontend/` (≤3 files) |
-| 6 | D | `aiDoc/examples/backend/*` |
-| 7 | D | `aiDoc/examples/frontend/*` |
-| 8 | E | `aiDoc/examples/README.md` |
-| 9 | F | `aiDoc/memory/` (all) |
+| 6 | D | `aiDoc/examples/` 分层示例（按范式：web 的 model→…→router、library 的公开 API→内部实现、cli 的命令注册→命令处理→核心逻辑；无适用层时可只在 examples/README.md 登记真实参考文件） |
+| 7 | E | `aiDoc/examples/README.md` |
+| 8 | F | `aiDoc/memory/` (all) |
 
 Report brief progress after each group.
 
