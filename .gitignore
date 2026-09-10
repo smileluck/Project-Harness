@@ -11,3 +11,4 @@ __pycache__/
 
 # Test scratch
 /tmp-test/
+aiDoc/.harness-backups/
