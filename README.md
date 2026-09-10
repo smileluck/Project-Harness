@@ -54,7 +54,7 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 
 | Command | What it does |
 |---|---|
-| `init` | Non-destructive scaffold: probes project type/stack, copies the `AGENTS.md` + `aiDoc/` skeleton, never overwrites by default (`--dry-run`, `--overwrite` with backups, idempotent). For mature repos, run a gap audit and only fill the missing pieces. |
+| `init` | Non-destructive scaffold: probes project type/stack, copies the `AGENTS.md` + `aiDoc/` skeleton, never overwrites by default (`--dry-run`, `--overwrite` with backups, idempotent). Runs a default static scan (multi-language manifests + structure statistics; component detection for mixed projects across java/python/go/c++/c/web/qt) that writes a first version of real content into `relations/` plus the machine-generated `relations/code-index.md` (`--no-scan` disables). For mature repos, run a gap audit and only fill the missing pieces. |
 | `generate [--incremental\|--scope <area>\|--dry-run] [--lang zh\|en]` | Agent-driven: probes the codebase and writes the real content of `AGENTS.md` + `aiDoc/` from actual code — layering rules, API contracts, examples, routing tables. Supports incremental and scoped regeneration. |
 | `sync` | Drift detection: `check_sync.py` verifies index integrity, referenced paths, `last-updated` headers, and area consistency; the agent then resolves semantic drift. |
 | `record [note\|plan\|handoff]` | Create decision notes, change plans, or handoffs following the lifecycle discipline (no invented alternatives; implemented notes updated in place; reversals get new cross-linked notes). |
@@ -67,7 +67,7 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 ├── CLAUDE.md                # one line: @AGENTS.md
 ├── aiDoc/
 │   ├── README.md            # L1 routing: index, task→must-read table, ownership map
-│   ├── relations/           # repo profile, dev workflow, system map
+│   ├── relations/           # repo profile, dev workflow, system map, code-index.md (machine-generated)
 │   ├── modules/             # architecture & module rules, module dev guide
 │   ├── contracts/           # contract layer: web-api / library / cli variant
 │   ├── frontend/            # frontend rules, utils reuse (frontend projects only)
@@ -100,6 +100,7 @@ Project-Harness/
     ├── templates/zh/  templates/en/   # bilingual skeletons injected into target repos
     └── scripts/
         ├── init_project.py       # non-destructive scaffolding
+        ├── scan_repo.py          # zero-dependency static scan (runs during init by default)
         └── check_sync.py         # mechanical drift checks
 ```
 

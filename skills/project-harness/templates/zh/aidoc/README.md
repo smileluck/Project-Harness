@@ -16,7 +16,7 @@
 
 | 目录 | 内容 |
 |---|---|
-| `relations/` | 仓库结构、技术栈、依赖关系、开发流程 |
+| `relations/` | 仓库结构、技术栈、依赖关系、开发流程（含机器生成的 `code-index.md`，不手改） |
 | `modules/` | 架构与模块组织规则、模块开发指南 |
 | `contracts/` | 生产者与消费者之间的共享契约（按项目范式：web-api / library / cli） |
 | `frontend/` | 前端规范、工具函数复用规则（仅当前端存在时生成） |
@@ -34,6 +34,7 @@
 | 所有任务都需要的高层规则与不变量 | `/AGENTS.md` |
 | 文档索引与「任务→必读文档」路由表 | `aiDoc/README.md`（本文件） |
 | 项目定位、技术栈、目录职责 | `relations/repo-profile.md`、`relations/system-map.md` |
+| 组件清单、语言构成、模块清单、入口点、命令索引 | `relations/code-index.md`（机器生成，不手改） |
 | 开发流程、分支与提交规范、环境命令 | `relations/development-workflow.md` |
 | 架构与模块组织约束 | `modules/architecture-rules.md` |
 | 新建模块/功能/命令的步骤 | `modules/module-development.md` |
@@ -57,6 +58,7 @@
 | `relations/repo-profile.md` | 项目定位与技术栈速查 |
 | `relations/development-workflow.md` | 开发流程、提交规范、环境命令 |
 | `relations/system-map.md` | 系统架构与组件关系 |
+| `relations/code-index.md` | 组件清单、语言构成、入口点、命令索引（机器生成，不手改） |
 | `modules/architecture-rules.md` | 架构各层必须遵守的约束 |
 | `modules/module-development.md` | 新建模块/功能/命令的完整步骤 |
 | `contracts/boundary.md` | 生产者与消费者之间的共享契约 |
@@ -78,6 +80,7 @@
 | 新建前端页面 / 功能 | `frontend/frontend-rules.md`、`frontend/frontend-utils.md`、`examples/README.md` |
 | 契约 / 接口对接 | `contracts/boundary.md` |
 | 了解仓库结构 / 技术栈 / 流程 | `relations/repo-profile.md`、`relations/system-map.md`、`relations/development-workflow.md` |
+| 查组件清单 / 入口点 / 命令索引 | `relations/code-index.md`（机器生成，不手改） |
 | 用户提出新业务需求 | `memory/business/TEMPLATE.md`、`memory/project-memory.md`（必更新索引） |
 | 非平凡决策（行为/架构/契约/流程变更） | `notes/README.md`、`notes/TEMPLATE.md` |
 | 多步骤 / 跨组件 / 有风险的变更 | `plans/README.md`、`plans/change-plan.TEMPLATE.md` |

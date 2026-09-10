@@ -5,6 +5,8 @@ System architecture and component relationships. This is the first place AI look
 
 ## Root Directory Responsibilities
 
+<!-- init's scan fills this table with component annotations; mixed projects get one row per component -->
+
 TODO: one row per top-level directory.
 
 | Directory | Responsibility |

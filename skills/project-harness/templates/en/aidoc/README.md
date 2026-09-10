@@ -14,7 +14,7 @@ Project-level rules are never copied into tool-private directories; Claude Code 
 
 ## Directory Guide
 
-- `relations/` — repo structure, tech stack, dependencies, development workflow
+- `relations/` — repo structure, tech stack, dependencies, development workflow (includes the machine-generated `code-index.md`, never hand-edited)
 - `modules/` — architecture rules, module development guide
 - `contracts/` — contract layer: interface contract and responsibility split
 - `frontend/` — frontend rules, utility reuse rules (generated only when a frontend exists)
@@ -31,7 +31,7 @@ One fact has one maintained home; other places only link.
 |---|---|
 | Rules needed in every task | `../AGENTS.md` |
 | Doc index and task routing | this file |
-| Repo structure, tech stack, workflow | `relations/` |
+| Repo structure, tech stack, workflow | `relations/` (incl. machine-generated `code-index.md`, never hand-edited) |
 | Architecture and module rules | `modules/` |
 | Contract layer | `contracts/` |
 | Frontend rules | `frontend/` |
@@ -52,6 +52,7 @@ TODO: one line per document — path + one-sentence purpose. This is the "look u
 | `relations/repo-profile.md` | Project positioning and tech stack |
 | `relations/development-workflow.md` | Development order, branches, commits, commands |
 | `relations/system-map.md` | Architecture and component relationships |
+| `relations/code-index.md` | Component inventory, language composition, entry points, command index (machine-generated, never hand-edited) |
 | `modules/architecture-rules.md` | Architecture and per-layer constraints |
 | `modules/module-development.md` | Step-by-step module creation guide |
 | `contracts/boundary.md` | Contract layer: interface contract and responsibility split |
@@ -74,6 +75,7 @@ Paths are relative to `aiDoc/`. TODO: complete for every task type that exists i
 | New frontend page / feature | `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/` (frontend examples) |
 | Contract / field alignment | `contracts/boundary.md` |
 | Understand repo structure / stack / workflow | `relations/repo-profile.md`, `relations/system-map.md`, `relations/development-workflow.md` |
+| Look up components / entry points / command index | `relations/code-index.md` (machine-generated, never hand-edited) |
 | New business requirement from user | `memory/business/TEMPLATE.md`, `memory/project-memory.md` (index must be updated) |
 | Multi-step / cross-component change | `plans/README.md`, `plans/change-plan.TEMPLATE.md` |
 | Recording a non-trivial decision | `notes/README.md`, `notes/TEMPLATE.md` |

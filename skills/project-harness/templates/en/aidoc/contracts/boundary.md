@@ -5,6 +5,8 @@ Interface contract and responsibility split across this project's public boundar
 
 The body below is organized per paradigm. The generate workflow keeps the variant matching this project and deletes the rest.
 
+<!-- mixed projects: describe the contracts between components (e.g. web frontend ↔ server API, Qt UI ↔ core library interface) -->
+
 ## Responsibility Boundary
 
 TODO: who owns what, stated as producer side vs consumer side. Example rows — replace with the real split:

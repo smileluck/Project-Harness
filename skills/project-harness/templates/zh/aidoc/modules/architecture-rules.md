@@ -15,6 +15,9 @@
 - 分层服务（典型 Web/后端）：按 数据层 → 契约层 → 业务逻辑层 → 入口层 组织
 - 包模块结构（library/SDK）：按公开 API 面 → 内部实现模块 → 共享基础设施 组织
 - 插件体系（cli/可扩展工具）：按核心内核 → 插件契约/接口 → 插件实现 → 注册机制 组织
+- qt-app：UI 与逻辑分层，信号槽连接两侧；UI 层不直接操作核心数据结构
+- cpp-app：按 公开头文件/接口 → 实现模块 → 构建目标（CMake/Makefile）组织
+- java-app：按 package 分层（如 controller/service/repository 或 api/impl），依赖方向单向
 -->
 
 ## 数据层

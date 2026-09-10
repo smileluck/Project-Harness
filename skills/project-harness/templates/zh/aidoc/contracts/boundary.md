@@ -13,6 +13,7 @@
 | TODO: 如 表单即时反馈/展示格式化 | 消费方 |
 
 <!-- 变体：web-api / library / cli，generate 工作流保留匹配变体并删除其余 -->
+<!-- mixed 项目：描述组件间契约（如 web 前端 ↔ 服务端 API、Qt UI ↔ 核心库接口） -->
 
 ## web-api 变体：HTTP 接口契约
 

@@ -18,6 +18,12 @@ TODO: state the actual package/module structure and the dependency direction bet
 
 TODO: state the actual plugin architecture: core vs plugins, registration mechanism, allowed interaction paths.
 
+<!-- additional paradigms the generate workflow may substitute for the variants above:
+- qt-app: UI/logic separation, signals & slots connecting the two sides; the UI layer never touches core data structures directly
+- cpp-app: public headers/interfaces → implementation modules → build targets (CMake/Makefile)
+- java-app: package layering (e.g. controller/service/repository or api/impl) with one-way dependencies
+-->
+
 ## Data Layer
 
 TODO: storage/persistence conventions — base classes, declaration style, naming rules, storage location — cite real paths and symbols (e.g. `app/models/common/base.py:BaseModel`).

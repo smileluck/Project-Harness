@@ -9,6 +9,8 @@ TODO: one short paragraph. Infer from `package.json` / `pyproject.toml` name and
 
 ## Core Tech Stack
 
+<!-- init's scan fills this table per component; mixed projects get one row per component -->
+
 TODO: fill from real manifests and imports. Web services fill all rows; libraries / CLI / frontend projects keep only applicable rows (e.g. language, framework, key dependencies) and drop the rest.
 
 | Concern | Choice |

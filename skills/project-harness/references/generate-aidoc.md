@@ -13,7 +13,7 @@ Parse `$ARGUMENTS`:
 | `--scope modules` | Regenerate `modules/architecture-rules.md`, `modules/module-development.md`, and module-layer examples under `examples/` |
 | `--scope contracts` | Regenerate `contracts/boundary.md` |
 | `--scope frontend` | Regenerate `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/frontend/` |
-| `--scope relations` | Regenerate the 3 files under `relations/` |
+| `--scope relations` | Regenerate the hand-written files under `relations/` (`code-index.md` is machine-owned; rerun `scan_repo.py` instead) |
 | `--scope memory` | Regenerate files under `memory/` (preserve user-written records) |
 | `--scope notes` | Refresh notes indexes/templates only — never rewrite existing decision notes |
 | `--scope plans` | Refresh plans indexes/templates only — never rewrite existing plans |
@@ -41,6 +41,8 @@ Read these files when present:
 | `pyproject.toml`, `requirements.txt`, `Pipfile`, `setup.py` | Python dependencies |
 | `go.mod` / `go.sum` | Go dependencies |
 | `pom.xml`, `build.gradle` | Java dependencies |
+| `CMakeLists.txt`, `Makefile` | C/C++ build targets and layout |
+| `*.pro`, qmake project files | Qt modules and app layout |
 | `Cargo.toml` | Rust dependencies |
 | `.nvmrc`, `.node-version`, `.python-version` | Runtime versions |
 | `Dockerfile`, `docker-compose.yml` | Deployment setup |
@@ -56,7 +58,10 @@ Read these files when present:
 | `fastify` | Fastify |
 | `express`, `koa`, `nestjs` | Node.js backend |
 | `gin`, `gorm`, `fiber` | Go (Gin/Fiber) |
-| `spring-boot` | Spring Boot |
+| `spring-boot`, `spring-web`, `spring-context` | Java (Spring) |
+| `servlet`, `jakarta` | Java (web) |
+| `cmake`, `Makefile` targets | C/C++ (CMake/Make) |
+| `Qt` modules in `.pro`, `qmake`, `.qml`, `.ui` files | Qt (Widgets/QML) |
 | `actix`, `axum` | Rust (Actix/Axum) |
 | `vue`, `vite` + `.vue` | Vue |
 | `react`, `.jsx`/`.tsx` | React |
@@ -85,24 +90,47 @@ Uncovered frameworks: judge from dependency names + directory structure combined
 2. Recently modified modules (use `git log --format="" --name-only`) — they reflect current style.
 3. Feature-rich modules (pagination, auth, relations) — broader coverage.
 
-### 1.4 Project type
+### 1.4 Project type and components
 
-Six types: `fullstack` / `backend` / `frontend` / `library` / `cli` / `general`. Detection signals:
+The unit of detection is the **component**: a tuple `(path, kind, language/framework, evidence)` where kind ∈ `web-frontend` / `web-backend` / `cli` / `library` / `qt-app` / `java-app` / `go-module` / `cpp-app` / `generic`. A repository has one or more components; the repo-level label derives from them:
 
-| Signal | Clues |
+- Single component → one of the six types `fullstack` / `backend` / `frontend` / `library` / `cli` / `general`. Single-component `qt-app` / `go-module` / `cpp-app` maps to `general`.
+- Multiple components → `mixed`.
+
+Component kind table:
+
+| Kind | Clues |
 |---|---|
-| `has_frontend` | frontend framework dependency (vue, react, angular, svelte, next, nuxt, …) |
-| `has_web` | web framework dependency (`fastapi`, `django`, `flask`, `express`, `nestjs`, `gin`, …) |
-| `is_cli` | `[project.scripts]` / `bin` entries, `click`, `typer`, `commander`, `cobra` |
-| `is_library` | `[build-system]`, `setup.py`, package `main`/`exports` fields, `[lib]` crate type |
+| `web-frontend` | frontend framework dependency (vue, react, angular, svelte, next, nuxt, …) |
+| `web-backend` | web framework dependency (`fastapi`, `django`, `flask`, `express`, `nestjs`, `gin`, `spring-boot`, …) |
+| `cli` | `[project.scripts]` / `bin` entries, `click`, `typer`, `commander`, `cobra` |
+| `library` | `[build-system]`, `setup.py`, package `main`/`exports` fields, `[lib]` crate type |
+| `qt-app` | `*.pro` / qmake project files, Qt dependencies, `.qml` / `.ui` files |
+| `java-app` | `pom.xml` / `build.gradle` with an application entry point |
+| `go-module` | `go.mod` with a buildable `main` package |
+| `cpp-app` | `CMakeLists.txt` / `Makefile` defining an executable target |
+| `generic` | none of the above matched |
 
-Priority (first match wins): `fullstack` (has_frontend + has_web) > `frontend` (has_frontend) > `backend` (has_web) > `cli` (is_cli) > `library` (is_library) > `general`. The result drives the adaptive rules in [aidoc-structure.md](aidoc-structure.md).
+Priority when several kinds match one component (first match wins): `web-frontend` > `web-backend` > `cli` > `library` > `qt-app` > `java-app` > `go-module` > `cpp-app` > `generic`.
+
+One directory may host several components (e.g. a `package.json` with both a Vite frontend and an Express server); record each with its own evidence.
+
+The repo-level label maps to the legacy six-type detection as follows: `fullstack` (web-frontend + web-backend in one repo) > `frontend` (web-frontend only) > `backend` (web-backend only) > `cli` > `library` > `general`; `has_frontend` = any component is `web-frontend` and still only drives conditional generation of the `frontend/` area. The result drives the adaptive rules in [aidoc-structure.md](aidoc-structure.md) — for `mixed`, content is organized per component.
+
+### 1.5 Auto-scan base
+
+When `init` ran with its default static scan, parts of `relations/` are pre-filled (sections carry the marker `<!-- auto-scan: init 扫描生成，generate 工作流校订后移除此标记 -->`) and `relations/code-index.md` exists as the machine-generated fact base. Treat these as **pre-probed facts**:
+
+- Do not repeat the mechanical scan; start from `code-index.md` (component inventory, language composition, entry points, command index) and the auto-filled sections.
+- Calibrate and correct them against the real code — the scan is zero-dependency heuristics and can be wrong.
+- After calibrating a section, remove its `auto-scan` marker. Never hand-edit `code-index.md`; if it is wrong or stale, rerun `python3 <skill-dir>/scripts/scan_repo.py <repo>`.
+- With `--no-scan` repos, `code-index.md` remains a skeleton; probe per sections 1.1–1.4 as before.
 
 ## Phase 2: Generate per the structure contract
 
 Generate files per [aidoc-structure.md](aidoc-structure.md), which defines the tree, per-file requirements, and writing style.
 
-**Adaptive rules**: file sets and per-type content emphasis are defined once — in the six-type adaptivity table in [aidoc-structure.md](aidoc-structure.md). Follow that table; do not restate or diverge from it here. The short version: only the `frontend/` area is conditional; `contracts/boundary.md` and `modules/architecture-rules.md` exist for every type but use the paradigm variant matching the project type.
+**Adaptive rules**: file sets and per-type content emphasis are defined once — in the adaptivity table in [aidoc-structure.md](aidoc-structure.md) (six types + `mixed`). Follow that table; do not restate or diverge from it here. The short version: only the `frontend/` area is conditional; `contracts/boundary.md` and `modules/architecture-rules.md` exist for every type but use the paradigm variant matching the project type; `mixed` projects organize content per component.
 
 **Parallel groups** — files within a group may be generated in parallel; groups run in order. With `--scope`, generate only the matching group(s).
 
@@ -110,7 +138,7 @@ Generate files per [aidoc-structure.md](aidoc-structure.md), which defines the t
 |---|---|---|
 | 1 | — | `AGENTS.md` |
 | 2 | — | `aiDoc/README.md` |
-| 3 | A | `aiDoc/relations/` (3 files) |
+| 3 | A | `aiDoc/relations/` (hand-written files; `code-index.md` is machine-owned) |
 | 4 | B | `aiDoc/modules/` (2 files) |
 | 5 | C | `aiDoc/contracts/` + `aiDoc/frontend/` (≤3 files) |
 | 6 | D | `aiDoc/examples/` 分层示例（按范式：web 的 model→…→router、library 的公开 API→内部实现、cli 的命令注册→命令处理→核心逻辑；无适用层时可只在 examples/README.md 登记真实参考文件） |
