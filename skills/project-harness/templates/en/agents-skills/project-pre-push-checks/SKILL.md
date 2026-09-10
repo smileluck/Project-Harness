@@ -28,7 +28,7 @@ TODO(init/generate): fill in this project's own commands. Select the smallest se
 |---|---|---|
 | Focused tests | TODO | Any logic change |
 | Typecheck / lint | TODO | Any interface or type change |
-| Contract tests | TODO | Any change touching `aiDoc/frontend-backend/boundary.md` territory |
+| Contract tests | TODO | Any change touching `aiDoc/contracts/boundary.md` territory |
 | Build / artifact smoke | TODO | Any change to build, exports, or manifests |
 | Real-entry smoke | TODO | Any user-visible output change |
 

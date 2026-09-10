@@ -5,11 +5,11 @@ Project positioning and tech stack. Every entry must come from real manifests an
 
 ## Project Positioning
 
-TODO: one short paragraph. Infer from `package.json` / `pyproject.toml` name and description, `README.md`, and user input. State what the project does, who it serves, and whether it is fullstack / backend-only / frontend-only.
+TODO: one short paragraph. Infer from `package.json` / `pyproject.toml` name and description, `README.md`, and user input. State what the project does, who it serves, and its project type (fullstack / backend / frontend / library / cli / general).
 
-## Backend Tech Stack
+## Core Tech Stack
 
-TODO: fill from real manifests and imports. Remove this section for frontend-only projects.
+TODO: fill from real manifests and imports. Web services fill all rows; libraries / CLI / frontend projects keep only applicable rows (e.g. language, framework, key dependencies) and drop the rest.
 
 | Concern | Choice |
 |---|---|
@@ -23,7 +23,7 @@ TODO: fill from real manifests and imports. Remove this section for frontend-onl
 
 ## Frontend Tech Stack
 
-TODO: fill from real manifests and imports. Remove this section for backend-only projects.
+TODO: fill from real manifests and imports. Remove this section for projects without a frontend.
 
 | Concern | Choice |
 |---|---|

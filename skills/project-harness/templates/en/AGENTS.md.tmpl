@@ -30,11 +30,11 @@ TODO: list each top-level directory and key subdirectory with its responsibility
 
 ### Architecture
 
-TODO: record the actual layering pattern (e.g. Router → Endpoint → Service → Model), citing real directories. Details live in `aiDoc/modules/backend-layer-rules.md`.
+TODO: record the actual architecture pattern (e.g. Router → Endpoint → Service → Model), citing real directories. Details live in `aiDoc/modules/architecture-rules.md`.
 
-### Contract / Frontend-Backend Collaboration
+### Contract
 
-TODO: record the actual response/request conventions in one or two lines. Details live in `aiDoc/frontend-backend/boundary.md`.
+TODO: record the actual interface/contract conventions in one or two lines. Details live in `aiDoc/contracts/boundary.md`.
 
 ### Modules and Directories
 
@@ -67,7 +67,7 @@ Never read generated, vendored, or cached trees: `node_modules/`, `.venv/`, `__p
 ## Definition of Done
 
 - Code follows the layering and module rules documented in `aiDoc/`.
-- Both sides of every changed contract (producer and consumer) are traced and updated; `aiDoc/frontend-backend/boundary.md` is updated when applicable.
+- Both sides of every changed contract (producer and consumer) are traced and updated; `aiDoc/contracts/boundary.md` is updated when applicable.
 - Required evidence ran and passed; passed / failed / skipped / not-run are reported separately.
 - Decision notes and memory indexes are updated when the change alters behavior, contracts, process, testing strategy, or persistent data.
 - When work is handed off unfinished, the handoff records exact state, changed files, commands run with results, remaining work, blockers, and the next safe action. An interrupted command is never described as completed.
@@ -76,9 +76,9 @@ Never read generated, vendored, or cached trees: `node_modules/`, `.venv/`, `__p
 
 | Task family | Read first |
 |---|---|
-| Backend module / endpoint development | `aiDoc/modules/`, `aiDoc/examples/` |
-| Frontend page / feature development | `aiDoc/frontend-backend/`, `aiDoc/examples/` |
-| Contract / field alignment | `aiDoc/frontend-backend/boundary.md` |
+| Module / feature / command development | `aiDoc/modules/`, `aiDoc/examples/` |
+| Frontend page / feature development | `aiDoc/frontend/`, `aiDoc/examples/` |
+| Contract / field alignment | `aiDoc/contracts/boundary.md` |
 | Repo structure / tech stack / workflow | `aiDoc/relations/` |
 | Business requirement intake | `aiDoc/memory/business/` |
 | Recording or revisiting a decision | `aiDoc/notes/` |
@@ -91,7 +91,7 @@ These are coarse pointers only; the detailed "task → must-read docs" routing t
 Regenerate or incrementally update the doc system (via the project-harness generate workflow) when:
 
 - Architecture changes materially: layering shifts, top-level directories added/removed, tech stack replaced
-- Backend modules or frontend pages are added/removed so that `aiDoc/modules/`, `aiDoc/examples/`, or `aiDoc/relations/system-map.md` no longer match the code
+- Modules, features, or commands are added/removed so that `aiDoc/modules/`, `aiDoc/examples/`, or `aiDoc/relations/system-map.md` no longer match the code
 - `aiDoc/` child docs are added/removed, invalidating the routing table in `aiDoc/README.md` and the quick-routing table above — both must be synchronized even if their own last-updated markers are unchanged
 - Routing tables or examples have drifted visibly from the real code
 

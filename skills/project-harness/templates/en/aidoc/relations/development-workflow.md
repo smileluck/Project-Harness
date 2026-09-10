@@ -14,10 +14,10 @@ TODO: derive from the real layering. Typical shape:
 5. Register routes
 6. Add or update focused tests
 
-## Frontend-Backend Collaboration
+## Contract Collaboration
 
-- Backend defines the contract first; frontend develops in parallel against the agreed shape.
-- Contract details live in `../frontend-backend/boundary.md`; both sides must match it.
+- The producer side defines the contract first; the consumer side develops in parallel against the agreed shape.
+- Contract details live in `../contracts/boundary.md`; both sides must match it.
 - Verify integration at the real entry path before calling the work done.
 
 ## Branch Strategy
@@ -43,4 +43,4 @@ TODO: concrete commands, verified to run.
 
 ## API Documentation
 
-TODO: Swagger / ReDoc / other URL if the project exposes one; otherwise state how the contract is inspected (e.g. read `../frontend-backend/boundary.md` plus the router source).
+TODO: Swagger / ReDoc / other URL if the project exposes one; otherwise state how the contract is inspected (e.g. read `../contracts/boundary.md` plus the entry-point source).

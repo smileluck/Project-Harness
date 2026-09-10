@@ -34,7 +34,7 @@ The script only proves mechanical facts. A clean report does **not** mean the do
 
 Verify by reading code and docs together:
 
-1. **Symbol existence**: class/function names cited in `frontend-backend/boundary.md` and `modules/backend-layer-rules.md` still exist in code (Grep each).
+1. **Symbol existence**: class/function names cited in `contracts/boundary.md` and `modules/architecture-rules.md` still exist in code (Grep each).
 2. **Contract fidelity**: response/pagination structures in `boundary.md` match the actual serializers; field naming convention matches real payloads.
 3. **Example validity**: each example's "real reference files" exist **and** the example still matches those files' current patterns.
 4. **Routing consistency**: `aiDoc/README.md` routing table and common entries match the actual aiDoc file set; `AGENTS.md`'s "task family → aiDoc area" quick-reference matches existing aiDoc areas.

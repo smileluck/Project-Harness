@@ -10,8 +10,9 @@ Parse `$ARGUMENTS`:
 |---|---|
 | (empty) | Full generation: probe the project, generate/refresh all aiDoc files |
 | `--incremental` | Read existing aiDoc, compare with code changes, regenerate only stale files |
-| `--scope backend` | Regenerate `modules/backend-layer-rules.md`, `examples/backend/`, backend parts of `modules/module-development.md` |
-| `--scope frontend` | Regenerate `frontend-backend/frontend-rules.md`, `frontend-utils.md`, `examples/frontend/` |
+| `--scope modules` | Regenerate `modules/architecture-rules.md`, `modules/module-development.md`, and module-layer examples under `examples/` |
+| `--scope contracts` | Regenerate `contracts/boundary.md` |
+| `--scope frontend` | Regenerate `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/frontend/` |
 | `--scope relations` | Regenerate the 3 files under `relations/` |
 | `--scope memory` | Regenerate files under `memory/` (preserve user-written records) |
 | `--scope notes` | Refresh notes indexes/templates only — never rewrite existing decision notes |
@@ -19,6 +20,8 @@ Parse `$ARGUMENTS`:
 | `--scope core` | Regenerate `AGENTS.md` + `aiDoc/README.md` (load contract and routing layer) |
 | `--dry-run` | Output Phase 1 probe results and the generation plan; write nothing |
 | `--lang zh\|en` | Language of generated prose (identifiers stay English). Default: match the repo's existing docs language |
+
+The former `--scope backend` maps to `modules` + `contracts`; the former `--scope frontend` maps to `frontend` + `contracts`.
 
 `--dry-run` may combine with any mode.
 
@@ -61,6 +64,10 @@ Read these files when present:
 | `svelte`, `@sveltejs` | Svelte/SvelteKit |
 | `next` | Next.js |
 | `nuxt` | Nuxt |
+| `click`, `typer` | Python CLI |
+| `commander`, `yargs` | Node.js CLI |
+| `cobra` | Go CLI |
+| `clap` | Rust CLI |
 
 Uncovered frameworks: judge from dependency names + directory structure combined.
 
@@ -68,6 +75,8 @@ Uncovered frameworks: judge from dependency names + directory structure combined
 
 - Backend: read 2–3 typical endpoint/controller, service, and model files; identify the layering pattern.
 - Frontend: read 2–3 typical page components, API wrappers, state-management files; identify the component pattern.
+- CLI: read the command definitions, entry points, and I/O handling; identify the command-registration pattern.
+- Library: read the public exports and a typical module; identify the public/internal boundary.
 - Identify unified request/response formats, auth mechanism, and data-access pattern (ORM/raw/...).
 
 **Example module selection** (highest priority first):
@@ -78,19 +87,22 @@ Uncovered frameworks: judge from dependency names + directory structure combined
 
 ### 1.4 Project type
 
-`fullstack` (both sides) / `backend-only` / `frontend-only`. This drives the adaptive rules below.
+Six types: `fullstack` / `backend` / `frontend` / `library` / `cli` / `general`. Detection signals:
+
+| Signal | Clues |
+|---|---|
+| `has_frontend` | frontend framework dependency (vue, react, angular, svelte, next, nuxt, …) |
+| `has_web` | web framework dependency (`fastapi`, `django`, `flask`, `express`, `nestjs`, `gin`, …) |
+| `is_cli` | `[project.scripts]` / `bin` entries, `click`, `typer`, `commander`, `cobra` |
+| `is_library` | `[build-system]`, `setup.py`, package `main`/`exports` fields, `[lib]` crate type |
+
+Priority (first match wins): `fullstack` (has_frontend + has_web) > `frontend` (has_frontend) > `backend` (has_web) > `cli` (is_cli) > `library` (is_library) > `general`. The result drives the adaptive rules in [aidoc-structure.md](aidoc-structure.md).
 
 ## Phase 2: Generate per the structure contract
 
 Generate files per [aidoc-structure.md](aidoc-structure.md), which defines the tree, per-file requirements, and writing style.
 
-**Adaptive rules**:
-
-| Project type | Skip | `boundary.md` becomes |
-|---|---|---|
-| backend-only | `frontend-backend/frontend-rules.md`, `frontend-utils.md`, `examples/frontend/` | API producer contract |
-| frontend-only | `modules/backend-layer-rules.md`, `examples/backend/` | API consumer contract |
-| fullstack | nothing | full two-sided contract |
+**Adaptive rules**: file sets and per-type content emphasis are defined once — in the six-type adaptivity table in [aidoc-structure.md](aidoc-structure.md). Follow that table; do not restate or diverge from it here. The short version: only the `frontend/` area is conditional; `contracts/boundary.md` and `modules/architecture-rules.md` exist for every type but use the paradigm variant matching the project type.
 
 **Parallel groups** — files within a group may be generated in parallel; groups run in order. With `--scope`, generate only the matching group(s).
 
@@ -100,7 +112,7 @@ Generate files per [aidoc-structure.md](aidoc-structure.md), which defines the t
 | 2 | — | `aiDoc/README.md` |
 | 3 | A | `aiDoc/relations/` (3 files) |
 | 4 | B | `aiDoc/modules/` (2 files) |
-| 5 | C | `aiDoc/frontend-backend/` (≤3 files) |
+| 5 | C | `aiDoc/contracts/` + `aiDoc/frontend/` (≤3 files) |
 | 6 | D | `aiDoc/examples/backend/*` |
 | 7 | D | `aiDoc/examples/frontend/*` |
 | 8 | E | `aiDoc/examples/README.md` |
@@ -142,7 +154,7 @@ It verifies mechanically checkable facts: aiDoc index completeness (every path i
 
 What the script cannot prove, verify yourself:
 
-1. **Symbol consistency**: Grep class/function names cited in `boundary.md` and layer-rules docs; confirm they exist in the code.
+1. **Symbol consistency**: Grep class/function names cited in `contracts/boundary.md` and `modules/architecture-rules.md`; confirm they exist in the code.
 2. **Example fidelity**: examples match the current style of the modules they were extracted from.
 3. **AGENTS.md call logic**: the quick-reference table covers exactly the aiDoc areas that exist; the "when to regenerate" section is present with complete triggers.
 4. **No invented facts**: every stack item, command, and path traces to a probed source.

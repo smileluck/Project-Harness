@@ -30,7 +30,7 @@ The script creates only missing files and reports existing destinations as `SKIP
 
 ## Path A: new / lightly documented repo
 
-1. Run the initializer (after dry-run approval).
+1. Run the initializer (after dry-run approval). The skeleton adapts to six project types — `fullstack` / `backend` / `frontend` / `library` / `cli` / `general` — and only the `frontend/` area is conditional (created only when a real frontend exists); all other aiDoc areas are created for every type.
 2. Tailor every generated command, path, and rule against the real project — remove placeholders that cannot be resolved, mark genuine unknowns instead of inventing them.
 3. Remind the user that the skeleton is content-thin: the next step is `generate`, which probes the codebase and fills `AGENTS.md` + `aiDoc/` with real project facts (see [generate-aidoc.md](generate-aidoc.md)). Offer to run it immediately.
 

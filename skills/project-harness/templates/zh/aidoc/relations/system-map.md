@@ -20,7 +20,7 @@ TODO: 分层调用链示意
 ```
 
 - 调用方向必须单向，禁止跨层或反向调用
-- 各层约束详见 [../modules/backend-layer-rules.md](../modules/backend-layer-rules.md)
+- 各层约束详见 [../modules/architecture-rules.md](../modules/architecture-rules.md)
 
 ## 核心基础设施
 

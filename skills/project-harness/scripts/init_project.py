@@ -7,11 +7,12 @@
 
 行为概述:
     1. 校验 <repo-path> 的 git 根（嵌套仓库拒绝，非 git 仓库警告后继续）。
-    2. 探测项目类型（fullstack / backend-only / frontend-only）与技术栈线索。
+    2. 探测项目类型（fullstack / backend / frontend / library / cli /
+       general）与技术栈线索。
     3. 从 skills/project-harness/templates/<lang>/ 拷贝 aiDoc 骨架、AGENTS.md、
        CLAUDE.md、.agents/skills，并创建 notes/plans 生命周期目录；
-       按项目类型跳过的文件会同步裁剪索引（aiDoc/README.md、AGENTS.md）中
-       引用它们的行。
+       未探测到前端时跳过的 frontend/ 文件会同步裁剪索引
+       （aiDoc/README.md、AGENTS.md）中引用它们的行。
     4. 默认绝不覆盖已存在文件；--overwrite 会先备份到 aiDoc/.harness-backups/。
     5. 幂等：第二次运行全部 SKIP。
 
@@ -22,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import sys
 from datetime import date, datetime
@@ -30,34 +32,35 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 TEMPLATES_ROOT = SCRIPT_DIR.parent / "templates"
 
-# 与模板布局对应的“按项目类型跳过”清单（相对 aidoc/ 根）。
-# 若模板文件名调整，这里需要同步修改。
-BACKEND_ONLY_SKIP = (
-    "frontend-backend/frontend-rules.md",
-    "frontend-backend/frontend-utils.md",
-)
-FRONTEND_ONLY_SKIP = (
-    "modules/backend-layer-rules.md",
-    "modules/module-development.md",
+# 与模板布局对应的条件性跳过清单（相对 aidoc/ 根）。
+# 仅 frontend/ 区域是条件性的：未探测到前端时跳过；其余区域全类型保留，
+# 内容由 generate 工作流按范式适配。若模板文件名调整，这里需要同步修改。
+FRONTEND_SKIP = (
+    "frontend/frontend-rules.md",
+    "frontend/frontend-utils.md",
 )
 
 # 技术栈探测线索
-BACKEND_MARKERS = (
+MARKER_FILES = (
+    "package.json",
     "pyproject.toml",
     "requirements.txt",
     "go.mod",
-    "pom.xml",
-    "build.gradle",
-    "build.gradle.kts",
+    "setup.py",
     "Cargo.toml",
 )
 FRONTEND_DEPS = (
     "vue", "react", "react-dom", "next", "nuxt", "@nuxt/core", "svelte",
     "@sveltejs/kit", "angular", "@angular/core", "solid-js", "@builder.io/qwik",
 )
-NODE_BACKEND_DEPS = (
-    "express", "fastify", "koa", "@nestjs/core", "hapi", "@hapi/hapi",
+NODE_WEB_DEPS = (
+    "express", "fastify", "koa", "@nestjs/core", "hono", "hapi", "@hapi/hapi",
 )
+NODE_CLI_DEPS = ("commander", "yargs")
+PY_WEB_DEPS = ("fastapi", "django", "flask")
+PY_CLI_DEPS = ("click", "typer")
+GO_WEB_RE = re.compile(r"\b(gin|fiber)\b")
+GO_CLI_RE = re.compile(r"\bcobra\b")
 
 GITIGNORE_LINE = "aiDoc/.harness-backups/"
 
@@ -93,21 +96,24 @@ def _scan_marker_files(repo: Path) -> list[str]:
                 candidates.append(child)
     except OSError:
         pass
-    markers = BACKEND_MARKERS + ("package.json",)
     for base in candidates:
-        for name in markers:
+        for name in MARKER_FILES:
             if (base / name).is_file():
                 found.append(str((base / name).relative_to(repo)))
     return found
 
 
-def _package_json_deps(pkg: Path) -> set[str]:
+def _package_json_data(pkg: Path) -> dict:
     import json
 
     try:
         data = json.loads(pkg.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return set()
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _package_json_deps(data: dict) -> set[str]:
     deps: set[str] = set()
     for key in ("dependencies", "devDependencies", "peerDependencies"):
         section = data.get(key)
@@ -116,42 +122,105 @@ def _package_json_deps(pkg: Path) -> set[str]:
     return deps
 
 
-def detect_project(repo: Path) -> tuple[str, list[str]]:
-    """返回 (项目类型, 线索说明列表)。类型 ∈ fullstack/backend-only/frontend-only。"""
+def _read_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def detect_project(repo: Path) -> tuple[str, list[str], bool]:
+    """返回 (项目类型, 线索说明列表, 是否探测到前端)。
+
+    类型 ∈ fullstack/backend/frontend/library/cli/general，按优先级判定：
+    前端+Web 框架 → fullstack；仅前端 → frontend；仅 Web 框架 → backend；
+    CLI 入口 → cli；库打包标志 → library；无任何标志 → general。
+    """
     clues: list[str] = []
     has_frontend = False
-    has_backend = False
+    has_web = False
+    is_cli = False
+    is_library = False
 
     for rel in _scan_marker_files(repo):
         p = repo / rel
-        if p.name == "package.json":
-            deps = _package_json_deps(p)
+        name = p.name
+        if name == "package.json":
+            data = _package_json_data(p)
+            deps = _package_json_deps(data)
             fe = sorted(d for d in deps if d in FRONTEND_DEPS)
-            be = sorted(d for d in deps if d in NODE_BACKEND_DEPS)
+            web = sorted(d for d in deps if d in NODE_WEB_DEPS)
+            cli = sorted(d for d in deps if d in NODE_CLI_DEPS)
             if fe:
                 has_frontend = True
                 clues.append(f"{rel}: 前端依赖 {', '.join(fe)}")
-            if be:
-                has_backend = True
-                clues.append(f"{rel}: Node 后端依赖 {', '.join(be)}")
-            if not fe and not be:
-                # 无明确依赖线索的 package.json 视为 Node 项目（前后端皆有可能，偏后端）
-                has_backend = True
-                clues.append(f"{rel}: package.json（无明显前端依赖，按 Node 后端计）")
-        else:
-            has_backend = True
-            clues.append(f"{rel}: 后端标志文件")
+            if web:
+                has_web = True
+                clues.append(f"{rel}: Node Web 框架依赖 {', '.join(web)}")
+            if "bin" in data:
+                is_cli = True
+                clues.append(f"{rel}: 含 \"bin\" 字段（CLI 入口）")
+            if cli:
+                is_cli = True
+                clues.append(f"{rel}: CLI 依赖 {', '.join(cli)}")
+            if "main" in data or "exports" in data:
+                is_library = True
+                clues.append(f"{rel}: 含 \"main\"/\"exports\" 字段（库入口）")
+            if not (fe or web or cli or "bin" in data
+                    or "main" in data or "exports" in data):
+                clues.append(f"{rel}: package.json（无明确依赖线索，不计入判定）")
+        elif name in ("pyproject.toml", "requirements.txt"):
+            content = _read_text(p).lower()
+            web = sorted(d for d in PY_WEB_DEPS if d in content)
+            cli = sorted(d for d in PY_CLI_DEPS if d in content)
+            if web:
+                has_web = True
+                clues.append(f"{rel}: Python Web 框架依赖 {', '.join(web)}")
+            if cli:
+                is_cli = True
+                clues.append(f"{rel}: CLI 依赖 {', '.join(cli)}")
+            if name == "pyproject.toml":
+                if "[project.scripts]" in content:
+                    is_cli = True
+                    clues.append(f"{rel}: 含 [project.scripts] 节（CLI 入口）")
+                if "[build-system]" in content:
+                    is_library = True
+                    clues.append(f"{rel}: 含 [build-system] 节（可构建库）")
+        elif name == "setup.py":
+            is_library = True
+            clues.append(f"{rel}: setup.py（可构建库）")
+        elif name == "go.mod":
+            content = _read_text(p)
+            web = sorted(set(GO_WEB_RE.findall(content)))
+            if web:
+                has_web = True
+                clues.append(f"{rel}: Go Web 框架依赖 {', '.join(web)}")
+            if GO_CLI_RE.search(content):
+                is_cli = True
+                clues.append(f"{rel}: CLI 依赖 cobra")
+            if not web:
+                # Go module 无 Web 框架时多为库/CLI，归 library 可接受
+                is_library = True
+                clues.append(f"{rel}: go.mod（无 Web 框架，按 Go 库/模块计）")
+        elif name == "Cargo.toml":
+            if "[lib]" in _read_text(p):
+                is_library = True
+                clues.append(f"{rel}: 含 [lib] 节（Rust 库）")
 
-    if has_frontend and has_backend:
+    if has_frontend and has_web:
         ptype = "fullstack"
     elif has_frontend:
-        ptype = "frontend-only"
-    elif has_backend:
-        ptype = "backend-only"
+        ptype = "frontend"
+    elif has_web:
+        ptype = "backend"
+    elif is_cli:
+        ptype = "cli"
+    elif is_library:
+        ptype = "library"
     else:
-        ptype = "fullstack"
-        clues.append("未发现任何技术栈标志文件，默认按 fullstack 处理（全量模板）")
-    return ptype, clues
+        ptype = "general"
+        clues.append("未发现任何技术栈标志文件，按 general 处理（全量模板）")
+    return ptype, clues, has_frontend
 
 
 # ---------------------------------------------------------------- 拷贝计划
@@ -161,7 +230,7 @@ class Plan:
         self.created: list[str] = []       # CREATE / APPEND
         self.skipped: list[str] = []       # 已存在，SKIP
         self.overwritten: list[str] = []   # BACKUP+OVERWRITE
-        self.deferred: list[str] = []      # 因项目类型跳过
+        self.deferred: list[str] = []      # 未探测到前端，跳过 frontend/
         self.backups: list[str] = []       # 备份目标路径
 
 
@@ -222,8 +291,8 @@ def _prune_deferred_refs(repo: Path, skip_set: set[str], plan: Plan, *,
     path_needles = tuple(skip_set)
     # 整个区域被跳过时，还需删除索引中指向该区域目录的表格行
     area_tokens: tuple[str, ...] = ()
-    if set(FRONTEND_ONLY_SKIP) <= skip_set:
-        area_tokens = ("`modules/`", "`aiDoc/modules/`")
+    if set(FRONTEND_SKIP) <= skip_set:
+        area_tokens = ("`frontend/`", "`aiDoc/frontend/`")
 
     for rel in ("aiDoc/README.md", "AGENTS.md"):
         if not _freshly_written(plan, rel):
@@ -250,20 +319,17 @@ def _prune_deferred_refs(repo: Path, skip_set: set[str], plan: Plan, *,
                 f.write_text("\n".join(kept) + "\n", encoding="utf-8")
 
 
-def build_and_run(repo: Path, templates: Path, project_name: str, ptype: str,
-                  *, overwrite: bool, dry_run: bool) -> Plan:
+def build_and_run(repo: Path, templates: Path, project_name: str,
+                  has_frontend: bool, *, overwrite: bool, dry_run: bool) -> Plan:
     plan = Plan()
     today = date.today().isoformat()
     render_ctx = (project_name, today)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     backup_root = repo / "aiDoc" / ".harness-backups" / timestamp
 
-    if ptype == "backend-only":
-        skip_set = set(BACKEND_ONLY_SKIP)
-    elif ptype == "frontend-only":
-        skip_set = set(FRONTEND_ONLY_SKIP)
-    else:
-        skip_set = set()
+    # 仅 frontend/ 区域是条件性的；contracts/boundary.md、modules/* 等其余
+    # 区域对全部类型保留，内容由 generate 工作流按范式适配。
+    skip_set = set() if has_frontend else set(FRONTEND_SKIP)
 
     # 1) aidoc/ -> aiDoc/（整树，含按类型跳过）
     aidoc_src = templates / "aidoc"
@@ -277,7 +343,7 @@ def build_and_run(repo: Path, templates: Path, project_name: str, ptype: str,
                 rel = rel_dir / name
                 rel_str = str(rel)
                 if rel_str in skip_set:
-                    plan.deferred.append(f"aiDoc/{rel_str}  (项目类型 {ptype})")
+                    plan.deferred.append(f"aiDoc/{rel_str}  (未探测到前端)")
                     continue
                 dst = repo / "aiDoc" / rel
                 if name.endswith(".tmpl"):
@@ -391,7 +457,7 @@ def print_report(plan: Plan, *, dry_run: bool) -> None:
         (f"created [{verb_create}]", plan.created),
         (f"skipped [{verb_skip}]", plan.skipped),
         (f"overwritten [{verb_over}]", plan.overwritten),
-        ("deferred [按项目类型跳过]", plan.deferred),
+        ("deferred [未探测到前端，跳过]", plan.deferred),
     )
     for label, items in groups:
         print(f"\n-- {label}: {len(items)} 项")
@@ -443,14 +509,14 @@ def main(argv: list[str] | None = None) -> int:
     project_name = args.project_name or repo.name
 
     # 项目探测
-    ptype, clues = detect_project(repo)
+    ptype, clues, has_frontend = detect_project(repo)
     print("===== 项目探测 =====")
     print(f"仓库: {repo}")
     print(f"项目类型: {ptype}")
     for c in clues:
         print(f"  线索: {c}")
 
-    plan = build_and_run(repo, templates, project_name, ptype,
+    plan = build_and_run(repo, templates, project_name, has_frontend,
                          overwrite=args.overwrite, dry_run=args.dry_run)
     print_report(plan, dry_run=args.dry_run)
     return 0

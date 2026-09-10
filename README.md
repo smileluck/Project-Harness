@@ -23,7 +23,7 @@ Five cooperating layers, one maintained home per fact:
 | Layer | Home in the target repo |
 |---|---|
 | Standing instructions | Root `AGENTS.md` (+ nested `AGENTS.md` only where subtree rules genuinely differ) |
-| Current-state documentation | `aiDoc/` (relations, modules, frontend-backend, examples, memory) |
+| Current-state documentation | `aiDoc/` (relations, modules, contracts, frontend, examples, memory) |
 | Decision records | `aiDoc/notes/<proposed\|implemented\|rejected>/<class>/` |
 | Execution state | `aiDoc/plans/active/` → `completed/`, handoffs |
 | Workflow skills & executable evidence | `.agents/skills/`, focused checks (`check_sync.py`), CI owns exhaustive matrices |
@@ -68,8 +68,9 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 ├── aiDoc/
 │   ├── README.md            # L1 routing: index, task→must-read table, ownership map
 │   ├── relations/           # repo profile, dev workflow, system map
-│   ├── modules/             # backend layering rules, module dev guide
-│   ├── frontend-backend/    # API contract, frontend rules, utils reuse
+│   ├── modules/             # architecture & module rules, module dev guide
+│   ├── contracts/           # contract layer: web-api / library / cli variant
+│   ├── frontend/            # frontend rules, utils reuse (frontend projects only)
 │   ├── examples/            # explanatory examples per layer
 │   ├── memory/              # long-term preferences + business requirement records
 │   ├── notes/               # decision records: <lifecycle>/<class>/yyyy-mm-dd-topic.md

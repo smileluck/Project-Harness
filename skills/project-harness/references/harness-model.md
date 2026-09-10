@@ -19,8 +19,9 @@ Team coordination overlays these layers: a lead partitions work, teammates own b
 | Rules needed in every task | Root `AGENTS.md` |
 | Rules for one directory tree | Nested `AGENTS.md` |
 | Repo structure, stack, workflow, system map | `aiDoc/relations/` |
-| Backend layering rules, module development | `aiDoc/modules/` |
-| Frontend/backend contracts and frontend rules | `aiDoc/frontend-backend/` |
+| Architecture & module organization rules, module development | `aiDoc/modules/` |
+| Contract layer (web-api / library / cli) | `aiDoc/contracts/` |
+| Frontend rules and utils reuse | `aiDoc/frontend/` (frontend projects only) |
 | Worked examples of project patterns | `aiDoc/examples/` |
 | Stable preferences, business requirements | `aiDoc/memory/` |
 | Why a non-trivial decision won | `aiDoc/notes/<lifecycle>/<class>/` |

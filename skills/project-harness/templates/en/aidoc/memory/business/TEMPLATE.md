@@ -11,13 +11,19 @@
 
 ## Affected Scope
 
-### Backend
+<!-- The generate workflow keeps only the subsections applicable to this project type and deletes the rest. -->
 
-<!-- Modules, models, endpoints involved -->
+### Backend / Library
+
+<!-- Modules, models, endpoints, or exported symbols involved -->
 
 ### Frontend
 
 <!-- Pages, components, APIs involved -->
+
+### CLI
+
+<!-- Commands, flags, IO behavior involved -->
 
 ## Constraints and Notes
 

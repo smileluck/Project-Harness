@@ -9,14 +9,15 @@
 - 当 AI 需要新增某一层文件时，应先阅读对应示例
 - 示例代码必须从项目真实代码中提取，禁止凭空编写
 
-## 后端开发阅读顺序
+## 示例阅读顺序
 
-<!-- TODO: generate 工作流按实际生成的后端示例文件列出阅读顺序，如 model → schema → service → endpoint → router -->
+<!-- TODO: generate 工作流按项目范式与实际生成的示例文件列出阅读顺序 -->
+<!-- 变体：分层服务（如 model → schema → service → endpoint → router）/ library（如 公开 API → 内部实现 → 基础设施）/ cli（如 命令注册 → 命令处理 → 核心逻辑），保留匹配变体并删除其余 -->
 
 1. TODO:
 2. TODO:
 
-## 前端开发阅读顺序
+## 前端示例阅读顺序
 
 <!-- TODO: 如有前端，按实际生成的前端示例文件列出阅读顺序，如 api → view → utils-usage；无前端时删除本节 -->
 

@@ -15,8 +15,9 @@ Project-level rules are never copied into tool-private directories; Claude Code 
 ## Directory Guide
 
 - `relations/` — repo structure, tech stack, dependencies, development workflow
-- `modules/` — backend layering rules, module development guide
-- `frontend-backend/` — frontend-backend contract, frontend rules, utility reuse rules (when applicable)
+- `modules/` — architecture rules, module development guide
+- `contracts/` — contract layer: interface contract and responsibility split
+- `frontend/` — frontend rules, utility reuse rules (generated only when a frontend exists)
 - `examples/` — explanatory examples for each layer
 - `memory/` — AI memory layer (long-term preferences, business requirement records)
 - `notes/` — decision records (proposed / implemented / rejected)
@@ -31,8 +32,9 @@ One fact has one maintained home; other places only link.
 | Rules needed in every task | `../AGENTS.md` |
 | Doc index and task routing | this file |
 | Repo structure, tech stack, workflow | `relations/` |
-| Backend layering and module rules | `modules/` |
-| Frontend-backend contract and frontend rules | `frontend-backend/` |
+| Architecture and module rules | `modules/` |
+| Contract layer | `contracts/` |
+| Frontend rules | `frontend/` |
 | Per-layer explanatory examples | `examples/` |
 | Stable user preferences, business requirement records | `memory/` |
 | Why a non-trivial decision won | `notes/<lifecycle>/<class>/` |
@@ -50,11 +52,11 @@ TODO: one line per document — path + one-sentence purpose. This is the "look u
 | `relations/repo-profile.md` | Project positioning and tech stack |
 | `relations/development-workflow.md` | Development order, branches, commits, commands |
 | `relations/system-map.md` | Architecture and component relationships |
-| `modules/backend-layer-rules.md` | Backend per-layer constraints |
+| `modules/architecture-rules.md` | Architecture and per-layer constraints |
 | `modules/module-development.md` | Step-by-step module creation guide |
-| `frontend-backend/boundary.md` | Data contract and responsibility split |
-| `frontend-backend/frontend-rules.md` | Frontend development rules |
-| `frontend-backend/frontend-utils.md` | Utility reuse rules |
+| `contracts/boundary.md` | Contract layer: interface contract and responsibility split |
+| `frontend/frontend-rules.md` | Frontend development rules |
+| `frontend/frontend-utils.md` | Utility reuse rules |
 | `examples/README.md` | How to use the example layer |
 | `memory/project-memory.md` | Memory index |
 | `notes/README.md` | Decision-record lifecycle and naming rules |
@@ -68,9 +70,9 @@ Paths are relative to `aiDoc/`. TODO: complete for every task type that exists i
 
 | Task type | Must-read docs |
 |---|---|
-| New backend module / endpoint | `modules/module-development.md`, `modules/backend-layer-rules.md`, `examples/` (backend examples) |
-| New frontend page / feature | `frontend-backend/frontend-rules.md`, `frontend-backend/frontend-utils.md`, `examples/` (frontend examples) |
-| Contract / field alignment | `frontend-backend/boundary.md` |
+| New module / feature / command | `modules/module-development.md`, `modules/architecture-rules.md`, `examples/` |
+| New frontend page / feature | `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/` (frontend examples) |
+| Contract / field alignment | `contracts/boundary.md` |
 | Understand repo structure / stack / workflow | `relations/repo-profile.md`, `relations/system-map.md`, `relations/development-workflow.md` |
 | New business requirement from user | `memory/business/TEMPLATE.md`, `memory/project-memory.md` (index must be updated) |
 | Multi-step / cross-component change | `plans/README.md`, `plans/change-plan.TEMPLATE.md` |

@@ -1,19 +1,21 @@
 <!-- last-updated: {{DATE}} -->
-# Frontend-Backend Boundary
+# Contract Layer
 
-Data contract and responsibility split between frontend and backend. Both sides of every changed contract must be traced before work is called done.
+Interface contract and responsibility split across this project's public boundary. Both sides of every changed contract must be traced before work is called done.
 
-For backend-only projects, treat this file as the API contract for external consumers; for frontend-only projects, as the API consumption contract.
+The body below is organized per paradigm. The generate workflow keeps the variant matching this project and deletes the rest.
 
 ## Responsibility Boundary
 
-TODO: who owns what. Example rows — replace with the real split:
+TODO: who owns what, stated as producer side vs consumer side. Example rows — replace with the real split:
 
-| Concern | Backend | Frontend |
+| Concern | Producer side | Consumer side |
 |---|---|---|
 | Validation | TODO | TODO |
 | Error presentation | TODO | TODO |
-| Pagination state | TODO | TODO |
+| State ownership | TODO | TODO |
+
+<!-- variant: web-api — the generate workflow keeps the matching variant and deletes the rest -->
 
 ## Unified Response Structure
 
@@ -42,6 +44,34 @@ TODO: any non-obvious type conversions across the boundary (e.g. bool ↔ string
 ## Time Fields
 
 TODO: wire format and timezone handling, if the project has special handling; otherwise remove this section.
+
+<!-- variant: library — the generate workflow keeps the matching variant and deletes the rest -->
+
+## Public API Surface
+
+TODO: list the exported symbols that constitute the public API, with their defining paths.
+
+## Export Contract
+
+TODO: what is exported from where, naming and stability expectations for each export.
+
+## Version Compatibility Promises
+
+TODO: semantic-versioning policy, deprecation procedure, backward-compatibility guarantees.
+
+<!-- variant: cli — the generate workflow keeps the matching variant and deletes the rest -->
+
+## Command Spec
+
+TODO: one entry per command — name, purpose, defining code path.
+
+## Argument / IO Contract
+
+TODO: flags, positional arguments, stdin/stdout/stderr expectations, output formats.
+
+## Exit-Code Conventions
+
+TODO: exit-code meanings and which conditions map to which code.
 
 ## Change Rules
 

@@ -30,7 +30,7 @@ CODE_TOP_DIRS = (
 
 # 检查 4：aiDoc 标准区域名
 AIDOC_SECTIONS = (
-    "relations", "modules", "frontend-backend", "examples",
+    "relations", "modules", "contracts", "frontend", "examples",
     "memory", "notes", "plans",
 )
 

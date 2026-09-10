@@ -14,12 +14,13 @@ aiDoc/
     development-workflow.md      # dev flow, branches, commits, commands
     system-map.md                # architecture & component relations
   modules/
-    backend-layer-rules.md       # backend layering constraints (backend projects)
+    architecture-rules.md        # architecture & module organization rules
     module-development.md        # step-by-step module/feature guide
-  frontend-backend/
-    boundary.md                  # contract between sides (API contract if one side only)
-    frontend-rules.md            # frontend conventions (frontend projects)
-    frontend-utils.md            # shared-utils reuse rules (frontend projects)
+  contracts/
+    boundary.md                  # contract layer: web-api / library / cli variant
+  frontend/
+    frontend-rules.md            # frontend conventions (frontend projects only)
+    frontend-utils.md            # shared-utils reuse rules (frontend projects only)
   examples/
     README.md                    # reading order & purpose of the example layer
     backend/*.md                 # one example per backend layer
@@ -36,7 +37,18 @@ aiDoc/
 <tool dirs>                      # thin adapters only (see tool-adapters.md)
 ```
 
-Adaptivity: backend-only projects skip the frontend-only files; frontend-only projects skip the backend-only files; `boundary.md` becomes a pure API contract (producer or consumer side) when only one side exists. Do not generate files for absent layers.
+Adaptivity: the harness supports six project types — `fullstack`, `backend`, `frontend`, `library`, `cli`, `general`. The **only** conditional area is `frontend/` (generated only when a real frontend exists); every other area is generated for all types, with content shaped by paradigm:
+
+| Project type | `frontend/` area | `contracts/boundary.md` | `modules/architecture-rules.md` | `modules/module-development.md` | `examples/` |
+|---|---|---|---|---|---|
+| fullstack | generated | web-api variant, two-sided | layered-service paradigm | backend module + frontend feature steps | backend-layer + frontend examples |
+| backend | skipped | web-api variant, producer side | layered-service paradigm | backend module steps | backend-layer examples |
+| frontend | generated | web-api variant, consumer side | component-structure paradigm | frontend feature steps | frontend examples |
+| library | skipped | library variant (public API surface) | package-module paradigm | new public module/feature steps | public-API usage examples |
+| cli | skipped | cli variant (command spec) | command/plugin paradigm | new command/subcommand steps | command usage examples |
+| general | skipped | closest-fitting variant | dominant structure, documented as found | dominant development flow | examples matching the dominant structure |
+
+Do not generate `frontend/` files for projects without a frontend.
 
 Every generated file starts with `<!-- last-updated: YYYY-MM-DD -->`.
 
@@ -62,44 +74,50 @@ Every generated file starts with `<!-- last-updated: YYYY-MM-DD -->`.
 
 ### `aiDoc/relations/repo-profile.md`
 
-Project positioning (inferred from manifests + README + user prompt), backend stack (language, framework, ORM, database, cache, migrations, auth), frontend stack (framework, build tool, UI library, state management, routing, styling), package manager, and a table of project-specific key features (response format, ID strategy, auth mechanism, …). All from real probing.
+Project positioning (inferred from manifests + README + user prompt), primary stack (language, framework, ORM, database, cache, migrations, auth), frontend stack if a frontend exists (framework, build tool, UI library, state management, routing, styling), package manager, and a table of project-specific key features (response format, ID strategy, auth mechanism, …). All from real probing.
 
 ### `aiDoc/relations/development-workflow.md`
 
-Recommended development order matching the real layering, frontend/backend collaboration flow, branch strategy, commit message convention, concrete install/start/migrate commands, API doc URLs if any.
+Recommended development order matching the real structure, collaboration flow across components (e.g. frontend ↔ backend, caller ↔ library) where more than one exists, branch strategy, commit message convention, concrete install/start/migrate commands, API doc URLs if any.
 
 ### `aiDoc/relations/system-map.md`
 
-Table of top-level directory responsibilities; the real layering flow (e.g. Router → Controller → Service → Model); infrastructure directories and their roles; frontend data flow if a frontend exists; backend-module ↔ frontend-page mapping; key configuration files and their purpose.
+Table of top-level directory responsibilities; the real layering flow (e.g. Router → Controller → Service → Model); infrastructure directories and their roles; frontend data flow if a frontend exists; module ↔ consumer mapping where applicable (e.g. backend-module ↔ frontend-page); key configuration files and their purpose.
 
-### `aiDoc/modules/backend-layer-rules.md` (backend projects)
+### `aiDoc/modules/architecture-rules.md`
 
-- Prime directive: strict layering, no cross-layer calls.
-- Per layer (Model, Schema/DTO, Service, Controller/Endpoint, Router): base-class inheritance, field declaration style, naming, location, method-signature patterns, exception handling, pagination.
+- Prime directive: architecture boundaries are strict — no cross-layer/cross-module shortcuts.
+- Paradigm variants (pick per project type): **layered service** (Model, Schema/DTO, Service, Controller/Endpoint, Router), **package module** (public vs internal packages, import discipline), **plugin/command system** (registration, lifecycle, command wiring). Document the paradigm actually probed; note the variant in the file header.
+- Per layer/module: base-class inheritance, field declaration style, naming, location, method-signature patterns, exception handling, pagination where applicable.
 - Error-code allocation table if the project has one.
 - **Every rule must cite real class names and file paths** (e.g. `app/models/common/page.py:PageRequest`).
 
-### `aiDoc/modules/module-development.md` (backend projects)
+### `aiDoc/modules/module-development.md`
 
-Complete steps for a new backend module (directory → model → schema → service → endpoint → router → registration → migration) and, if a frontend exists, for a new frontend feature (types → API function → i18n → page → routing). Design principles: self-contained, follow existing patterns. Cite real reference file paths.
+Complete steps for adding a unit of work in the project's paradigm: a backend module (directory → model → schema → service → endpoint → router → registration → migration), a frontend feature (types → API function → i18n → page → routing), a library feature (implementation → public export → version-compatibility check), or a cli command (implementation → registration → help/usage text). Design principles: self-contained, follow existing patterns. Cite real reference file paths.
 
-### `aiDoc/frontend-backend/boundary.md`
+### `aiDoc/contracts/boundary.md`
 
-Responsibility table per side; the actual unified response structure (JSON + field meanings); pagination structure if any; field naming convention (snake_case/camelCase); type bridging with conversion flow and code locations for any non-obvious conversion; time-field format/timezone if special; change rules and a pre-completion checklist. For single-sided projects, the producer or consumer API contract only.
+The contract layer between the project and its consumers. Variant per project type:
 
-### `aiDoc/frontend-backend/frontend-rules.md` (frontend projects)
+- **web-api variant** (fullstack / backend / frontend): responsibility table per side; the actual unified response structure (JSON + field meanings); pagination structure if any; field naming convention (snake_case/camelCase); type bridging with conversion flow and code locations for any non-obvious conversion; time-field format/timezone if special; change rules and a pre-completion checklist. Single-sided projects document the producer or consumer contract only.
+- **library variant**: the public API surface (exported symbols and their re-export locations); export/visibility contract (public vs internal); stability and version-compatibility rules (deprecation policy, SemVer mapping); change rules and a pre-completion checklist.
+- **cli variant**: command specification (commands, subcommands, arguments, flags); I/O contract (stdin/stdout/stderr, output formats, stream vs file); exit-code table; backward-compatibility rules for flags and output; change rules and a pre-completion checklist.
+
+### `aiDoc/frontend/frontend-rules.md` (frontend projects only)
 
 Base rules (HTTP layer, state management, routing); naming conventions table (files, components, variables, API functions); type requirements; component rules (shared vs page components, props style); required steps for a new page; styling priority; i18n rules if present; environment variables; common script commands table; comment requirements.
 
-### `aiDoc/frontend-backend/frontend-utils.md` (frontend projects)
+### `aiDoc/frontend/frontend-utils.md` (frontend projects only)
 
 Core principle: check existing utilities first, never rebuild. Inventory of the utils directory with purposes; workspace sub-package responsibilities in a monorepo; a mandatory-use table mapping scenarios to the required utility.
 
 ### `aiDoc/examples/`
 
 - `README.md`: the example layer is instructive, not copy-paste; reading order per side; real code wins over examples when they disagree (and then the example must be updated).
-- Backend (one file per layer): `model-example.md`, `schema-example.md`/`dto-example.md`, `service-example.md`, `endpoint-example.md`/`controller-example.md`, `router-example.md`.
+- Backend-layer examples (one file per layer): `model-example.md`, `schema-example.md`/`dto-example.md`, `service-example.md`, `endpoint-example.md`/`controller-example.md`, `router-example.md`.
 - Frontend: `api-example.md`, `view-example.md`, `utils-usage-example.md`.
+- Library/cli: examples demonstrating the public API or command usage, one per major capability, extracted from real code (tests, docs, command definitions).
 - Every example file: purpose, 2-3 core principles, an example **extracted from real project code** (sensitive data stripped), key-point explanations, and a **Real reference files** list of actual paths. If the project lacks suitable code, write code that matches the probed project style — never generic boilerplate.
 
 ### `aiDoc/memory/`

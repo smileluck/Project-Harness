@@ -34,15 +34,15 @@
 
 ### 架构
 
-<!-- TODO: 按实际分层模式填写，如 Endpoint -> Service -> Model；严格分层，禁止跨层调用。细节见 aiDoc/modules/backend-layer-rules.md -->
+<!-- TODO: 按实际范式填写，如分层服务（Endpoint -> Service -> Model）、包模块结构、插件体系；严格分层，禁止跨层调用。细节见 aiDoc/modules/architecture-rules.md -->
 
-TODO: 一句话说明分层结构，细节路由到 `aiDoc/modules/backend-layer-rules.md`。
+TODO: 一句话说明架构组织方式，细节路由到 `aiDoc/modules/architecture-rules.md`。
 
-### 前后端协作 / API 契约
+### 契约
 
-<!-- TODO: 按实际响应格式和约定填写，细节路由到 aiDoc/frontend-backend/boundary.md -->
+<!-- TODO: 按项目范式（web-api / library / cli）与实际契约约定填写，细节路由到 aiDoc/contracts/boundary.md -->
 
-TODO: 一句话说明契约约定（统一响应结构、字段命名），细节路由到 `aiDoc/frontend-backend/boundary.md`。
+TODO: 一句话说明契约约定（如统一响应结构、公开 API 面、命令规格），细节路由到 `aiDoc/contracts/boundary.md`。
 
 ### 模块与目录
 
@@ -95,9 +95,9 @@ TODO: 一句话说明模块组织原则，细节路由到 `aiDoc/modules/module-
 
 | 任务族 | 优先查阅区域 |
 |---|---|
-| 后端模块/接口开发 | `aiDoc/modules/`、`aiDoc/examples/` |
-| 前端页面/功能开发 | `aiDoc/frontend-backend/`、`aiDoc/examples/` |
-| 前后端契约/字段对接 | `aiDoc/frontend-backend/boundary.md` |
+| 模块/功能/命令开发 | `aiDoc/modules/`、`aiDoc/examples/` |
+| 前端页面/功能开发 | `aiDoc/frontend/`、`aiDoc/examples/` |
+| 契约/接口对接 | `aiDoc/contracts/boundary.md` |
 | 仓库结构/技术栈/流程 | `aiDoc/relations/` |
 | 业务需求记录 | `aiDoc/memory/business/` |
 | 决策记录 | `aiDoc/notes/` |
@@ -114,7 +114,7 @@ TODO: 一句话说明模块组织原则，细节路由到 `aiDoc/modules/module-
 出现以下情况时，应通过 generate 工作流重新生成或增量更新文档体系：
 
 - 架构较大变化：分层调整、新增/删除顶层目录、技术栈替换
-- 新增/删除后端模块或前端页面，导致 `aiDoc/modules/`、`aiDoc/examples/`、`aiDoc/relations/system-map.md` 与代码脱节
+- 新增/删除模块、功能或命令（含前端页面），导致 `aiDoc/modules/`、`aiDoc/examples/`、`aiDoc/relations/system-map.md` 与代码脱节
 - `aiDoc/` 子文档新增/删除，导致 `aiDoc/README.md` 详细路由表与本文件高层速查失效
 - 路由表或示例与真实代码明显漂移
 

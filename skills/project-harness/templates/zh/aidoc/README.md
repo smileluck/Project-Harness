@@ -17,8 +17,9 @@
 | 目录 | 内容 |
 |---|---|
 | `relations/` | 仓库结构、技术栈、依赖关系、开发流程 |
-| `modules/` | 后端分层规则、模块开发指南 |
-| `frontend-backend/` | 前后端契约、前端规范、工具函数复用规则（如适用） |
+| `modules/` | 架构与模块组织规则、模块开发指南 |
+| `contracts/` | 生产者与消费者之间的共享契约（按项目范式：web-api / library / cli） |
+| `frontend/` | 前端规范、工具函数复用规则（仅当前端存在时生成） |
 | `examples/` | 讲解型示例说明 |
 | `memory/` | AI 记忆层（长期偏好 + 业务需求记录） |
 | `notes/` | 决策记录（proposed / implemented / rejected） |
@@ -34,11 +35,11 @@
 | 文档索引与「任务→必读文档」路由表 | `aiDoc/README.md`（本文件） |
 | 项目定位、技术栈、目录职责 | `relations/repo-profile.md`、`relations/system-map.md` |
 | 开发流程、分支与提交规范、环境命令 | `relations/development-workflow.md` |
-| 后端分层约束 | `modules/backend-layer-rules.md` |
-| 新建模块/功能的步骤 | `modules/module-development.md` |
-| 前后端契约、字段命名、类型桥接 | `frontend-backend/boundary.md` |
-| 前端开发规范 | `frontend-backend/frontend-rules.md` |
-| 前端工具函数复用 | `frontend-backend/frontend-utils.md` |
+| 架构与模块组织约束 | `modules/architecture-rules.md` |
+| 新建模块/功能/命令的步骤 | `modules/module-development.md` |
+| 共享契约、字段命名、类型桥接 | `contracts/boundary.md` |
+| 前端开发规范 | `frontend/frontend-rules.md` |
+| 前端工具函数复用 | `frontend/frontend-utils.md` |
 | 各层代码组织标准（讲解型） | `examples/` |
 | 长期稳定的协作偏好 | `memory/long-term/` |
 | 每次业务需求记录 | `memory/business/` |
@@ -56,11 +57,11 @@
 | `relations/repo-profile.md` | 项目定位与技术栈速查 |
 | `relations/development-workflow.md` | 开发流程、提交规范、环境命令 |
 | `relations/system-map.md` | 系统架构与组件关系 |
-| `modules/backend-layer-rules.md` | 后端各层必须遵守的约束 |
-| `modules/module-development.md` | 新建模块/功能的完整步骤 |
-| `frontend-backend/boundary.md` | 前后端边界与数据契约 |
-| `frontend-backend/frontend-rules.md` | 前端开发规范 |
-| `frontend-backend/frontend-utils.md` | 前端工具函数复用清单 |
+| `modules/architecture-rules.md` | 架构各层必须遵守的约束 |
+| `modules/module-development.md` | 新建模块/功能/命令的完整步骤 |
+| `contracts/boundary.md` | 生产者与消费者之间的共享契约 |
+| `frontend/frontend-rules.md` | 前端开发规范 |
+| `frontend/frontend-utils.md` | 前端工具函数复用清单 |
 | `examples/README.md` | 讲解型示例的阅读入口 |
 | `memory/project-memory.md` | 记忆层索引 |
 | `notes/README.md` | 决策记录的分类与维护纪律 |
@@ -72,10 +73,10 @@
 
 | 任务类型 | 必读文档 |
 |---|---|
-| 新建后端模块 / 接口 | `modules/module-development.md`、`modules/backend-layer-rules.md`、`examples/README.md` |
-| 修改后端既有逻辑 | `modules/backend-layer-rules.md`、`relations/system-map.md` |
-| 新建前端页面 / 功能 | `frontend-backend/frontend-rules.md`、`frontend-backend/frontend-utils.md`、`examples/README.md` |
-| 前后端契约 / 字段对接 | `frontend-backend/boundary.md` |
+| 新建模块 / 功能 / 命令 | `modules/module-development.md`、`modules/architecture-rules.md`、`examples/README.md` |
+| 修改既有逻辑 | `modules/architecture-rules.md`、`relations/system-map.md` |
+| 新建前端页面 / 功能 | `frontend/frontend-rules.md`、`frontend/frontend-utils.md`、`examples/README.md` |
+| 契约 / 接口对接 | `contracts/boundary.md` |
 | 了解仓库结构 / 技术栈 / 流程 | `relations/repo-profile.md`、`relations/system-map.md`、`relations/development-workflow.md` |
 | 用户提出新业务需求 | `memory/business/TEMPLATE.md`、`memory/project-memory.md`（必更新索引） |
 | 非平凡决策（行为/架构/契约/流程变更） | `notes/README.md`、`notes/TEMPLATE.md` |

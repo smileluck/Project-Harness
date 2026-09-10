@@ -10,11 +10,11 @@
 1. TODO:
 2. TODO:
 
-## 前后端协作
+## 契约两侧协作
 
-<!-- TODO: 无前端时删除本节 -->
+<!-- TODO: 项目无生产方/消费方两侧结构时删除本节 -->
 
-- 后端先定义接口契约（见 [../frontend-backend/boundary.md](../frontend-backend/boundary.md)），前端可并行开发
+- 生产方先定义接口契约（见 [../contracts/boundary.md](../contracts/boundary.md)），消费方可并行开发
 - 联调前必须确认契约两侧字段一致
 - TODO: 联调验证方式
 

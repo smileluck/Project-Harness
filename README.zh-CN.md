@@ -23,7 +23,7 @@ Project-Harness 把这一切打包成一个带确定性脚本的可安装 skill�
 | 层 | 目标仓库中的位置 |
 |---|---|
 | 常驻指令 | 根 `AGENTS.md`（子树规则确实不同时才用嵌套 `AGENTS.md`） |
-| 现状文档 | `aiDoc/`（relations、modules、frontend-backend、examples、memory） |
+| 现状文档 | `aiDoc/`（relations、modules、contracts、frontend、examples、memory） |
 | 决策记录 | `aiDoc/notes/<proposed\|implemented\|rejected>/<class>/` |
 | 执行状态 | `aiDoc/plans/active/` → `completed/`，交接文档 |
 | 工作流 skill 与可执行证据 | `.agents/skills/`、聚焦检查（`check_sync.py`），穷举矩阵归 CI |
@@ -68,8 +68,9 @@ python3 install.py --tool all       # 以上全部
 ├── aiDoc/
 │   ├── README.md            # L1 路由：索引、任务→必读路由表、信息归属表
 │   ├── relations/           # 仓库画像、开发流程、系统地图
-│   ├── modules/             # 后端分层规则、模块开发指南
-│   ├── frontend-backend/    # API 契约、前端规范、工具复用
+│   ├── modules/             # 架构与模块组织规则、模块开发指南
+│   ├── contracts/           # 契约层：web-api / library / cli 变体
+│   ├── frontend/            # 前端规范、工具复用（仅前端项目生成）
 │   ├── examples/            # 各层讲解型示例
 │   ├── memory/              # 长期偏好 + 业务需求记录
 │   ├── notes/               # 决策记录：<生命周期>/<分类>/yyyy-mm-dd-主题.md
