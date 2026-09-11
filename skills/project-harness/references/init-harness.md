@@ -41,7 +41,7 @@ In the completion report, group scan-filled files under **auto-filled** (distinc
 
 1. Run the initializer (after dry-run approval). The skeleton adapts to six project types — `fullstack` / `backend` / `frontend` / `library` / `cli` / `general` — plus `mixed` for multi-component repos detected by the scan, and only the `frontend/` area is conditional (created only when a real frontend exists); all other aiDoc areas are created for every type.
 2. Tailor every generated command, path, and rule against the real project — remove placeholders that cannot be resolved, mark genuine unknowns instead of inventing them.
-3. Remind the user that outside the auto-scan-filled sections the skeleton is content-thin: the next step is `generate`, which calibrates the auto-filled sections (removing their markers), probes the codebase, and fills `AGENTS.md` + `aiDoc/` with real project facts (see [generate-aidoc.md](generate-aidoc.md)). Offer to run it immediately.
+3. **Default: continue directly into the `generate` workflow** (see [generate-aidoc.md](generate-aidoc.md)) — calibrate the auto-filled sections (removing their markers), probe the codebase, and fill `AGENTS.md` + `aiDoc/` with real project facts. Init and generate are one continuous onboarding run; do not stop after scaffolding. Stop at the skeleton only when the user asked for skeleton-only or passed `--no-generate` — in that case state explicitly that `generate` remains the pending next step.
 
 ## Path B: mature repo (gap audit)
 
@@ -59,4 +59,4 @@ Before handing off an initialized harness:
 2. Verify every link and command points to a real file or script that executes.
 3. Run the dry-run again — a second default run must create nothing and change nothing (idempotence).
 4. Confirm the load chain works: `CLAUDE.md` contains `@AGENTS.md` (where applicable), `AGENTS.md` routes to `aiDoc/README.md`, adapters point at the canonical files.
-5. Report by category: **created / auto-filled / merged / skipped / intentionally deferred**, each with a one-line reason. **auto-filled** covers the scan-filled `relations/` sections and `relations/code-index.md` — note that their markers still await `generate` calibration. Deferrals (typically: run `generate` to fill content) must be stated, not silently dropped.
+5. Report by category: **created / auto-filled / merged / skipped / intentionally deferred**, each with a one-line reason. **auto-filled** covers the scan-filled `relations/` sections and `relations/code-index.md`. When the run continues into `generate` (the default), this checklist applies after `generate` completes and "markers await calibration" never appears in the final report; in a skeleton-only run (`--no-generate`), the pending `generate` step must be stated as an explicit deferral, not silently dropped.

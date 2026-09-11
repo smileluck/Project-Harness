@@ -16,7 +16,7 @@ Parse `$ARGUMENTS` (or `$action`) and dispatch:
 
 | Action | Purpose | Read first |
 |---|---|---|
-| `init` | Non-destructive skeleton bootstrap of a new or lightly documented repo (AGENTS.md, aiDoc/ tree, tool adapters). Runs `scripts/init_project.py`. | [references/init-harness.md](references/init-harness.md) |
+| `init [--no-generate]` | Non-destructive skeleton bootstrap of a new or lightly documented repo (AGENTS.md, aiDoc/ tree, tool adapters). Runs `scripts/init_project.py`, then continues into the `generate` workflow by default; `--no-generate` stops at the skeleton. | [references/init-harness.md](references/init-harness.md) |
 | `generate [--incremental \| --scope <area> \| --dry-run] [--lang zh\|en]` | Probe the codebase and generate/update `AGENTS.md` + the `aiDoc/` documentation system. | [references/generate-aidoc.md](references/generate-aidoc.md) |
 | `sync` | Detect documentation drift (mechanical checks via `scripts/check_sync.py`, then agent-driven semantic drift handling) and resync incrementally. | [references/sync-aidoc.md](references/sync-aidoc.md) |
 | `record [note \| plan \| handoff \| lesson]` | Create a decision note, change plan, handoff, or lesson record under the correct lifecycle/class discipline. | [references/change-docs.md](references/change-docs.md) |

@@ -12,7 +12,7 @@
 
 ## 契约 1：skill 调用接口
 
-`SKILL.md` 按 `$ARGUMENTS` 分派：`init` / `generate [--incremental|--scope <area>|--dry-run] [--lang zh|en]` / `sync` / `record [note|plan|handoff|lesson]`。新增子命令必须同步 SKILL.md 路由表与对应 reference 篇。
+`SKILL.md` 按 `$ARGUMENTS` 分派：`init [--no-generate]`（默认 init 完成后自动接续 generate 工作流；`--no-generate` 只搭骨架）/ `generate [--incremental|--scope <area>|--dry-run] [--lang zh|en]` / `sync` / `record [note|plan|handoff|lesson]`。新增子命令必须同步 SKILL.md 路由表与对应 reference 篇。
 
 ## 契约 2：脚本 CLI
 

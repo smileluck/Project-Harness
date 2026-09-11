@@ -9,6 +9,7 @@
 
 - `business/2026-09-11-self-evolution-loop.md`：AI 开发自动触发规则更新（自进化回路），规则级强制漂移自检 + 决策回写约束，已完成
 - `business/2026-09-11-rule-evolution-lessons.md`：规则自进化——lessons 经验采集层 + 晋升约束层机制，已完成
+- `business/2026-09-11-init-auto-generate.md`：init 默认自动接续 generate 工作流（`--no-generate` 可退出），已完成
 
 ## 经验记忆（lessons）
 
