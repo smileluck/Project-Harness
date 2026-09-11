@@ -12,6 +12,7 @@ An `AGENTS.md` file helps, but it is not a complete collaboration system. Agent-
 - durable rationale for decisions (including the alternatives that were rejected),
 - execution state for work in flight (plans, handoffs),
 - situational workflows (review, pre-push checks) loaded only when relevant,
+- a capture-and-promote path for recurring pitfalls and patterns (experience → constraint rules, self-evolving),
 - and a way to detect when the docs have drifted away from the code.
 
 Project-Harness packages all of this as a single installable skill with deterministic scripts, working with Kimi Code, Claude Code, Codex, and any tool that scans `.agents/skills/`.
@@ -56,8 +57,8 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 |---|---|
 | `init` | Non-destructive scaffold: probes project type/stack, copies the `AGENTS.md` + `aiDoc/` skeleton, never overwrites by default (`--dry-run`, `--overwrite` with backups, idempotent). Runs a default static scan (multi-language manifests + structure statistics; component detection for mixed projects across java/python/go/c++/c/web/qt) that writes a first version of real content into `relations/` plus the machine-generated `relations/code-index.md` (`--no-scan` disables). For mature repos, run a gap audit and only fill the missing pieces. |
 | `generate [--incremental\|--scope <area>\|--dry-run] [--lang zh\|en]` | Agent-driven: probes the codebase and writes the real content of `AGENTS.md` + `aiDoc/` from actual code — layering rules, API contracts, examples, routing tables. Supports incremental and scoped regeneration. |
-| `sync` | Drift detection: `check_sync.py` verifies index integrity, referenced paths, `last-updated` headers, and area consistency; the agent then resolves semantic drift. |
-| `record [note\|plan\|handoff]` | Create decision notes, change plans, or handoffs following the lifecycle discipline (no invented alternatives; implemented notes updated in place; reversals get new cross-linked notes). |
+| `sync` | Drift detection: `check_sync.py` verifies index integrity, referenced paths, `last-updated` headers, and area consistency; the agent then resolves semantic drift. It also runs as a mandatory completion gate on every change, sweeping due lessons (count ≥ 2) for promotion. |
+| `record [note\|plan\|handoff\|lesson]` | Create decision notes, change plans, handoffs, or lesson records following the lifecycle discipline (no invented alternatives; implemented notes updated in place; reversals get new cross-linked notes; lessons capture pitfalls and recurring patterns, promoted into constraint docs at the second occurrence). |
 
 ## What a target repo gets
 
@@ -72,7 +73,7 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 │   ├── contracts/           # contract layer: web-api / library / cli variant
 │   ├── frontend/            # frontend rules, utils reuse (frontend projects only)
 │   ├── examples/            # explanatory examples per layer
-│   ├── memory/              # long-term preferences + business requirement records
+│   ├── memory/              # long-term preferences + business records + lessons (pitfall/pattern staging, promoted into constraint docs)
 │   ├── notes/               # decision records: <lifecycle>/<class>/yyyy-mm-dd-topic.md
 │   └── plans/               # change plans (active/completed) + handoffs
 ├── .agents/skills/

@@ -12,6 +12,7 @@
 - 决策的持久化依据（包括被否决的备选方案）
 - 进行中工作的执行状态（计划、交接）
 - 按需加载的情境化工作流（审查、pre-push 检查）
+- 反复踩坑与模式的沉淀晋升通道（经验采集 → 约束规则的自进化）
 - 以及检测文档与代码漂移的手段
 
 Project-Harness 把这一切打包成一个带确定性脚本的可安装 skill，支持 Kimi Code、Claude Code、Codex 及任何扫描 `.agents/skills/` 的工具。
@@ -56,8 +57,8 @@ python3 install.py --tool all       # 以上全部
 |---|---|
 | `init` | 非破坏性骨架初始化：探测项目类型/技术栈，拷贝 `AGENTS.md` + `aiDoc/` 骨架，默认绝不覆盖（支持 `--dry-run`、`--overwrite` 自动备份、幂等）。默认执行静态扫描（多语言 manifest 解析 + 结构统计；支持混合项目组件探测，覆盖 java/python/go/c++/c/web/qt），生成第一版真实内容并写入 `relations/`，同时产出机器生成的 `relations/code-index.md`（`--no-scan` 关闭）。成熟仓库走 gap audit，只补缺失件。 |
 | `generate [--incremental\|--scope <区域>\|--dry-run] [--lang zh\|en]` | Agent 驱动：探测代码库并基于真实代码撰写 `AGENTS.md` + `aiDoc/` 内容——分层规则、API 契约、示例、路由表。支持增量与局部再生成。 |
-| `sync` | 漂移检测：`check_sync.py` 校验索引完整性、引用路径、`last-updated` 头部、区域一致性；agent 再处理语义漂移。 |
-| `record [note\|plan\|handoff]` | 按生命周期纪律创建决策记录 / 变更计划 / 交接（不编造备选方案；implemented 就地更新；推翻旧决策新建交叉链接 note）。 |
+| `sync` | 漂移检测：`check_sync.py` 校验索引完整性、引用路径、`last-updated` 头部、区域一致性；agent 再处理语义漂移。同时是每次变更收尾的强制自检闸门，并兜底晋升到期 lessons（出现次数 ≥2）。 |
+| `record [note\|plan\|handoff\|lesson]` | 按生命周期纪律创建决策记录 / 变更计划 / 交接 / 经验记录（不编造备选方案；implemented 就地更新；推翻旧决策新建交叉链接 note；lesson 记录踩坑与反复模式，第二次出现时晋升进约束层）。 |
 
 ## 目标仓库会得到什么
 
@@ -72,7 +73,7 @@ python3 install.py --tool all       # 以上全部
 │   ├── contracts/           # 契约层：web-api / library / cli 变体
 │   ├── frontend/            # 前端规范、工具复用（仅前端项目生成）
 │   ├── examples/            # 各层讲解型示例
-│   ├── memory/              # 长期偏好 + 业务需求记录
+│   ├── memory/              # 长期偏好 + 业务需求 + lessons（踩坑/模式 staging，晋升进约束层）
 │   ├── notes/               # 决策记录：<生命周期>/<分类>/yyyy-mm-dd-主题.md
 │   └── plans/               # 变更计划（active/completed）+ 交接
 ├── .agents/skills/
