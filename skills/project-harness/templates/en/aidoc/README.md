@@ -19,7 +19,7 @@ Project-level rules are never copied into tool-private directories; Claude Code 
 - `contracts/` — contract layer: interface contract and responsibility split
 - `frontend/` — frontend rules, utility reuse rules (generated only when a frontend exists)
 - `examples/` — explanatory examples for each layer
-- `memory/` — AI memory layer (long-term preferences, business requirement records)
+- `memory/` — AI memory layer (long-term preferences, business requirement records, lesson staging)
 - `notes/` — decision records (proposed / implemented / rejected)
 - `plans/` — change plans and handoffs (active / completed)
 
@@ -37,6 +37,7 @@ One fact has one maintained home; other places only link.
 | Frontend rules | `frontend/` |
 | Per-layer explanatory examples | `examples/` |
 | Stable user preferences, business requirement records | `memory/` |
+| Pitfalls and recurring patterns pending promotion | `memory/lessons/` |
 | Why a non-trivial decision won | `notes/<lifecycle>/<class>/` |
 | Current execution checklist for a change | `plans/active/` |
 | Reusable situational procedure | `../.agents/skills/<workflow>/SKILL.md` |
@@ -60,6 +61,7 @@ TODO: one line per document — path + one-sentence purpose. This is the "look u
 | `frontend/frontend-utils.md` | Utility reuse rules |
 | `examples/README.md` | How to use the example layer |
 | `memory/project-memory.md` | Memory index |
+| `memory/lessons/README.md` | Lesson capture and promotion discipline |
 | `notes/README.md` | Decision-record lifecycle and naming rules |
 | `plans/README.md` | Change-plan lifecycle rules |
 
@@ -77,6 +79,7 @@ Paths are relative to `aiDoc/`. TODO: complete for every task type that exists i
 | Understand repo structure / stack / workflow | `relations/repo-profile.md`, `relations/system-map.md`, `relations/development-workflow.md` |
 | Look up components / entry points / command index | `relations/code-index.md` (machine-generated, never hand-edited) |
 | New business requirement from user | `memory/business/TEMPLATE.md`, `memory/project-memory.md` (index must be updated) |
+| Recording a pitfall / recurring pattern | `memory/lessons/README.md`, `memory/lessons/TEMPLATE.md` (index must be updated) |
 | Multi-step / cross-component change | `plans/README.md`, `plans/change-plan.TEMPLATE.md` |
 | Recording a non-trivial decision | `notes/README.md`, `notes/TEMPLATE.md` |
 | Code review | `../.agents/skills/project-code-review/SKILL.md` |

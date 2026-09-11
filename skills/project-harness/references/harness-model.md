@@ -24,6 +24,7 @@ Team coordination overlays these layers: a lead partitions work, teammates own b
 | Frontend rules and utils reuse | `aiDoc/frontend/` (frontend projects only) |
 | Worked examples of project patterns | `aiDoc/examples/` |
 | Stable preferences, business requirements | `aiDoc/memory/` |
+| Pitfalls, recurring patterns awaiting promotion | `aiDoc/memory/lessons/` |
 | Why a non-trivial decision won | `aiDoc/notes/<lifecycle>/<class>/` |
 | Current execution checklist | `aiDoc/plans/active/` |
 | Reusable situational procedure | `.agents/skills/<workflow>/SKILL.md` |

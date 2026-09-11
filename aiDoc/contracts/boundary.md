@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-10 -->
+<!-- last-updated: 2026-09-11 -->
 # 契约层（boundary）
 
 > 本仓库非 Web/库/传统 CLI，契约双方：生产方 = 本工具包；消费方 = 安装 skill 的 agent 与被初始化的目标仓库。
@@ -12,7 +12,7 @@
 
 ## 契约 1：skill 调用接口
 
-`SKILL.md` 按 `$ARGUMENTS` 分派：`init` / `generate [--incremental|--scope <area>|--dry-run] [--lang zh|en]` / `sync` / `record [note|plan|handoff]`。新增子命令必须同步 SKILL.md 路由表与对应 reference 篇。
+`SKILL.md` 按 `$ARGUMENTS` 分派：`init` / `generate [--incremental|--scope <area>|--dry-run] [--lang zh|en]` / `sync` / `record [note|plan|handoff|lesson]`。新增子命令必须同步 SKILL.md 路由表与对应 reference 篇。
 
 ## 契约 2：脚本 CLI
 

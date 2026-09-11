@@ -44,6 +44,7 @@
 | 各层代码组织标准（讲解型） | `examples/` |
 | 长期稳定的协作偏好 | `memory/long-term/` |
 | 每次业务需求记录 | `memory/business/` |
+| 踩坑与反复模式的经验（待晋升） | `memory/lessons/` |
 | 为什么做某个非平凡决策 | `notes/<proposed\|implemented\|rejected>/<class>/` |
 | 当前进行中的变更执行清单 | `plans/active/` |
 | 可复用的情境化工作流 | `.agents/skills/<workflow>/SKILL.md` |
@@ -66,6 +67,7 @@
 | `frontend/frontend-utils.md` | 前端工具函数复用清单 |
 | `examples/README.md` | 讲解型示例的阅读入口 |
 | `memory/project-memory.md` | 记忆层索引 |
+| `memory/lessons/README.md` | 经验记录的捕获与晋升纪律 |
 | `notes/README.md` | 决策记录的分类与维护纪律 |
 | `plans/README.md` | 变更计划的生命周期与何时需要计划 |
 
@@ -82,6 +84,7 @@
 | 了解仓库结构 / 技术栈 / 流程 | `relations/repo-profile.md`、`relations/system-map.md`、`relations/development-workflow.md` |
 | 查组件清单 / 入口点 / 命令索引 | `relations/code-index.md`（机器生成，不手改） |
 | 用户提出新业务需求 | `memory/business/TEMPLATE.md`、`memory/project-memory.md`（必更新索引） |
+| 踩坑 / 反复模式记录 | `memory/lessons/README.md`、`memory/lessons/TEMPLATE.md`（必更新索引） |
 | 非平凡决策（行为/架构/契约/流程变更） | `notes/README.md`、`notes/TEMPLATE.md` |
 | 多步骤 / 跨组件 / 有风险的变更 | `plans/README.md`、`plans/change-plan.TEMPLATE.md` |
 | 工作中断或移交他人 | `plans/handoff.TEMPLATE.md` |

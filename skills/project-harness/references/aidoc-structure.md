@@ -32,6 +32,8 @@ aiDoc/
     long-term/README.md          # stable cross-session preferences
     business/README.md           # business-requirement records + index
     business/TEMPLATE.md         # template for a new business record
+    lessons/README.md            # lesson capture rules + promotion discipline + index
+    lessons/TEMPLATE.md          # template for a new lesson record
   notes/<lifecycle>/<class>/     # decision records (see change-docs.md)
   plans/active|completed/        # change plans (see change-docs.md)
 .agents/skills/                  # two project-local workflow skills
@@ -134,6 +136,7 @@ Core principle: check existing utilities first, never rebuild. Inventory of the 
 - `project-memory.md`: index with `## Long-term` and `## Business requirements` sections, plus maintenance notes. Must be updated whenever a memory file is added or removed.
 - `long-term/README.md`: record only repeatedly confirmed stable patterns; each entry has rule, applicable scenarios, source; delete stale entries.
 - `business/README.md` + `business/TEMPLATE.md`: the template carries description, status (pending/in-progress/done/cancelled), backend scope, frontend scope, constraints, related files, record date. New records use the template and update both indexes.
+- `lessons/README.md` + `lessons/TEMPLATE.md`: staging area for pitfalls and recurring patterns. The template carries context, pitfall/pattern, occurrence count, status (pending/promoted/dropped), promotion target, record date. Promotion discipline (second occurrence or user confirmation → rule written into the constraint body's home document in the same change) is defined in [change-docs.md](change-docs.md); `lessons/README.md` states the capture rules and carries the lesson index pointer.
 
 ### `aiDoc/notes/` and `aiDoc/plans/`
 

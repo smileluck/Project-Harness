@@ -39,6 +39,7 @@ aiDoc/notes/<lifecycle>/<class>/yyyy-mm-dd-topic.md
 Every note includes: the problem, the proposal/decision, genuine alternatives considered, and acceptance criteria + risks (proposed) or consequences (implemented).
 
 - **Never invent alternatives** to make the note look thorough — record only what was actually considered.
+- **Constraints are rewritten, not just noted**: when the decision changes an architecture, contract, or process constraint, update the constraint's home document (`modules/architecture-rules.md`, `contracts/boundary.md`, or `AGENTS.md`) in the same change. The note records why; the rule doc must say what now holds.
 - An `implemented` note is updated **in place** as facts change; do not append a change log.
 - A reversal gets a **new** note, cross-linked to the one it supersedes; move the old note per its new status.
 - Update `aiDoc/notes/` indexes (and the `aiDoc/README.md` routing metadata if the file set changed) in the same change.
@@ -61,6 +62,23 @@ Create `aiDoc/plans/active/yyyy-mm-dd-topic.md` for work that is multi-step, cro
 - Update the plan as work changes; it is the live execution record.
 - On completion: summarize the delivered outcome and move the file to `aiDoc/plans/completed/`. Delete it only if it has no durable value.
 - A completed plan is evidence of execution, **not** the authority for current behavior — that authority lives in `AGENTS.md`/`aiDoc/` docs and the decision notes.
+
+## Lessons
+
+Lessons are the capture layer of rule self-evolution: pitfalls and recurring patterns recorded at `aiDoc/memory/lessons/yyyy-mm-dd-topic.md` (templates: `templates/<lang>/aidoc/memory/lessons/`). **Once is an incident, twice is a pattern.**
+
+### When to record one
+
+Record a lesson in the same change when work hits a pitfall, review flags the same class of problem repeatedly, or a reusable pattern emerges. Keep it light — five lines per the template. On recurrence of an equivalent lesson, increment its occurrence count in place; never file a duplicate.
+
+### Promotion discipline
+
+- Trigger: the same lesson occurs a 2nd time, or the user confirms explicitly.
+- Action: in the **same change**, write the rule into the constraint body's home document (`modules/architecture-rules.md`, `contracts/boundary.md`, `frontend/frontend-rules.md`, or `AGENTS.md` — by content ownership); set the lesson status to `promoted` with a cross-link to the target section.
+- If the promotion alters behavior, architecture, or contracts, a decision note is still required (the note records why; the constraint doc says what now holds).
+- Mark `dropped` only for entries confirmed to have no general value, with the reason recorded.
+- Never stockpile lessons without promoting; the [sync workflow](sync-aidoc.md) sweeps `pending` entries with count ≥ 2 as a backstop.
+- Update the lesson index in `aiDoc/memory/project-memory.md` in the same change as any lesson add/increment/promote.
 
 ## Handoffs
 

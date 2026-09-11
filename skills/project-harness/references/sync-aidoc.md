@@ -4,6 +4,7 @@ Detect drift between the aiDoc documentation system and the code, then resync in
 
 ## When to trigger
 
+- **Mandatory completion gate**: before closing out any code or doc change, run the Step 1 mechanical check (or the scoped manual equivalent against the `aiDoc/README.md` routing table when the script is unavailable). This is a required step of every change, not an optional audit; drift found here is fixed in the same change, never deferred.
 - Architecture changed: layering adjustments, top-level directories added/removed, stack replaced.
 - Backend modules or frontend pages added/removed — `aiDoc/modules/`, `aiDoc/examples/`, `aiDoc/relations/system-map.md` may be stale.
 - aiDoc sub-documents added/removed — the `aiDoc/README.md` routing table and the `AGENTS.md` quick-reference may be stale.
@@ -44,6 +45,7 @@ Verify by reading code and docs together:
 4. **Routing consistency**: `aiDoc/README.md` routing table and common entries match the actual aiDoc file set; `AGENTS.md`'s "task family → aiDoc area" quick-reference matches existing aiDoc areas.
 5. **Stack accuracy**: `relations/repo-profile.md` matches current manifests (dependencies added/removed).
 6. **Command validity**: commands in `relations/development-workflow.md` and `AGENTS.md` still run (spot-check the risky ones).
+7. **Lesson promotion sweep**: scan `aiDoc/memory/lessons/` for `pending` entries with occurrence count ≥ 2 — promote them into the constraint body's home document within this sync, or record the reason for staying pending.
 
 ## Step 3: resync
 
