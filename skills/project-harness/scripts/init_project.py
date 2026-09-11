@@ -98,12 +98,40 @@ class Plan:
         self.auto_filled: list[str] = []   # 扫描填充（relations 文档小节 + code-index）
 
 
-def _render(text: str, project_name: str, today: str) -> str:
-    return text.replace("{{PROJECT_NAME}}", project_name).replace("{{DATE}}", today)
+def _harness_root() -> Path | None:
+    """工具包仓库根（skills/project-harness/scripts -> 上三级）。
+
+    仅当目录布局符合仓库 checkout 结构时返回路径；skill 被单独安装到
+    其他位置（如 ~/.kimi-code/skills/）时返回 None，模板中的 <harness>
+    占位符保持原样，由用户手动替换。
+    """
+    root = SCRIPT_DIR.parents[2]
+    if (root / "skills" / "project-harness" / "scripts").is_dir():
+        return root
+    return None
+
+
+def make_render_ctx(project_name: str, today: str) -> dict[str, str]:
+    """渲染占位符表（契约 3 登记）：{{PROJECT_NAME}}、{{DATE}}、<skill-dir>、<harness>。"""
+    ctx = {
+        "{{PROJECT_NAME}}": project_name,
+        "{{DATE}}": today,
+        "<skill-dir>": str(SCRIPT_DIR.parent),
+    }
+    root = _harness_root()
+    if root is not None:
+        ctx["<harness>"] = str(root)
+    return ctx
+
+
+def _render(text: str, ctx: dict[str, str]) -> str:
+    for placeholder, value in ctx.items():
+        text = text.replace(placeholder, value)
+    return text
 
 
 def _copy_file(src: Path, dst: Path, repo: Path, plan: Plan, *,
-               overwrite: bool, dry_run: bool, render: tuple[str, str] | None,
+               overwrite: bool, dry_run: bool, render: dict[str, str] | None,
                backup_root: Path, label_prefix: str = "") -> None:
     rel = dst.relative_to(repo)
     tag = f"{label_prefix}{rel}"
@@ -129,7 +157,7 @@ def _copy_file(src: Path, dst: Path, repo: Path, plan: Plan, *,
         except (OSError, UnicodeDecodeError):
             shutil.copy2(src, dst)
         else:
-            dst.write_text(_render(text, render[0], render[1]), encoding="utf-8")
+            dst.write_text(_render(text, render), encoding="utf-8")
     else:
         shutil.copy2(src, dst)
 
@@ -449,7 +477,7 @@ def apply_scan_fill(repo: Path, templates: Path, scan: dict, plan: Plan, *,
                 continue
             try:
                 text = _render(src.read_text(encoding="utf-8"),
-                               project_name, today)
+                               make_render_ctx(project_name, today))
             except OSError:
                 continue
         else:
@@ -481,7 +509,7 @@ def build_and_run(repo: Path, templates: Path, project_name: str,
                   has_frontend: bool, *, overwrite: bool, dry_run: bool) -> Plan:
     plan = Plan()
     today = date.today().isoformat()
-    render_ctx = (project_name, today)
+    render_ctx = make_render_ctx(project_name, today)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     backup_root = repo / "aiDoc" / ".harness-backups" / timestamp
 

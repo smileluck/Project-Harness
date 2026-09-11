@@ -49,4 +49,4 @@ Scripts and templates ship inside this skill directory, next to this `SKILL.md`:
 - `scripts/check_sync.py` — mechanical drift checks between docs and code
 - `templates/<lang>/` — document skeletons, including `templates/<lang>/adapters/` for tool adapters and `templates/<lang>/aidoc/` for notes/plans templates
 
-Resolve the skill directory via `${KIMI_SKILL_DIR}` when available, otherwise via the skill's install path. Example: `python3 ${KIMI_SKILL_DIR}/scripts/init_project.py <repo-root> --dry-run`.
+Resolve the skill directory via `${KIMI_SKILL_DIR}` when available (a Kimi Code-specific variable; in other agent tools use the skill's actual install path instead). Example: `python3 ${KIMI_SKILL_DIR}/scripts/init_project.py <repo-root> --dry-run`.
