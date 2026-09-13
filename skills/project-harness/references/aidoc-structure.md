@@ -40,7 +40,7 @@ aiDoc/
 <tool dirs>                      # thin adapters only (see tool-adapters.md)
 ```
 
-Adaptivity: the harness supports six project types — `fullstack`, `backend`, `frontend`, `library`, `cli`, `general` — plus `mixed` for multi-component repositories. Under the component model (see [generate-aidoc.md](generate-aidoc.md) Phase 1), a repo is a set of components, each `(path, kind, language/framework, evidence)` with kind ∈ `web-frontend` / `web-backend` / `cli` / `library` / `qt-app` / `java-app` / `go-module` / `cpp-app` / `generic`. A single-component repo keeps one of the six type labels above (single-component `qt-app` / `go-module` / `cpp-app` maps to `general`); a multi-component repo is labeled `mixed`. The **only** conditional area is `frontend/` (generated only when a real frontend exists — i.e. any component is `web-frontend`); every other area is generated for all types, with content shaped by paradigm:
+Adaptivity: the harness supports six project types — `fullstack`, `backend`, `frontend`, `library`, `cli`, `general` — plus `mixed` for multi-component repositories. The component model and the derivation of the repo-level label are defined in [generate-aidoc.md](generate-aidoc.md) Phase 1.4; this file owns only the per-type file sets and content emphasis. The **only** conditional area is `frontend/` (generated only when a real frontend exists — i.e. any component is `web-frontend`); every other area is generated for all types, with content shaped by paradigm:
 
 | Project type | `frontend/` area | `contracts/boundary.md` | `modules/architecture-rules.md` | `modules/module-development.md` | `examples/` |
 |---|---|---|---|---|---|

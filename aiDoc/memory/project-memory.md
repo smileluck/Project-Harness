@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-11 -->
+<!-- last-updated: 2026-09-13 -->
 # 项目记忆索引
 
 ## 长期记忆
@@ -13,7 +13,9 @@
 
 ## 经验记忆（lessons）
 
-暂无；新增/晋升/累加 lesson 时必须同步本区索引，规则见 `lessons/README.md`。
+- `lessons/2026-09-13-explicit-markers-over-heading-text.md`：程序化填充点用显式标记，不用标题文本匹配（pending，1 次）
+
+新增/晋升/累加 lesson 时必须同步本区索引，规则见 `lessons/README.md`。
 
 ## 维护说明
 

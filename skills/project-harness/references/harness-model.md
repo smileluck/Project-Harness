@@ -40,9 +40,9 @@ Never duplicate a rule across tiers. Put a short link at the point of use.
 
 ## Operating invariants
 
-- One fact, one maintained home; other documents link to it.
+Shared invariants (one fact one home, no-overwrite default, evidence proportionality, no invented facts) are maintained in [SKILL.md](../SKILL.md#operating-invariants) — the entry-point contract. This layer adds only model-specific ones:
+
 - Non-trivial changes update the documentation and the decision record that owns the rationale. Mechanical, behavior-preserving edits need no ceremonial notes.
-- Default initialization never overwrites existing files. `--overwrite` requires explicit approval.
 - Mechanically checkable rules should become executable checks (tests, `check_sync.py` coverage) when the project can support them.
 - Local work runs the narrowest credible regression evidence; CI owns exhaustive coverage.
 - The lead agent owns integration: final diff, overlap reconciliation, relevant checks, and waiting for required delegated work.

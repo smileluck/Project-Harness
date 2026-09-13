@@ -11,7 +11,8 @@
     3. scan_repo.py --json 可运行且输出合法 JSON。
     4. zh/en 模板镜像：文件清单一致 + 每对文件占位符计数一致。
     5. 耦合校验：FRONTEND_SKIP 文件在模板中存在；AIDOC_SECTIONS 与模板
-       aidoc/ 子目录集合一致；auto-scan 标记在脚本与 references 中逐字相同。
+       aidoc/ 子目录集合一致；auto-scan 标记在脚本与 references 中逐字相同；
+       scan-fill 标记在 zh/en 模板中逐字各出现一次。
 
 退出码: 0 全过；1 有失败。
 """
@@ -210,6 +211,24 @@ def test_coupling() -> None:
                  p.read_text(encoding="utf-8")]
     check("auto-scan 标记在 references 中逐字出现", len(refs_with) >= 2,
           f"仅 {refs_with}")
+
+    # scan-fill 标记：zh/en 模板的填充点必须逐字一致（脚本按标记定位小节）
+    fill_targets = {
+        "relations/repo-profile.md":
+            ("positioning", "stack", "pkgmgmt", "features"),
+        "relations/development-workflow.md": ("env",),
+        "relations/system-map.md": ("rootdirs", "config"),
+    }
+    bad = []
+    for rel, keys in fill_targets.items():
+        for lang in ("zh", "en"):
+            text = (TEMPLATES / lang / "aidoc" / rel).read_text(encoding="utf-8")
+            for key in keys:
+                marker = f"{init_project.SCAN_FILL_PREFIX}{key}{init_project.SCAN_FILL_SUFFIX}"
+                if text.count(marker) != 1:
+                    bad.append(f"{lang}/{rel}: {key} 出现 {text.count(marker)} 次")
+    check("scan-fill 标记在 zh/en 模板中逐字各出现一次", not bad,
+          "; ".join(bad[:3]))
 
 
 def main() -> int:

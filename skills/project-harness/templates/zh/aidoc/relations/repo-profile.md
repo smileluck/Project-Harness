@@ -4,12 +4,14 @@
 > 项目定位与技术栈速查。所有内容必须来自真实配置文件与代码探测，禁止编造。
 
 ## 项目定位
+<!-- scan-fill:positioning -->
 
 <!-- TODO: 根据 package.json/pyproject.toml 的 name/description、README.md 推断项目一句话定位 -->
 
 TODO: 一句话说明本项目是什么、解决什么问题。
 
 ## 核心技术栈
+<!-- scan-fill:stack -->
 
 <!-- init 扫描会按组件填充本表；混合项目每组件一行 -->
 
@@ -39,12 +41,14 @@ TODO: 一句话说明本项目是什么、解决什么问题。
 | 样式方案 | TODO: |
 
 ## 包管理
+<!-- scan-fill:pkgmgmt -->
 
 <!-- TODO: uv/pip/npm/pnpm/yarn/go mod/cargo 等，含锁定文件名称 -->
 
 TODO:
 
 ## 核心特性
+<!-- scan-fill:features -->
 
 <!-- TODO: 表格列出项目特有的关键特性（统一响应格式、ID 策略、认证方式、多租户等），每条附真实代码位置 -->
 

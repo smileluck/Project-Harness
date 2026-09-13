@@ -61,4 +61,4 @@ Always regenerate `aiDoc/README.md`'s routing table and the `AGENTS.md` quick-re
 
 ## Step 4: report
 
-Report: mechanical findings (verbatim from the script), semantic findings (file → drift → evidence), files regenerated, and anything intentionally left stale with the reason. Do not report "in sync" for checks that were not actually run.
+Report: mechanical findings (verbatim from the script), semantic findings (file → drift → evidence), files regenerated, and anything intentionally left stale with the reason. Reporting discipline (passed / failed / skipped / unavailable / not-run) is defined in [quality-workflow.md](quality-workflow.md).

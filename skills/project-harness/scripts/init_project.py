@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
 import shutil
 import sys
 from datetime import date, datetime
@@ -216,18 +215,10 @@ def _prune_deferred_refs(repo: Path, skip_set: set[str], plan: Plan, *,
 AUTO_SCAN_MARK = "<!-- auto-scan: init 扫描生成，generate 工作流校订后移除此标记 -->"
 CODE_INDEX_REL = "aiDoc/relations/code-index.md"
 
-# 双语小节锚点表（取 templates/zh 与 templates/en 的实际 `## ` 标题；
-# 匹配时只锚标题文本，不锚整行，容忍模板其它行变化）
-SECTION_ANCHORS = {
-    "positioning": ("项目定位", "Project Positioning"),
-    "stack": ("核心技术栈", "Core Tech Stack"),
-    "pkgmgmt": ("包管理", "Package Management"),
-    "features": ("核心特性", "Core Features"),
-    "env": ("环境与依赖", "Environment & Dependencies",
-            "Environment and Dependencies"),
-    "rootdirs": ("根目录职责", "Root Directory Responsibilities"),
-    "config": ("配置文件", "Configuration Files"),
-}
+# 扫描填充定位标记：模板小节标题行后的 `<!-- scan-fill:<key> -->`。
+# 标记是模板与脚本之间的显式契约，小节标题可自由改写不影响填充。
+SCAN_FILL_PREFIX = "<!-- scan-fill:"
+SCAN_FILL_SUFFIX = " -->"
 
 # 配置文件用途（zh, en）
 _CONFIG_PURPOSE = {
@@ -255,35 +246,32 @@ _CONFIG_PURPOSE = {
 }
 
 
-def _find_section(lines: list[str], candidates: tuple[str, ...]):
-    """按 `## ` 标题文本定位小节，返回 (标题行号, 下一标题/文末行号, 标题)。"""
-    cands = tuple(c.lower() for c in candidates)
+def _find_section(lines: list[str], key: str):
+    """按 `<!-- scan-fill:<key> -->` 标记行定位小节，返回 (标记行号, 下一标题/文末行号, key)。"""
+    marker = f"{SCAN_FILL_PREFIX}{key}{SCAN_FILL_SUFFIX}"
     for i, ln in enumerate(lines):
-        m = re.match(r"^##\s+(.+?)\s*$", ln)
-        if not m:
+        if ln.strip() != marker:
             continue
-        title = m.group(1).strip().lower()
-        if any(title == c or c in title for c in cands):
-            j = i + 1
-            while j < len(lines) and not lines[j].startswith("## "):
-                j += 1
-            return i, j, m.group(1).strip()
+        j = i + 1
+        while j < len(lines) and not lines[j].startswith("## "):
+            j += 1
+        return i, j, key
     return None
 
 
 def _fill_sections(text: str, sections: list) -> tuple[str, list[str], list[str]]:
-    """sections: [(key, candidates, body_lines)]。整段替换小节正文。"""
+    """sections: [(key, body_lines)]。保留标题与标记行，替换小节正文。"""
     lines = text.splitlines()
     matches = []
     missing: list[str] = []
-    for key, candidates, body in sections:
-        found = _find_section(lines, candidates)
+    for key, body in sections:
+        found = _find_section(lines, key)
         if found:
             matches.append((found[0], found[1], found[2], body))
         else:
             missing.append(key)
     done = [m[2] for m in matches]
-    for i, j, _title, body in sorted(matches, key=lambda m: m[0], reverse=True):
+    for i, j, _key, body in sorted(matches, key=lambda m: m[0], reverse=True):
         lines[i + 1:j] = ["", AUTO_SCAN_MARK, ""] + body + [""]
     return "\n".join(lines) + "\n", done, missing
 
@@ -441,20 +429,19 @@ def _config_table(scan: dict, lang: str) -> list[str]:
 
 
 def _fill_specs(scan: dict, lang: str, project_name: str) -> list:
-    A = SECTION_ANCHORS
     return [
         ("aiDoc/relations/repo-profile.md", [
-            ("positioning", A["positioning"], _pos_lines(scan, lang, project_name)),
-            ("stack", A["stack"], _stack_table(scan, lang)),
-            ("pkgmgmt", A["pkgmgmt"], _pkgmgmt_lines(scan, lang)),
-            ("features", A["features"], _features_table(scan, lang)),
+            ("positioning", _pos_lines(scan, lang, project_name)),
+            ("stack", _stack_table(scan, lang)),
+            ("pkgmgmt", _pkgmgmt_lines(scan, lang)),
+            ("features", _features_table(scan, lang)),
         ]),
         ("aiDoc/relations/development-workflow.md", [
-            ("env", A["env"], _env_table(scan, lang)),
+            ("env", _env_table(scan, lang)),
         ]),
         ("aiDoc/relations/system-map.md", [
-            ("rootdirs", A["rootdirs"], _rootdirs_table(scan, lang)),
-            ("config", A["config"], _config_table(scan, lang)),
+            ("rootdirs", _rootdirs_table(scan, lang)),
+            ("config", _config_table(scan, lang)),
         ]),
     ]
 
@@ -490,7 +477,7 @@ def apply_scan_fill(repo: Path, templates: Path, scan: dict, plan: Plan, *,
         if done:
             plan.auto_filled.append(f"{rel}  ({tag}: {'、'.join(done)})")
         for key in missing:
-            plan.auto_filled.append(f"{rel}  (锚点未找到，跳过小节: {key})")
+            plan.auto_filled.append(f"{rel}  (scan-fill 标记未找到，跳过小节: {key})")
         if done and not dry_run:
             (repo / rel).write_text(new_text, encoding="utf-8")
 

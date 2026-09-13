@@ -21,8 +21,6 @@ Parse `$ARGUMENTS`:
 | `--dry-run` | Output Phase 1 probe results and the generation plan; write nothing |
 | `--lang zh\|en` | Language of generated prose (identifiers stay English). Default: match the repo's existing docs language |
 
-The former `--scope backend` maps to `modules` + `contracts`; the former `--scope frontend` maps to `frontend` + `contracts`.
-
 `--dry-run` may combine with any mode.
 
 ## Phase 1: Project probing
@@ -115,7 +113,7 @@ Priority when several kinds match one component (first match wins): `web-fronten
 
 One directory may host several components (e.g. a `package.json` with both a Vite frontend and an Express server); record each with its own evidence.
 
-The repo-level label maps to the legacy six-type detection as follows: `fullstack` (web-frontend + web-backend in one repo) > `frontend` (web-frontend only) > `backend` (web-backend only) > `cli` > `library` > `general`; `has_frontend` = any component is `web-frontend` and still only drives conditional generation of the `frontend/` area. The result drives the adaptive rules in [aidoc-structure.md](aidoc-structure.md) — for `mixed`, content is organized per component.
+The repo-level label derives from the components: `fullstack` (web-frontend + web-backend in one repo) > `frontend` (web-frontend only) > `backend` (web-backend only) > `cli` > `library` > `general`; `has_frontend` = any component is `web-frontend` and still only drives conditional generation of the `frontend/` area. The result drives the adaptive rules in [aidoc-structure.md](aidoc-structure.md) — for `mixed`, content is organized per component.
 
 ### 1.5 Auto-scan base
 
@@ -123,7 +121,7 @@ When `init` ran with its default static scan, parts of `relations/` are pre-fill
 
 - Do not repeat the mechanical scan; start from `code-index.md` (component inventory, language composition, entry points, command index) and the auto-filled sections.
 - Calibrate and correct them against the real code — the scan is zero-dependency heuristics and can be wrong.
-- After calibrating a section, remove its `auto-scan` marker. Never hand-edit `code-index.md`; if it is wrong or stale, rerun `python3 <skill-dir>/scripts/scan_repo.py <repo>`.
+- After calibrating a section, remove its `auto-scan` marker and the template's `scan-fill` marker. Never hand-edit `code-index.md`; if it is wrong or stale, rerun `python3 <skill-dir>/scripts/scan_repo.py <repo>`.
 - With `--no-scan` repos, `code-index.md` remains a skeleton; probe per sections 1.1–1.4 as before.
 
 ## Phase 2: Generate per the structure contract
@@ -179,14 +177,13 @@ It verifies mechanically checkable facts: aiDoc index completeness (every path i
 
 ### Semantic (agent self-check)
 
-What the script cannot prove, verify yourself:
+Run the semantic drift checklist in [sync-aidoc.md](sync-aidoc.md) Step 2 — it applies unchanged to freshly generated docs (symbol existence, contract fidelity, example validity, routing consistency, stack accuracy, command validity). Generation adds one requirement the sync checklist does not cover:
 
-1. **Symbol consistency**: Grep class/function names cited in `contracts/boundary.md` and `modules/architecture-rules.md`; confirm they exist in the code.
-2. **Example fidelity**: examples match the current style of the modules they were extracted from.
-3. **AGENTS.md call logic**: the quick-reference table covers exactly the aiDoc areas that exist; the "when to regenerate" section is present with complete triggers.
-4. **No invented facts**: every stack item, command, and path traces to a probed source.
+- **No invented facts**: every stack item, command, and path traces to a probed source.
 
 ## Report format
+
+Reporting discipline (exact commands, passed / failed / skipped / unavailable / not-run) is defined in [quality-workflow.md](quality-workflow.md); the format below is this workflow's concrete instance.
 
 ```
 ## Verification results

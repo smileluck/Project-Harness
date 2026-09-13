@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-11 -->
+<!-- last-updated: 2026-09-13 -->
 # 经验记忆（lessons）
 
 存放开发过程中踩过的坑与反复出现的模式。本目录是**经验 staging 区**：经验在此低成本采集，达到晋升条件后写进约束正文（`/AGENTS.md`、`modules/architecture-rules.md`、`contracts/boundary.md` 等），本目录只留记录与去向链接。
@@ -21,4 +21,4 @@
 
 ## 经验索引
 
-暂无。
+- [2026-09-13-explicit-markers-over-heading-text.md](2026-09-13-explicit-markers-over-heading-text.md)：程序化填充点用显式标记，不用标题文本匹配（pending，1 次）

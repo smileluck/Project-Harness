@@ -29,6 +29,7 @@ TODO: record the real strategy (e.g. `main` / `develop` / `feature/*` / `hotfix/
 TODO: record the real convention, e.g. `type(scope): description`, and list the types actually in use.
 
 ## Environment & Dependencies
+<!-- scan-fill:env -->
 
 TODO: concrete commands, verified to run.
 

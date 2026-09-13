@@ -4,6 +4,7 @@
 System architecture and component relationships. This is the first place AI looks to locate things — keep it aligned with the real tree.
 
 ## Root Directory Responsibilities
+<!-- scan-fill:rootdirs -->
 
 <!-- init's scan fills this table with component annotations; mixed projects get one row per component -->
 
@@ -38,6 +39,7 @@ TODO: backend module ↔ frontend page/feature mapping.
 | TODO | TODO |
 
 ## Configuration Files
+<!-- scan-fill:config -->
 
 TODO: key config files and what they control.
 
