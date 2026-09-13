@@ -1,16 +1,16 @@
-<!-- last-updated: 2026-09-10 -->
+<!-- last-updated: 2026-09-13 -->
 # 系统地图（system map）
 
 > 组件关系与调用链速查。
 
 ## 根目录职责
 
-<!-- auto-scan: init 扫描生成，generate 工作流校订后移除此标记 -->
-
 | 目录 | 职责 |
 |---|---|
 | `skills/project-harness/` | 完整 skill：SKILL.md 入口 + references/ + templates/ + scripts/ |
 | `aiDoc/` | 本仓库自身的 AI 协作文档层 |
+| `tests/` | 自检脚本 `selftest.py`（init/scan/check_sync 行为 + 脚本↔模板↔文档耦合契约） |
+| `.agents/skills/` | 本仓库自身的预置 skill（代码审查、推送前检查；zh 模板的渲染实例） |
 | `install.py` | 多工具安装器（copy/symlink 到各工具 skills 目录） |
 | `README.md` / `README.zh-CN.md` | 双语入口文档 |
 | `CLAUDE.md` | 仅一行 `@AGENTS.md` |
@@ -33,7 +33,7 @@
 
 | 能力 | 入口 | 核心文件 |
 |---|---|---|
-| init（骨架+扫描） | `init_project.py: main` | `scan_repo.py`（探测）、`templates/`（骨架） |
+| init（骨架+扫描） | `init_project.py: main` | `scan_repo.py`（探测）、`skills/project-harness/templates/`（骨架） |
 | sync（漂移检测） | `check_sync.py: main` | 目标仓库的 AGENTS.md + aiDoc/ |
 | 安装 | `install.py: main` | 工具路径映射表 |
 

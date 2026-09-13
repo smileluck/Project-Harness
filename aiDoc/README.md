@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-11 -->
+<!-- last-updated: 2026-09-13 -->
 # aiDoc
 
 `aiDoc/` 是本仓库的结构化 AI 文档层（L1 路由层），用于把长期有效的项目上下文从工具目录中抽离出来，并按主题拆分成可维护的约束文档。
@@ -49,8 +49,6 @@
 
 ## 常用入口
 
-<!-- TODO: generate 工作流补全——每个文件一行：文档路径 + 一句话用途，作为"按文档查字典"的索引。路径相对 aiDoc/ -->
-
 | 文档 | 用途 |
 |---|---|
 | `relations/repo-profile.md` | 项目定位与技术栈速查 |
@@ -61,14 +59,15 @@
 | `modules/module-development.md` | 新建模块/功能/命令的完整步骤 |
 | `contracts/boundary.md` | 生产者与消费者之间的共享契约 |
 | `examples/README.md` | 讲解型示例的阅读入口 |
+| `memory/README.md` | 记忆层总览与使用规则 |
+| `memory/long-term/README.md` | 长期稳定偏好的沉淀规则 |
+| `memory/business/README.md` | 业务需求记录规则（索引唯一维护于 project-memory.md） |
 | `memory/project-memory.md` | 记忆层索引 |
 | `memory/lessons/README.md` | 经验记录的捕获与晋升纪律 |
 | `notes/README.md` | 决策记录的分类与维护纪律 |
 | `plans/README.md` | 变更计划的生命周期与何时需要计划 |
 
 ## 任务→必读文档 路由表
-
-<!-- TODO: generate 工作流根据项目实际存在的 aiDoc 子文档补全所有任务类型。路径相对 aiDoc/ -->
 
 | 任务类型 | 必读文档 |
 |---|---|
@@ -78,6 +77,7 @@
 | 了解仓库结构 / 技术栈 / 流程 | `relations/repo-profile.md`、`relations/system-map.md`、`relations/development-workflow.md` |
 | 查组件清单 / 入口点 / 命令索引 | `relations/code-index.md`（机器生成，不手改） |
 | 用户提出新业务需求 | `memory/business/TEMPLATE.md`、`memory/project-memory.md`（必更新索引） |
+| 记录 / 查询用户长期偏好 | `memory/long-term/README.md`、`memory/README.md` |
 | 踩坑 / 反复模式记录 | `memory/lessons/README.md`、`memory/lessons/TEMPLATE.md`（必更新索引） |
 | 非平凡决策（行为/架构/契约/流程变更） | `notes/README.md`、`notes/TEMPLATE.md` |
 | 多步骤 / 跨组件 / 有风险的变更 | `plans/README.md`、`plans/change-plan.TEMPLATE.md` |

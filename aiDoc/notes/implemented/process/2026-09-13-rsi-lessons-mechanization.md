@@ -15,7 +15,7 @@
 4. 晋升后复发闭环：`post` +1 → 同一变更内修订已晋升的规则正文（不再记新 lesson）+ 决策记录"第一次为什么没拦住"。
 5. 联动：lesson `explicit-markers-over-heading-text` 本次第 2 次出现，按晋升纪律写入 `aiDoc/modules/architecture-rules.md` 脚本层。
 
-同步面：`templates/{zh,en}/`（lessons TEMPLATE/README、AGENTS.md.tmpl）、`references/`（change-docs、sync-aidoc、aidoc-structure）、根 `AGENTS.md` 不变量 #9、`tests/selftest.py` fixture。
+同步面：`templates/{zh,en}/`（lessons TEMPLATE/README、AGENTS.md.tmpl）、`skills/project-harness/references/`（change-docs、sync-aidoc、aidoc-structure）、根 `AGENTS.md` 不变量 #9、`tests/selftest.py` fixture。
 
 ## 真实考虑过的备选
 

@@ -13,7 +13,7 @@ Parse `$ARGUMENTS`:
 | `--scope modules` | Regenerate `modules/architecture-rules.md`, `modules/module-development.md`, and module-layer examples under `examples/` |
 | `--scope contracts` | Regenerate `contracts/boundary.md` |
 | `--scope frontend` | Regenerate `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/frontend/` |
-| `--scope relations` | Regenerate the hand-written files under `relations/` (`code-index.md` is machine-owned; rerun `scan_repo.py` instead) |
+| `--scope relations` | Regenerate the hand-written files under `relations/` (`code-index.md` is machine-owned; regenerate it via the command in [aidoc-structure.md](aidoc-structure.md)) |
 | `--scope memory` | Regenerate files under `memory/` (preserve user-written records) |
 | `--scope notes` | Refresh notes indexes/templates only — never rewrite existing decision notes |
 | `--scope plans` | Refresh plans indexes/templates only — never rewrite existing plans |
@@ -45,34 +45,7 @@ Read these files when present:
 | `.nvmrc`, `.node-version`, `.python-version` | Runtime versions |
 | `Dockerfile`, `docker-compose.yml` | Deployment setup |
 
-**Framework identification**: match from the dependency list, not hardcoded file features. Keyword table:
-
-| Dependency keyword | Framework/tech |
-|---|---|
-| `fastapi`, `uvicorn` | FastAPI |
-| `django` | Django |
-| `flask` | Flask |
-| `hono` | Hono |
-| `fastify` | Fastify |
-| `express`, `koa`, `nestjs` | Node.js backend |
-| `gin`, `gorm`, `fiber` | Go (Gin/Fiber) |
-| `spring-boot`, `spring-web`, `spring-context` | Java (Spring) |
-| `servlet`, `jakarta` | Java (web) |
-| `cmake`, `Makefile` targets | C/C++ (CMake/Make) |
-| `Qt` modules in `.pro`, `qmake`, `.qml`, `.ui` files | Qt (Widgets/QML) |
-| `actix`, `axum` | Rust (Actix/Axum) |
-| `vue`, `vite` + `.vue` | Vue |
-| `react`, `.jsx`/`.tsx` | React |
-| `angular` | Angular |
-| `svelte`, `@sveltejs` | Svelte/SvelteKit |
-| `next` | Next.js |
-| `nuxt` | Nuxt |
-| `click`, `typer` | Python CLI |
-| `commander`, `yargs` | Node.js CLI |
-| `cobra` | Go CLI |
-| `clap` | Rust CLI |
-
-Uncovered frameworks: judge from dependency names + directory structure combined.
+**Framework identification**: match from the dependency list, not hardcoded file features. The authoritative keyword table is maintained solely in the constants at the top of `scripts/scan_repo.py` (`FRONTEND_DEPS`, `NODE_WEB_DEPS`, `PY_WEB_DEPS`, `GO_WEB_*`, `RUST_WEB_*`, and the CLI tables) — do not duplicate it here. When the table lacks a framework, extend the script constants in the same change; the agent-side fallback for uncovered frameworks is judging from dependency names + directory structure combined.
 
 ### 1.3 Code patterns
 
@@ -117,11 +90,11 @@ The repo-level label derives from the components: `fullstack` (web-frontend + we
 
 ### 1.5 Auto-scan base
 
-When `init` ran with its default static scan, parts of `relations/` are pre-filled (sections carry the marker `<!-- auto-scan: init 扫描生成，generate 工作流校订后移除此标记 -->`) and `relations/code-index.md` exists as the machine-generated fact base. Treat these as **pre-probed facts**:
+When `init` ran with its default static scan, parts of `relations/` are pre-filled (sections carry the init `auto-scan` marker, defined verbatim in [init-harness.md](init-harness.md)) and `relations/code-index.md` exists as the machine-generated fact base. Treat these as **pre-probed facts**:
 
 - Do not repeat the mechanical scan; start from `code-index.md` (component inventory, language composition, entry points, command index) and the auto-filled sections.
 - Calibrate and correct them against the real code — the scan is zero-dependency heuristics and can be wrong.
-- After calibrating a section, remove its `auto-scan` marker and the template's `scan-fill` marker. Never hand-edit `code-index.md`; if it is wrong or stale, rerun `python3 <skill-dir>/scripts/scan_repo.py <repo>`.
+- After calibrating a section, remove its `auto-scan` marker and the template's `scan-fill` marker. Never hand-edit `code-index.md`; if it is wrong or stale, regenerate it via the command defined in [aidoc-structure.md](aidoc-structure.md).
 - With `--no-scan` repos, `code-index.md` remains a skeleton; probe per sections 1.1–1.4 as before.
 
 ## Phase 2: Generate per the structure contract

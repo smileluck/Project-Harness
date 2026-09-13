@@ -6,7 +6,7 @@ Rule bodies live only in `AGENTS.md` and `aiDoc/`. Tool-private directories carr
 
 | Tool | Native mechanism | What the harness writes |
 |---|---|---|
-| Claude Code | `CLAUDE.md` supports `@import` natively | Ensure root `CLAUDE.md` contains exactly `@AGENTS.md`. `.claude/` holds only `commands/` — **no** rule adapter file |
+| Claude Code | `CLAUDE.md` supports `@import` natively | Ensure root `CLAUDE.md` contains exactly `@AGENTS.md`. `.claude/` holds no rule adapter file; its only expected content is `commands/` plus skills installed by the harness installer (`install.py --tool claude --scope project` writes `.claude/skills/`) |
 | Kimi Code | `AGENTS.md` auto-loaded; project skills scanned from `.agents/skills/` and `.kimi-code/skills/` | Nothing extra. Project-local workflow skills go in `.agents/skills/` |
 | Codex | `AGENTS.md` native | Nothing extra |
 | Trae | `.trae/rules/project_rules.md` auto-loaded | Thin adapter (only if `.trae/` exists) |

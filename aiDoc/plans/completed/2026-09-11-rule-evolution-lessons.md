@@ -57,7 +57,7 @@ python3 skills/project-harness/scripts/check_sync.py .
 
 - 新增 `aiDoc/memory/lessons/` 采集层（本仓库 + zh/en 模板各 README/TEMPLATE，共 6 文件）
 - 根 `AGENTS.md` 新增不变量 #9「踩坑与反复模式必须入库」，zh/en 模板镜像
-- 晋升纪律入 `references/change-docs.md`；sync 兜底扫描入 `references/sync-aidoc.md` Step 2；结构契约入 `aidoc-structure.md`、`harness-model.md`
+- 晋升纪律入 `skills/project-harness/references/change-docs.md`；sync 兜底扫描入 `skills/project-harness/references/sync-aidoc.md` Step 2；结构契约入 `aidoc-structure.md`、`harness-model.md`
 - skill 契约扩展 `record [note|plan|handoff|lesson]`，`aiDoc/contracts/boundary.md` 已同步
 - 本仓库 `aiDoc/README.md`、`memory/README.md`、`project-memory.md` 索引与路由表同步
 - 留痕：决策记录 `notes/implemented/process/2026-09-11-rule-evolution-lessons.md`、业务记忆 `memory/business/2026-09-11-rule-evolution-lessons.md`

@@ -21,7 +21,7 @@
 
 - `skills/project-harness/scripts/check_sync.py`（新增检查）、`tests/selftest.py`（新 fixture）
 - `templates/{zh,en}/`：lessons TEMPLATE/README、AGENTS.md.tmpl
-- `references/`：change-docs.md、sync-aidoc.md、aidoc-structure.md
+- `skills/project-harness/references/`：change-docs.md、sync-aidoc.md、aidoc-structure.md
 - 本仓库 aiDoc：lessons TEMPLATE/README/现有 lesson、architecture-rules.md、根 AGENTS.md、memory 索引
 
 ## 验收标准

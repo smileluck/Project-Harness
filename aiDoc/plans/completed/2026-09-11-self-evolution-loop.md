@@ -58,6 +58,6 @@ python3 skills/project-harness/scripts/check_sync.py .
 
 - 根 `AGENTS.md`：不变量 #3 强化为「决策要留痕、约束要回写」，新增 #8「改动收尾必过漂移自检」，DoD 增加漂移自检勾选项
 - `templates/{zh,en}/AGENTS.md.tmpl`：同步镜像（zh 编号列表 / en 项目符号，语义一致）
-- `references/sync-aidoc.md`：Step 1 机械检查列为每次变更的强制收尾闸门；`references/change-docs.md`：新增「constraints are rewritten, not just noted」纪律
+- `skills/project-harness/references/sync-aidoc.md`：Step 1 机械检查列为每次变更的强制收尾闸门；`skills/project-harness/references/change-docs.md`：新增「constraints are rewritten, not just noted」纪律
 - 决策记录 `aiDoc/notes/implemented/process/2026-09-11-self-evolution-loop.md`、业务记忆 `aiDoc/memory/business/2026-09-11-self-evolution-loop.md` 落盘，记忆索引已更新
 - 验证：`check_sync.py .` 4/4 通过；`tests/selftest.py` 全部通过（含 zh/en 镜像校验）。与计划无偏差，无遗留事项

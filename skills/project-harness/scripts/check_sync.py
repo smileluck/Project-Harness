@@ -24,14 +24,19 @@
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
 
-# 检查 2：只认这些常见源码顶层目录开头的行内代码（白名单，宁缺毋滥）
+from harness_common import read_text_relaxed
+
+# 检查 2：只认这些常见源码顶层目录开头的行内代码（白名单，宁缺毋滥）。
+# skills/templates/references/aiDoc 覆盖 harness 自举仓库：本仓文档大量引用
+# skill 自身目录，缺省白名单会使这些最关键路径零校验。
 CODE_TOP_DIRS = (
     "src", "app", "pkg", "cmd", "internal", "lib", "server", "client",
-    "tests", "test", "scripts",
+    "tests", "test", "scripts", "skills", "templates", "references", "aiDoc",
 )
 
 # 检查 4：aiDoc 标准区域名
@@ -94,7 +99,9 @@ def check_index(repo: Path, aidoc: Path) -> tuple[bool, list[str]]:
     readme = aidoc / "README.md"
     if not readme.is_file():
         return False, ["aiDoc/README.md 不存在，无法检查索引"]
-    text = readme.read_text(encoding="utf-8", errors="replace")
+    text = read_text_relaxed(readme)
+    if text is None:
+        return False, ["aiDoc/README.md 不可读"]
     missing: list[str] = []
     seen: set[str] = set()
     for m in MD_REF_RE.finditer(text):
@@ -136,7 +143,9 @@ def _code_path_candidates(text: str) -> list[str]:
         token = span.strip()
         if "/" not in token or "://" in token:
             continue
-        if any(ch in token for ch in (" ", "?", "#", "*", "{", "}", "(", ")", ":")):
+        # < > | 属占位符/多选语法（如 <proposed|implemented>），不是真实路径
+        if any(ch in token for ch in
+               (" ", "?", "#", "*", "{", "}", "(", ")", ":", "<", ">", "|")):
             continue
         token = token[2:] if token.startswith("./") else token
         top = token.split("/", 1)[0]
@@ -145,15 +154,20 @@ def _code_path_candidates(text: str) -> list[str]:
     return out
 
 
+def _is_template_file(f: Path) -> bool:
+    name_u = f.name.upper()
+    return name_u == "TEMPLATE.MD" or name_u.endswith(".TEMPLATE.MD")
+
+
 def check_paths(repo: Path, aidoc: Path, agents: Path) -> tuple[bool, list[str]]:
-    files = [agents] + list(iter_aidoc_md(aidoc))
+    files = [agents] + [f for f in iter_aidoc_md(aidoc) if not _is_template_file(f)]
     missing: list[str] = []
     seen: set[str] = set()
     for f in files:
-        try:
-            lines = f.read_text(encoding="utf-8", errors="replace").splitlines()
-        except OSError:
+        text = read_text_relaxed(f)
+        if text is None:
             continue
+        lines = text.splitlines()
         rel_f = f.relative_to(repo)
         for lineno, line in enumerate(lines, 1):
             for cand in _code_path_candidates(line):
@@ -172,13 +186,14 @@ def check_paths(repo: Path, aidoc: Path, agents: Path) -> tuple[bool, list[str]]
 def check_last_updated(aidoc: Path) -> tuple[bool, list[str]]:
     missing: list[str] = []
     for f in iter_aidoc_md(aidoc):
-        if "TEMPLATE" in f.name.upper():
+        # 豁免模板文件：精确匹配 TEMPLATE.md 与 *.TEMPLATE.md，
+        # 避免子串误豁免（如 MY-TEMPLATE-STATS.md）
+        if _is_template_file(f):
             continue
-        try:
-            head = f.read_text(
-                encoding="utf-8", errors="replace").splitlines()[:5]
-        except OSError:
+        text = read_text_relaxed(f)
+        if text is None:
             continue
+        head = text.splitlines()[:5]
         if not any(LAST_UPDATED_RE.search(line) for line in head):
             missing.append(f"缺少 last-updated 头部: {f.relative_to(aidoc)}")
     return (not missing), missing
@@ -187,7 +202,7 @@ def check_last_updated(aidoc: Path) -> tuple[bool, list[str]]:
 # ---------------------------------------------------------------- 检查 4
 
 def check_sections(aidoc: Path, agents: Path) -> tuple[bool, list[str]]:
-    text = agents.read_text(encoding="utf-8", errors="replace")
+    text = read_text_relaxed(agents) or ""
     details: list[str] = []
     ok = True
     for section in AIDOC_SECTIONS:
@@ -232,9 +247,8 @@ def check_lessons(aidoc: Path) -> tuple[bool, list[str], list[str]]:
         return True, ["无 lesson 记录"], hints
     for f in files:
         rel = f.relative_to(aidoc)
-        try:
-            text = f.read_text(encoding="utf-8", errors="replace")
-        except OSError:
+        text = read_text_relaxed(f)
+        if text is None:
             continue
         meta = _parse_lesson_meta(text)
         if meta is None:
@@ -266,12 +280,13 @@ def check_lessons(aidoc: Path) -> tuple[bool, list[str], list[str]]:
 # ---------------------------------------------------------------- main
 
 def main(argv: list[str] | None = None) -> int:
-    argv = argv if argv is not None else sys.argv[1:]
-    if len(argv) != 1 or argv[0] in ("-h", "--help"):
-        print(__doc__)
-        return 0 if argv and argv[0] in ("-h", "--help") else 2
+    parser = argparse.ArgumentParser(
+        description="对目标项目的 AGENTS.md + aiDoc/ 做机械漂移检查。")
+    parser.add_argument("repo_path", nargs="?", default=".",
+                        help="目标仓库根目录（默认当前目录）")
+    args = parser.parse_args(argv)
 
-    repo = Path(argv[0]).expanduser().resolve()
+    repo = Path(args.repo_path).expanduser().resolve()
     agents = repo / "AGENTS.md"
     aidoc = repo / "aiDoc"
     if not agents.is_file() or not aidoc.is_dir():

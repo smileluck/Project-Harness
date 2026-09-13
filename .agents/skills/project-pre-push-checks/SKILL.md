@@ -22,10 +22,10 @@ whenToUse: 当用户准备 push、合并分支、或要求"提交前检查 / pre
 在项目根目录运行 harness 的漂移检测脚本：
 
 ```bash
-python3 <harness>/skills/project-harness/scripts/check_sync.py .
+python3 skills/project-harness/scripts/check_sync.py .
 ```
 
-> 说明：`<harness>` 是 Project-Harness 工具包的安装路径，首次使用时必须将其替换为真实路径（即本 skill 所在仓库的 checkout 位置）。该脚本检查 `AGENTS.md` / `aiDoc/` 的索引、路径引用与代码是否漂移。
+> 说明：命令中的工具包路径在 init 时会渲染为本仓库可执行的真实路径；若仍为占位形式，需手动替换为 Project-Harness 的 checkout 位置。该脚本检查 `AGENTS.md` / `aiDoc/` 的索引、路径引用与代码是否漂移。
 
 - 脚本报出的漂移必须修复或在报告中明确说明理由
 - 若目标项目尚未生成 aiDoc 体系（脚本提示缺失），跳过本步并在报告中标注 not-run

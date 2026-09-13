@@ -14,7 +14,7 @@
 1. **强制漂移自检**（新增操作不变量 #8）：完成任何代码或文档改动前，agent 必须主动运行 `check_sync.py`（无脚本时按路由表人工核对），发现的漂移在同一变更内修复；自检结果纳入 Definition of Done。
 2. **决策回写约束**（强化不变量 #3）：决策涉及架构/契约/流程约束时，必须在同一变更内同步更新约束正文所在文档，禁止只记决策不改规则。
 
-同步面：根 `AGENTS.md`、`templates/{zh,en}/AGENTS.md.tmpl` 镜像、`references/sync-aidoc.md`（completion gate）、`references/change-docs.md`（constraints are rewritten）。
+同步面：根 `AGENTS.md`、`templates/{zh,en}/AGENTS.md.tmpl` 镜像、`skills/project-harness/references/sync-aidoc.md`（completion gate）、`skills/project-harness/references/change-docs.md`（constraints are rewritten）。
 
 ## 真实考虑过的备选
 

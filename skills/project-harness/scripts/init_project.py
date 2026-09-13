@@ -18,6 +18,8 @@
        aiDoc/relations/code-index.md（机器产物，覆盖规则例外）。
     5. 默认绝不覆盖已存在文件；--overwrite 会先备份到 aiDoc/.harness-backups/。
     6. 幂等：第二次运行文档全部 SKIP，code-index.md 重新生成且内容一致。
+    7. 收尾写 aiDoc/.harness-manifest.json（工具包版本 + 本次写入文件的
+       sha256 基线），是 update_harness.py 判定"项目是否改过"的依据。
 
 退出码: 0 成功；2 参数错误 / 嵌套 git 拒绝。
 """
@@ -25,8 +27,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 import shutil
+import subprocess
 import sys
 from datetime import date, datetime
 from pathlib import Path
@@ -36,9 +41,13 @@ TEMPLATES_ROOT = SCRIPT_DIR.parent / "templates"
 
 try:
     import scan_repo
+    from harness_common import find_git_root
+    from render_data import CONFIG_PURPOSE, DIR_CONVENTIONS
 except ImportError:  # 被其他脚本 import 时兜底
     sys.path.insert(0, str(SCRIPT_DIR))
     import scan_repo
+    from harness_common import find_git_root
+    from render_data import CONFIG_PURPOSE, DIR_CONVENTIONS
 
 # 与模板布局对应的条件性跳过清单（相对 aidoc/ 根）。
 # 仅 frontend/ 区域是条件性的：未探测到前端时跳过；其余区域全类型保留，
@@ -57,16 +66,6 @@ LIFECYCLE_DIRS = (
     "aiDoc/plans/active",
     "aiDoc/plans/completed",
 )
-
-
-# ---------------------------------------------------------------- git 根校验
-
-def find_git_root(path: Path) -> Path | None:
-    """向上查找包含 .git 的目录（.git 可以是目录或 worktree 文件）。"""
-    for cand in (path, *path.parents):
-        if (cand / ".git").exists():
-            return cand
-    return None
 
 
 # ---------------------------------------------------------------- 项目探测
@@ -95,6 +94,7 @@ class Plan:
         self.deferred: list[str] = []      # 未探测到前端，跳过 frontend/
         self.backups: list[str] = []       # 备份目标路径
         self.auto_filled: list[str] = []   # 扫描填充（relations 文档小节 + code-index）
+        self.written: set[str] = set()     # 本次实际写入的仓库相对路径（posix）
 
 
 def _harness_root() -> Path | None:
@@ -129,26 +129,37 @@ def _render(text: str, ctx: dict[str, str]) -> str:
     return text
 
 
-def _copy_file(src: Path, dst: Path, repo: Path, plan: Plan, *,
-               overwrite: bool, dry_run: bool, render: dict[str, str] | None,
-               backup_root: Path, label_prefix: str = "") -> None:
+def _prep_dst(dst: Path, repo: Path, plan: Plan, *, overwrite: bool,
+              dry_run: bool, backup_root: Path) -> bool:
+    """统一的目标写入前置协议：SKIP / 备份+OVERWRITE / CREATE 记账。
+
+    返回 True 表示应继续写入内容；False 表示已 SKIP 或 dry-run 记账完毕。
+    """
     rel = dst.relative_to(repo)
-    tag = f"{label_prefix}{rel}"
     if dst.exists():
         if not overwrite:
             plan.skipped.append(str(rel))
-            return
+            return False
         backup = backup_root / rel
         plan.overwritten.append(f"{rel}  (备份 -> {backup.relative_to(repo)})")
         plan.backups.append(str(backup.relative_to(repo)))
         if dry_run:
-            return
+            return False
         backup.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(dst, backup)
     else:
-        plan.created.append(tag)
+        plan.created.append(str(rel))
         if dry_run:
-            return
+            return False
+    return True
+
+
+def _copy_file(src: Path, dst: Path, repo: Path, plan: Plan, *,
+               overwrite: bool, dry_run: bool, render: dict[str, str] | None,
+               backup_root: Path) -> None:
+    if not _prep_dst(dst, repo, plan, overwrite=overwrite, dry_run=dry_run,
+                     backup_root=backup_root):
+        return
     dst.parent.mkdir(parents=True, exist_ok=True)
     if render is not None:
         try:
@@ -159,6 +170,53 @@ def _copy_file(src: Path, dst: Path, repo: Path, plan: Plan, *,
             dst.write_text(_render(text, render), encoding="utf-8")
     else:
         shutil.copy2(src, dst)
+    plan.written.add(dst.relative_to(repo).as_posix())
+
+
+def _copy_file_bytes(data: bytes, dst: Path, repo: Path, plan: Plan, *,
+                     overwrite: bool, dry_run: bool, backup_root: Path) -> None:
+    if not _prep_dst(dst, repo, plan, overwrite=overwrite, dry_run=dry_run,
+                     backup_root=backup_root):
+        return
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_bytes(data)
+
+
+def _walk_copy(src_root: Path, dst_root: Path, repo: Path, plan: Plan, *,
+               overwrite: bool, dry_run: bool, render: dict[str, str] | None,
+               backup_root: Path, skip_set: set[str] = frozenset(),
+               dst_label: str = "", strip_tmpl: bool = False,
+               keep_empty_dirs: bool = False) -> None:
+    """os.walk 拷贝一棵模板子树到目标仓库内 dst_root。
+
+    skip_set 为相对 src_root 的文件名集合（命中记 deferred）；
+    strip_tmpl 去掉目标文件名 .tmpl 后缀；keep_empty_dirs 连空目录一起建。
+    """
+    if not src_root.is_dir():
+        print(f"警告: 模板目录不存在: {src_root}", file=sys.stderr)
+        return
+    for root, dirs, files in os.walk(src_root):
+        dirs.sort()
+        root_p = Path(root)
+        rel_dir = root_p.relative_to(src_root)
+        for name in sorted(files):
+            src = root_p / name
+            rel = rel_dir / name
+            rel_str = str(rel)
+            if rel_str in skip_set:
+                plan.deferred.append(f"{dst_label}{rel_str}  (未探测到前端)")
+                continue
+            dst = dst_root / rel
+            if strip_tmpl and name.endswith(".tmpl"):
+                dst = dst.with_name(name[: -len(".tmpl")])
+            _copy_file(src, dst, repo, plan, overwrite=overwrite,
+                       dry_run=dry_run, render=render, backup_root=backup_root)
+        if keep_empty_dirs and not files and not dirs:
+            dst_dir = dst_root / rel_dir
+            if str(rel_dir) != "." and not dst_dir.exists():
+                plan.created.append(f"{dst_label}{rel_dir}/  (空目录)")
+                if not dry_run:
+                    dst_dir.mkdir(parents=True, exist_ok=True)
 
 
 # ---------------------------------------------------------------- 引用裁剪
@@ -170,6 +228,30 @@ def _freshly_written(plan: Plan, rel: str) -> bool:
     return any(it.startswith(rel + "  ") for it in plan.overwritten)
 
 
+def _prune_lines(lines: list[str], skip_set: set[str]) -> tuple[list[str], int]:
+    """按跳过清单过滤引用行，返回 (保留行, 删除行数)。
+
+    _prune_deferred_refs（改文件）与 update_harness adopt（内存比对）共用。
+    """
+    path_needles = tuple(skip_set)
+    # 整个区域被跳过时，还需删除索引中指向该区域目录的表格行
+    area_tokens: tuple[str, ...] = ()
+    if set(FRONTEND_SKIP) <= skip_set:
+        area_tokens = ("`frontend/`", "`aiDoc/frontend/`")
+    kept: list[str] = []
+    dropped = 0
+    for ln in lines:
+        if any(n in ln for n in path_needles):
+            dropped += 1
+            continue
+        if area_tokens and ln.lstrip().startswith("|") \
+                and any(t in ln for t in area_tokens):
+            dropped += 1
+            continue
+        kept.append(ln)
+    return kept, dropped
+
+
 def _prune_deferred_refs(repo: Path, skip_set: set[str], plan: Plan, *,
                          dry_run: bool) -> None:
     """从本次新生成的 aiDoc/README.md 与 AGENTS.md 中删除引用被跳过文件的行。
@@ -179,12 +261,6 @@ def _prune_deferred_refs(repo: Path, skip_set: set[str], plan: Plan, *,
     """
     if not skip_set:
         return
-    path_needles = tuple(skip_set)
-    # 整个区域被跳过时，还需删除索引中指向该区域目录的表格行
-    area_tokens: tuple[str, ...] = ()
-    if set(FRONTEND_SKIP) <= skip_set:
-        area_tokens = ("`frontend/`", "`aiDoc/frontend/`")
-
     for rel in ("aiDoc/README.md", "AGENTS.md"):
         if not _freshly_written(plan, rel):
             continue
@@ -193,17 +269,7 @@ def _prune_deferred_refs(repo: Path, skip_set: set[str], plan: Plan, *,
             lines = f.read_text(encoding="utf-8").splitlines()
         except OSError:
             continue
-        kept: list[str] = []
-        dropped = 0
-        for ln in lines:
-            if any(n in ln for n in path_needles):
-                dropped += 1
-                continue
-            if area_tokens and ln.lstrip().startswith("|") \
-                    and any(t in ln for t in area_tokens):
-                dropped += 1
-                continue
-            kept.append(ln)
+        kept, dropped = _prune_lines(lines, skip_set)
         if dropped:
             plan.created.append(f"{rel}  (裁剪 {dropped} 行失效引用)")
             if not dry_run:
@@ -219,31 +285,6 @@ CODE_INDEX_REL = "aiDoc/relations/code-index.md"
 # 标记是模板与脚本之间的显式契约，小节标题可自由改写不影响填充。
 SCAN_FILL_PREFIX = "<!-- scan-fill:"
 SCAN_FILL_SUFFIX = " -->"
-
-# 配置文件用途（zh, en）
-_CONFIG_PURPOSE = {
-    "package.json": ("Node 清单（name/scripts/依赖）",
-                     "Node manifest (name/scripts/deps)"),
-    "pyproject.toml": ("Python 工程配置", "Python project configuration"),
-    "requirements.txt": ("Python 依赖清单", "Python dependency list"),
-    "setup.py": ("Python 打包配置", "Python packaging"),
-    "go.mod": ("Go 模块定义", "Go module definition"),
-    "pom.xml": ("Maven 工程配置", "Maven project configuration"),
-    "build.gradle": ("Gradle 构建配置", "Gradle build configuration"),
-    "build.gradle.kts": ("Gradle 构建配置（Kotlin DSL）",
-                         "Gradle build configuration (Kotlin DSL)"),
-    "CMakeLists.txt": ("CMake 构建配置", "CMake build configuration"),
-    "Makefile": ("make 目标定义", "make targets"),
-    "Cargo.toml": ("Rust crate 配置", "Rust crate configuration"),
-    "nvmrc": ("Node 版本固定", "Node version pin"),
-    "python-version": ("Python 版本固定", "Python version pin"),
-    "dockerfile": ("容器镜像构建", "container image build"),
-    "docker-compose": ("容器编排", "container orchestration"),
-    "tox": ("tox 多环境测试", "tox multi-env testing"),
-    "gh-workflows": ("GitHub Actions 工作流", "GitHub Actions workflows"),
-    "sln": ("Visual Studio 解决方案", "Visual Studio solution"),
-    "vcxproj": ("Visual Studio C++ 工程", "Visual Studio C++ project"),
-}
 
 
 def _find_section(lines: list[str], key: str):
@@ -389,7 +430,7 @@ def _rootdirs_table(scan: dict, lang: str) -> list[str]:
     for d in scan["top_dirs"]:
         parts = []
         if d["convention"]:
-            parts.append(scan_repo.DIR_CONVENTIONS[d["convention"]]
+            parts.append(DIR_CONVENTIONS[d["convention"]]
                          [0 if zh else 1])
         exts = ", ".join(d["exts"])
         seg = f"{d['files']} 个文件（{exts}）" if zh and exts else \
@@ -413,10 +454,10 @@ def _config_table(scan: dict, lang: str) -> list[str]:
         if base.endswith(".pro"):
             purpose = ("qmake 工程文件", "qmake project file")[idx]
         else:
-            purpose = _CONFIG_PURPOSE.get(base, ("工程清单", "project manifest"))[idx]
+            purpose = CONFIG_PURPOSE.get(base, ("工程清单", "project manifest"))[idx]
         items.append((rel, purpose))
     for c in scan["configs"]:
-        purpose = _CONFIG_PURPOSE.get(c["kind"], (c["kind"], c["kind"]))[idx]
+        purpose = CONFIG_PURPOSE.get(c["kind"], (c["kind"], c["kind"]))[idx]
         if c["value"] is not None:
             purpose += f"（{c['value']}）" if zh else f" ({c['value']})"
         items.append((c["path"], purpose))
@@ -505,34 +546,10 @@ def build_and_run(repo: Path, templates: Path, project_name: str,
     skip_set = set() if has_frontend else set(FRONTEND_SKIP)
 
     # 1) aidoc/ -> aiDoc/（整树，含按类型跳过）
-    aidoc_src = templates / "aidoc"
-    if aidoc_src.is_dir():
-        for root, dirs, files in os.walk(aidoc_src):
-            dirs.sort()
-            root_p = Path(root)
-            rel_dir = root_p.relative_to(aidoc_src)
-            for name in sorted(files):
-                src = root_p / name
-                rel = rel_dir / name
-                rel_str = str(rel)
-                if rel_str in skip_set:
-                    plan.deferred.append(f"aiDoc/{rel_str}  (未探测到前端)")
-                    continue
-                dst = repo / "aiDoc" / rel
-                if name.endswith(".tmpl"):
-                    dst = dst.with_name(name[: -len(".tmpl")])
-                _copy_file(src, dst, repo, plan, overwrite=overwrite,
-                           dry_run=dry_run, render=render_ctx,
-                           backup_root=backup_root)
-            # 空目录也创建（模板中可能存在暂无文件的目录）
-            if not files and not dirs:
-                dst_dir = repo / "aiDoc" / rel_dir
-                if str(rel_dir) != "." and not dst_dir.exists():
-                    plan.created.append(f"aiDoc/{rel_dir}/  (空目录)")
-                    if not dry_run:
-                        dst_dir.mkdir(parents=True, exist_ok=True)
-    else:
-        print(f"警告: 模板目录不存在: {aidoc_src}", file=sys.stderr)
+    _walk_copy(templates / "aidoc", repo / "aiDoc", repo, plan,
+               overwrite=overwrite, dry_run=dry_run, render=render_ctx,
+               backup_root=backup_root, skip_set=skip_set,
+               dst_label="aiDoc/", strip_tmpl=True, keep_empty_dirs=True)
 
     # 2) AGENTS.md.tmpl -> AGENTS.md
     agents_tmpl = templates / "AGENTS.md.tmpl"
@@ -549,18 +566,9 @@ def build_and_run(repo: Path, templates: Path, project_name: str,
                    backup_root=backup_root)
 
     # 4) agents-skills/ -> .agents/skills/
-    skills_src = templates / "agents-skills"
-    if skills_src.is_dir():
-        for root, dirs, files in os.walk(skills_src):
-            dirs.sort()
-            root_p = Path(root)
-            rel_dir = root_p.relative_to(skills_src)
-            for name in sorted(files):
-                src = root_p / name
-                dst = repo / ".agents" / "skills" / rel_dir / name
-                _copy_file(src, dst, repo, plan, overwrite=overwrite,
-                           dry_run=dry_run, render=render_ctx,
-                           backup_root=backup_root)
+    _walk_copy(templates / "agents-skills", repo / ".agents" / "skills",
+               repo, plan, overwrite=overwrite, dry_run=dry_run,
+               render=render_ctx, backup_root=backup_root)
 
     # 5) 生命周期目录 .gitkeep
     for d in LIFECYCLE_DIRS:
@@ -597,25 +605,80 @@ def build_and_run(repo: Path, templates: Path, project_name: str,
     return plan
 
 
-def _copy_file_bytes(data: bytes, dst: Path, repo: Path, plan: Plan, *,
-                     overwrite: bool, dry_run: bool, backup_root: Path) -> None:
-    rel = dst.relative_to(repo)
-    if dst.exists():
-        if not overwrite:
-            plan.skipped.append(str(rel))
-            return
-        backup = backup_root / rel
-        plan.overwritten.append(f"{rel}  (备份 -> {backup.relative_to(repo)})")
-        if not dry_run:
-            backup.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(dst, backup)
+# ---------------------------------------------------------------- 版本与 manifest
+
+MANIFEST_REL = "aiDoc/.harness-manifest.json"
+
+
+def harness_version() -> str:
+    """工具包版本：git describe --tags --always --dirty，回退 short HEAD / unknown。
+
+    与仓库根 install.py 的 source_version 是跨分发边界的有意镜像
+    （skill 被单独拷走时两者无法共享代码）。
+    """
+    root = _harness_root()
+    if root is None:
+        return "unknown"
+    for git_args in (("describe", "--tags", "--always", "--dirty"),
+                     ("rev-parse", "--short", "HEAD")):
+        try:
+            r = subprocess.run(["git", "-C", str(root), *git_args],
+                               capture_output=True, text=True, timeout=10)
+            if r.returncode == 0 and r.stdout.strip():
+                return r.stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            break
+    return "unknown"
+
+
+def template_rel_for(repo_rel: str, templates: Path) -> str | None:
+    """仓库相对路径 -> 模板相对路径（相对 templates/<lang>/）；非托管文件返回 None。"""
+    if repo_rel.startswith("aiDoc/"):
+        cand = "aidoc/" + repo_rel[len("aiDoc/"):]
+    elif repo_rel == "AGENTS.md":
+        cand = "AGENTS.md.tmpl"
+    elif repo_rel == "CLAUDE.md":
+        cand = "CLAUDE.md"
+    elif repo_rel.startswith(".agents/skills/"):
+        cand = "agents-skills/" + repo_rel[len(".agents/skills/"):]
     else:
-        plan.created.append(str(rel))
-        if dry_run:
-            return
+        return None
+    if (templates / cand).is_file():
+        return cand
+    if (templates / (cand + ".tmpl")).is_file():
+        return cand + ".tmpl"
+    return None
+
+
+def write_manifest(repo: Path, templates: Path, plan: Plan, *,
+                   version: str, project_name: str, lang: str,
+                   dry_run: bool) -> dict:
+    """对所有本次写入的托管文件算 sha256 并写 aiDoc/.harness-manifest.json。
+
+    必须在扫描填充与索引裁剪之后调用（哈希按最终内容）。code-index.md 是
+    机器产物、每次重新生成，不登记。dry-run 不写文件，只返回数据。
+    """
+    files: dict[str, dict] = {}
+    for rel in sorted(plan.written):
+        if rel == CODE_INDEX_REL:
+            continue
+        trel = template_rel_for(rel, templates)
+        if trel is None:
+            continue
+        try:
+            digest = hashlib.sha256((repo / rel).read_bytes()).hexdigest()
+        except OSError:
+            continue
+        files[rel] = {"sha256": digest, "template": trel}
+    data = {"harness_version": version, "project_name": project_name,
+            "lang": lang, "generated": date.today().isoformat(),
+            "files": files}
     if not dry_run:
+        dst = repo / MANIFEST_REL
         dst.parent.mkdir(parents=True, exist_ok=True)
-        dst.write_bytes(data)
+        dst.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+                       encoding="utf-8")
+    return data
 
 
 # ---------------------------------------------------------------- 报告
@@ -712,6 +775,18 @@ def main(argv: list[str] | None = None) -> int:
     else:
         apply_scan_fill(repo, templates, scan, plan, lang=args.lang,
                         project_name=project_name, dry_run=args.dry_run)
+
+    # 产物 manifest（update_harness.py 的判定基线；须在扫描填充/裁剪之后算哈希）
+    manifest = write_manifest(repo, templates, plan,
+                              version=harness_version(),
+                              project_name=project_name, lang=args.lang,
+                              dry_run=args.dry_run)
+    if args.dry_run:
+        plan.auto_filled.append(
+            f"{MANIFEST_REL}  (dry-run 计划生成，{len(manifest['files'])} 个托管文件)")
+    else:
+        plan.auto_filled.append(
+            f"{MANIFEST_REL}  (已生成，{len(manifest['files'])} 个托管文件)")
 
     print_report(plan, dry_run=args.dry_run)
     return 0

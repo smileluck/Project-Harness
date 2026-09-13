@@ -3,6 +3,7 @@
 
 用法:
     python3 scan_repo.py <repo-path> [--json]
+    python3 scan_repo.py <repo-path> --write-code-index [--lang zh|en]
 
 输出结构化结果（纯 dict/list，可 JSON 序列化）:
     root / scanned_at / file_count
@@ -23,7 +24,9 @@
     notes             无判定价值的清单说明（如空 package.json）
 
 仅使用标准库；toml 解析在 Python 3.11+ 用 tomllib，否则正则回退。
-扫描只读：不写任何文件、不执行 git 写操作（git ls-files 只读）。
+默认只读：不写任何文件、不执行 git 写操作（git ls-files 只读）。唯一例外是
+显式传入 --write-code-index：只写入机器产物 aiDoc/relations/code-index.md，
+这是 references 中 code-index.md 漂移修复路径的实现（agent 禁止手编该文件）。
 """
 
 from __future__ import annotations
@@ -37,6 +40,17 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
+from render_data import DIR_CONVENTIONS
+
+try:
+    from harness_common import read_text_relaxed
+except ImportError:  # 被拷贝到无同级模块的位置时兜底
+    def read_text_relaxed(path: Path) -> str | None:
+        try:
+            return path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            return None
+
 try:
     import tomllib  # Python 3.11+
 except ImportError:  # pragma: no cover - 3.9/3.10 环境
@@ -44,6 +58,7 @@ except ImportError:  # pragma: no cover - 3.9/3.10 环境
 
 # ---------------------------------------------------------------- 常量
 
+# 框架识别关键词表——唯一维护点（references/generate-aidoc.md 只放指针，不复制本表）。
 # 框架依赖 -> 展示名（值用于组件 stack 字符串）
 FRONTEND_DEPS = {
     "vue": "Vue", "react": "React", "react-dom": "React", "next": "Next.js",
@@ -57,11 +72,15 @@ NODE_WEB_DEPS = {
     "hapi": "hapi", "@hapi/hapi": "hapi",
 }
 NODE_CLI_DEPS = {"commander": "Commander", "yargs": "Yargs"}
-PY_WEB_DEPS = {"fastapi": "FastAPI", "django": "Django", "flask": "Flask"}
+PY_WEB_DEPS = {"fastapi": "FastAPI", "uvicorn": "uvicorn (ASGI)",
+               "django": "Django", "flask": "Flask"}
 PY_CLI_DEPS = {"click": "Click", "typer": "Typer"}
-GO_WEB_RE = re.compile(r"\b(gin|fiber)\b")
-GO_WEB_NAMES = {"gin": "Gin", "fiber": "Fiber"}
+GO_WEB_RE = re.compile(r"\b(gin|fiber|gorm)\b")
+GO_WEB_NAMES = {"gin": "Gin", "fiber": "Fiber", "gorm": "Gorm"}
 GO_CLI_RE = re.compile(r"\bcobra\b")
+RUST_WEB_RE = re.compile(r"\b(actix-web|actix|axum)\b")
+RUST_WEB_NAMES = {"actix": "Actix", "actix-web": "Actix", "axum": "Axum"}
+RUST_CLI_RE = re.compile(r"\bclap\b")
 
 # 语言构成统计覆盖的扩展名
 LANG_EXTS = (
@@ -82,24 +101,6 @@ WALK_EXCLUDES = {
 DIR_SKIP = WALK_EXCLUDES | {"aiDoc"}
 
 # 顶层目录约定名 -> (zh, en)
-DIR_CONVENTIONS = {
-    "src": ("源码目录", "source code"),
-    "tests": ("测试", "tests"), "test": ("测试", "tests"),
-    "docs": ("文档", "documentation"), "doc": ("文档", "documentation"),
-    "web": ("前端", "frontend"), "frontend": ("前端", "frontend"),
-    "client": ("前端/客户端", "frontend/client"),
-    "server": ("后端", "backend"), "backend": ("后端", "backend"),
-    "api": ("后端 API", "backend API"),
-    "cmd": ("命令入口（Go 约定）", "command entrypoints (Go convention)"),
-    "scripts": ("脚本", "scripts"), "examples": ("示例", "examples"),
-    "internal": ("内部包（Go 约定）", "internal packages (Go convention)"),
-    "pkg": ("公共包（Go 约定）", "public packages (Go convention)"),
-    "lib": ("库代码", "library code"), "app": ("应用代码", "application code"),
-    "config": ("配置", "configuration"), "assets": ("静态资源", "static assets"),
-    "public": ("静态资源", "static assets"),
-    "docker": ("容器配置", "container config"),
-}
-
 # 模块分组时剥掉的包装前缀
 MODULE_STRIP = {"src", "lib", "app"}
 
@@ -122,10 +123,8 @@ LOCKFILES = (
 # ---------------------------------------------------------------- 基础工具
 
 def _read_text(path: Path) -> str:
-    try:
-        return path.read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        return ""
+    # 公共实现在 harness_common.read_text_relaxed；此处保留 "" 语义的薄封装
+    return read_text_relaxed(path) or ""
 
 
 def _dep_name(spec: str) -> str:
@@ -321,7 +320,10 @@ def parse_pom(path: Path, rel: str) -> dict:
 
     return {"type": "pom.xml", "path": rel, "group": tag("groupId"),
             "artifact": tag("artifactId"), "version": tag("version"),
-            "spring": "spring-boot" in text}
+            "spring": "spring-boot" in text,
+            "servlet": bool(re.search(
+                r"<artifactId>[^<]*(?:servlet|jakarta\.)[^<]*</artifactId>",
+                text))}
 
 
 def parse_gradle(path: Path, rel: str) -> dict:
@@ -388,8 +390,11 @@ def parse_pro(path: Path, rel: str) -> dict:
 
 
 def parse_cargo(path: Path, rel: str) -> dict:
+    text = _read_text(path)
     return {"type": "Cargo.toml", "path": rel,
-            "lib": "[lib]" in _read_text(path)}
+            "lib": "[lib]" in text,
+            "web": sorted(set(RUST_WEB_RE.findall(text))),
+            "cli": ["clap"] if RUST_CLI_RE.search(text) else []}
 
 
 MANIFEST_PARSERS = (
@@ -623,6 +628,13 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
         if gradle and gradle["spring"]:
             be_stack.append("Spring Boot")
             be_evi.append(f"{gradle['path']}: org.springframework.boot 插件")
+        if pom and pom.get("servlet") and not pom["spring"]:
+            be_stack.append("Java Web (Servlet/Jakarta EE)")
+            be_evi.append(f"{pom['path']}: servlet/jakarta 依赖（无 spring-boot）")
+        if cargo and cargo["web"]:
+            be_stack.extend(RUST_WEB_NAMES[d] for d in cargo["web"])
+            be_evi.append(
+                f"{cargo['path']}: Rust Web 框架依赖 {', '.join(cargo['web'])}")
         if be_stack:
             comp("web-backend", " + ".join(_dedup(be_stack)), be_evi)
 
@@ -651,11 +663,15 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
         if gomod and gomod["cli"]:
             cli_stack.append("Cobra")
             cli_evi.append(f"{gomod['path']}: CLI 依赖 cobra")
+        if cargo and cargo["cli"]:
+            cli_stack.append("Clap")
+            cli_evi.append(f"{cargo['path']}: CLI 依赖 clap")
         if cli_evi:
             comp("cli", " + ".join(_dedup(cli_stack)) or "CLI", cli_evi)
 
-        # 5) java-app（spring 已在上方归入 web-backend）
-        if (pom and not pom["spring"]) or (gradle and not gradle["spring"]):
+        # 5) java-app（spring/servlet 已在上方归入 web-backend）
+        if ((pom and not pom["spring"] and not pom.get("servlet"))
+                or (gradle and not gradle["spring"])):
             evi = []
             tool = []
             if pom:
@@ -939,6 +955,10 @@ def scan_repo(repo) -> dict:
 
 # ---------------------------------------------------------------- code-index 渲染
 
+# 机器产物相对路径（init_project 注入与本脚本 --write-code-index 共用同一目标）
+CODE_INDEX_REL = "aiDoc/relations/code-index.md"
+
+
 def _path_disp(path: str, lang: str) -> str:
     if path == ".":
         return "（根）" if lang == "zh" else "(root)"
@@ -1079,6 +1099,11 @@ def main(argv: list | None = None) -> int:
     parser.add_argument("repo_path", help="目标仓库根目录")
     parser.add_argument("--json", action="store_true",
                         help="打印完整 JSON 结果（默认打印人读摘要）")
+    parser.add_argument("--write-code-index", action="store_true",
+                        help="扫描后重新生成机器产物 "
+                             "aiDoc/relations/code-index.md（默认只读不写文件）")
+    parser.add_argument("--lang", choices=("zh", "en"), default="zh",
+                        help="--write-code-index 的渲染语言（默认 zh）")
     args = parser.parse_args(argv)
 
     repo = Path(args.repo_path).expanduser().resolve()
@@ -1086,6 +1111,18 @@ def main(argv: list | None = None) -> int:
         print(f"错误: 路径不存在或不是目录: {repo}", file=sys.stderr)
         return 2
     result = scan_repo(repo)
+    if args.write_code_index:
+        dst = repo / CODE_INDEX_REL
+        content = render_code_index(result, lang=args.lang)
+        try:
+            unchanged = dst.is_file() and \
+                dst.read_text(encoding="utf-8") == content
+        except OSError:
+            unchanged = False
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_text(content, encoding="utf-8")
+        status = "已是最新（内容无变化）" if unchanged else "已重新生成"
+        print(f"code-index {status}: {dst}")
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:

@@ -5,6 +5,10 @@
 - From: TODO
 - To: TODO
 
+## Task
+
+<!-- One line: what unfinished work this handoff continues. -->
+
 ## Exact State
 
 <!-- Where the work stands right now: branch, base, dirty state, what works, what does not. -->

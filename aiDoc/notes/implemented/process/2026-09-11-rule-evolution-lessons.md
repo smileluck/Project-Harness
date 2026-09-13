@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-11 -->
+<!-- last-updated: 2026-09-13 -->
 # 决策：规则自进化回路——lessons 经验层 + 晋升机制
 
 > 路径：`aiDoc/notes/implemented/process/2026-09-11-rule-evolution-lessons.md`
@@ -11,7 +11,7 @@
 
 建立「经验 → 约束」自进化回路，核心原则：**一次是经历，两次是模式**。
 
-1. **采集层**：新增 `aiDoc/memory/lessons/`（README + TEMPLATE，对齐 business/ 结构），5 行轻量模板：情境 / 坑或模式 / 出现次数 / 状态（pending/promoted/dropped）/ 晋升去向。
+1. **采集层**：新增 `aiDoc/memory/lessons/`（README + TEMPLATE，对齐 business/ 结构），轻量模板：情境 / 坑或模式 / 出现次数 / 状态 / 晋升去向。状态集现为 pending/deferred/promoted/dropped，且模板头部有 lesson-meta 机械标记（由 2026-09-13 RSI 决策扩展，见同目录 2026-09-13-rsi-lessons-mechanization.md）。
 2. **捕获规则**：AGENTS.md 新增不变量 #9——踩坑、review 反复同类问题、可复用模式必须同一变更内记 lesson，同类再犯就地累加次数。
 3. **晋升纪律**：同一 lesson 第 2 次出现或用户确认时，同一变更内把规则写进约束正文所在文档（architecture-rules.md / boundary.md / frontend-rules.md / AGENTS.md），lesson 标 promoted 并交叉链接；dropped 须写理由；涉及行为/架构/契约变化仍按不变量 #3 写决策记录。
 4. **兜底**：sync 工作流 Step 2 新增 lesson 扫描——`pending` 且次数 ≥2 的条目在本次 sync 内晋升或标注理由。

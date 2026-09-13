@@ -36,7 +36,7 @@ Never duplicate a rule across tiers. Put a short link at the point of use.
 
 ## Conflict priority
 
-`AGENTS.md` > `aiDoc/README.md` > aiDoc sub-documents > tool adapter files. Adapters must never carry rule bodies — only entry pointers (see [tool-adapters.md](tool-adapters.md)).
+Defined once in [SKILL.md](../SKILL.md#operating-invariants) (the entry-point contract). Adapters must never carry rule bodies — only entry pointers (see [tool-adapters.md](tool-adapters.md)).
 
 ## Operating invariants
 

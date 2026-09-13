@@ -17,7 +17,7 @@ skill 的 `init` action 改为 `init [--no-generate]`：**默认在 init 脚本�
 - `generate-aidoc.md` 原生支持 post-init 入口（auto-scan 内容作为预探测事实），无需改动
 - completion checklist 更新：默认串联时报告在 generate 完成后收口；skeleton-only 运行必须显式声明 pending 的 generate 步骤
 
-同步面：`SKILL.md` 路由表、`references/init-harness.md`、`aiDoc/contracts/boundary.md` 契约 1、README 双语 init 行。
+同步面：`SKILL.md` 路由表、`skills/project-harness/references/init-harness.md`、`aiDoc/contracts/boundary.md` 契约 1、README 双语 init 行。
 
 ## 真实考虑过的备选
 

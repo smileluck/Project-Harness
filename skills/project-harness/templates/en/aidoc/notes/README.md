@@ -7,23 +7,21 @@
 
 Add or update a note when a change alters: behavior, architecture, a shared contract, process/tooling, testing strategy, persistent data, wire/config formats, or any other decision likely to be revisited.
 
-## Path Convention
+## Directory Structure and Naming
 
 `notes/<lifecycle>/<class>/yyyy-mm-dd-topic.md`
 
-- Lifecycle: `proposed` / `implemented` / `rejected`
-- Class: `feature` / `bug-fix` / `simplification` / `architecture` / `process` / `testing`
-- Topic: short kebab-case slug
+### Lifecycle
 
-## Lifecycle Rules
+| Lifecycle | Meaning |
+|---|---|
+| `proposed` | Substantial future work under review |
+| `implemented` | Shipped current decision; keep paths and facts current |
+| `rejected` | Declined proposal, retained only while its rationale prevents a plausible mistake |
 
-- `proposed`: substantial future work under review.
-- `implemented`: shipped current decision; keep paths and facts current.
-- `rejected`: declined proposal, retained only while its rationale prevents a plausible mistake; delete it when it no longer protects against one.
+### Class
 
-## Class Rules
-
-Use the six classes above. Extend the set only when the project has a real classification gap, and update this file when you do.
+`feature` / `bug-fix` / `simplification` / `architecture` / `process` / `testing` — extend only when the project has a real classification gap, and update this file when you do.
 
 ## Maintenance Discipline
 

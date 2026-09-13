@@ -7,19 +7,27 @@
 
 Create a plan for work that is multi-step, cross-component, risky, or delegated to another agent or person. A single-file, single-concern change needs no plan.
 
+## Directory Structure
+
+| Directory | Contents |
+|---|---|
+| `active/` | In-progress change plans, named `yyyy-mm-dd-topic.md` |
+| `completed/` | Finished and archived plans |
+
 ## Lifecycle
 
-- Active plans live in `active/yyyy-mm-dd-topic.md` and are updated as work changes.
-- On completion, summarize the delivered outcome in the plan and move it to `completed/`. Delete it instead when it has no durable value.
-- A completed plan is evidence of execution, not the authority for current behavior — current behavior is documented in the `aiDoc/` docs and `../notes/`.
+1. Before starting, create the plan in `active/` (use [change-plan.TEMPLATE.md](change-plan.TEMPLATE.md)) with objective / non-goals / assumptions / acceptance criteria / work items / validation commands / rollback
+2. Update the plan in place as work progresses (current decisions, blockers, completed items)
+3. On completion: append a delivery summary and move the file to `completed/`
+4. Delete plans with no durable retention value (pure temporary coordination) once finished
+5. A completed plan is evidence of execution, not the authority for current behavior — that authority lives in the `aiDoc/` docs and decision notes
 
-## Templates
+## Work Item Format
 
-- `change-plan.TEMPLATE.md` — objective, non-goals, assumptions, acceptance criteria, work items with owners / dependencies / advisory write scopes, validation commands, rollback.
-- `handoff.TEMPLATE.md` — exact state for the next agent or person continuing unfinished work.
+- Every work item names an owner and its dependencies
+- Write scopes are advisory: they name the expected files/directories to reduce parallel conflicts, but they are not locks
+- Every work item carries a validation command, with evidence proportional to the affected surface (see the root `AGENTS.md` operating invariants)
 
-## Discipline
+## Handoffs
 
-- Every work item names an owner and its dependencies.
-- Validation commands must be concrete and runnable, with evidence proportional to the affected surface.
-- Never describe an interrupted command as completed — in plans or in handoffs.
+When work is interrupted or handed over, use [handoff.TEMPLATE.md](handoff.TEMPLATE.md). Never describe an interrupted command as completed; a handoff must name the next safe action.

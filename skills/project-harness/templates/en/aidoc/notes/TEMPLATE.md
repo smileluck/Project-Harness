@@ -17,9 +17,13 @@
 
 <!-- Only alternatives genuinely considered, each with the concrete reason it lost. Never invent alternatives to fill this section. -->
 
-## Acceptance Criteria / Risks / Consequences
+## Acceptance Criteria
 
-<!-- proposed: acceptance criteria and risks. implemented: consequences and follow-up obligations. rejected: what would have to change to revisit this. -->
+<!-- proposed: executable acceptance criteria; implemented: criteria actually met. -->
+
+## Risks and Consequences
+
+<!-- proposed: risks. implemented: consequences and follow-up obligations. rejected: what would have to change to revisit this. -->
 
 ## Cross-Links
 

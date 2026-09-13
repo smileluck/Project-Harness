@@ -17,9 +17,11 @@ TODO: who owns what, stated as producer side vs consumer side. Example rows — 
 | Error presentation | TODO | TODO |
 | State ownership | TODO | TODO |
 
+## web-api variant: HTTP interface contract
+
 <!-- variant: web-api — the generate workflow keeps the matching variant and deletes the rest -->
 
-## Unified Response Structure
+### Unified Response Structure
 
 TODO: paste the real JSON envelope and explain each field. Cite the defining code path.
 
@@ -31,47 +33,51 @@ TODO
 |---|---|
 | TODO | TODO |
 
-## Unified Pagination Structure
+### Unified Pagination Structure
 
 TODO: fields and semantics; cite the defining code. Remove this section if the project has no shared pagination shape.
 
-## Field Naming
+### Field Naming
 
 TODO: `snake_case` / `camelCase` on the wire, and where any conversion happens (cite the code).
 
-## Key Type Bridging
+### Key Type Bridging
 
 TODO: any non-obvious type conversions across the boundary (e.g. bool ↔ string, decimal ↔ string). For each, document the conversion flow and every code location involved.
 
-## Time Fields
+### Time Fields
 
 TODO: wire format and timezone handling, if the project has special handling; otherwise remove this section.
 
+## library variant: public API contract
+
 <!-- variant: library — the generate workflow keeps the matching variant and deletes the rest -->
 
-## Public API Surface
+### Public API Surface
 
 TODO: list the exported symbols that constitute the public API, with their defining paths.
 
-## Export Contract
+### Export Contract
 
 TODO: what is exported from where, naming and stability expectations for each export.
 
-## Version Compatibility Promises
+### Version Compatibility Promises
 
 TODO: semantic-versioning policy, deprecation procedure, backward-compatibility guarantees.
 
+## cli variant: command-line contract
+
 <!-- variant: cli — the generate workflow keeps the matching variant and deletes the rest -->
 
-## Command Spec
+### Command Spec
 
 TODO: one entry per command — name, purpose, defining code path.
 
-## Argument / IO Contract
+### Argument / IO Contract
 
 TODO: flags, positional arguments, stdin/stdout/stderr expectations, output formats.
 
-## Exit-Code Conventions
+### Exit-Code Conventions
 
 TODO: exit-code meanings and which conditions map to which code.
 

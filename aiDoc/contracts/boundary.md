@@ -20,8 +20,10 @@
 |---|---|---|
 | `install.py` | `--tool --scope --link --dry-run [--force]` | 0 成功；2 参数/目标错误 |
 | `init_project.py` | `[--project-name] [--lang] [--dry-run] [--overwrite] [--no-scan]` | 0 成功；2 参数错误/嵌套 git 拒绝 |
-| `scan_repo.py` | `[--json]` | 0 成功；2 参数错误 |
-| `check_sync.py` | `<repo-path>` | 0 全过；1 有 ❌；2 缺 AGENTS.md/aiDoc |
+| `scan_repo.py` | `[--json] [--write-code-index [--lang zh\|en]]`（`--write-code-index` 写入唯一机器产物 `aiDoc/relations/code-index.md`，是 code-index 漂移修复路径） | 0 成功；2 参数错误 |
+| `check_sync.py` | `[repo-path]`（默认 `.`；路径真实性检查白名单 = 常见源码目录 + `skills`、`templates`、`references`、`aiDoc`） | 0 全过；1 有 ❌；2 缺 AGENTS.md/aiDoc |
+
+脚本层内部模块契约：`harness_common.py`（`find_git_root`/`read_text_relaxed` 唯一实现，各脚本禁止再复制）；`render_data.py`（双语展示文案表 `CONFIG_PURPOSE`/`DIR_CONVENTIONS` 唯一维护点）。
 
 变更参数或退出码必须同步本表与 references 中引用处。
 

@@ -75,7 +75,9 @@ Never read generated, vendored, or cached trees: `node_modules/`, `.venv/`, `__p
 - Decision notes and memory indexes are updated when the change alters behavior, contracts, process, testing strategy, or persistent data.
 - When work is handed off unfinished, the handoff records exact state, changed files, commands run with results, remaining work, blockers, and the next safe action. An interrupted command is never described as completed.
 
-## Task Routing (task family → aiDoc area)
+## Doc Index and Task Routing
+
+### Quick Reference (task family → aiDoc area)
 
 | Task family | Read first |
 |---|---|
@@ -87,7 +89,11 @@ Never read generated, vendored, or cached trees: `node_modules/`, `.venv/`, `__p
 | Recording or revisiting a decision | `aiDoc/notes/` |
 | Multi-step or cross-component change | `aiDoc/plans/` |
 
-These are coarse pointers only; the detailed "task → must-read docs" routing table lives in `aiDoc/README.md`. On conflict, this file wins.
+These are coarse pointers only; the detailed "task → must-read docs" routing table lives in `aiDoc/README.md`.
+
+### Detailed Routing
+
+The detailed "task → must-read docs" routing table and the common-entries dictionary are maintained solely in `aiDoc/README.md`. This file keeps only the quick reference, avoiding a duplicated inventory that would drift. On conflict, this file wins.
 
 ## When to Regenerate aiDoc
 

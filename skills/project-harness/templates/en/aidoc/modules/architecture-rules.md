@@ -42,6 +42,12 @@ TODO: how external calls enter the system — parameter extraction, response for
 
 The layer titles above are neutral placeholders; the generate workflow adapts them to the actual paradigm and names them after the real layers in the code.
 
+## Registration Mechanism
+
+<!-- TODO: how and where routes/commands/plugins are registered; remove this section if the project has no registration mechanism -->
+
+TODO:
+
 ## Error Code Allocation
 
 TODO: list used error-code ranges per module if the project has an error-code system; otherwise remove this section.
