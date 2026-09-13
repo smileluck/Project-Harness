@@ -13,6 +13,8 @@
     5. 耦合校验：FRONTEND_SKIP 文件在模板中存在；AIDOC_SECTIONS 与模板
        aidoc/ 子目录集合一致；auto-scan 标记在脚本与 references 中逐字相同；
        scan-fill 标记在 zh/en 模板中逐字各出现一次。
+    6. lessons 机械闸门：pending≥2 未处理 / promoted 缺 target → exit 1；
+       deferred、promoted 有 target、缺 lesson-meta 标记（仅提示）→ exit 0。
 
 退出码: 0 全过；1 有失败。
 """
@@ -171,10 +173,57 @@ def test_scripts_runnable(tmp: Path) -> None:
     check("scan_repo --json 输出合法", ok, r.stderr[-300:])
 
 
+# ---------------------------------------------------------------- 3. lessons 机械闸门
+
+LESSON_BODY = """<!-- last-updated: 2026-01-01 -->
+<!-- lesson-meta: status={status} count={count} post=0 target={target} -->
+# 测试 lesson
+
+## 晋升去向
+
+{note}
+"""
+
+
+def test_lessons_gate(tmp: Path) -> None:
+    print("\n[3] lessons 机械闸门")
+    repo = make_fixture(tmp / "lessons", "python-cli")
+    run_init(repo)
+    lesson = repo / "aiDoc" / "memory" / "lessons" / "2026-01-01-demo.md"
+
+    def run_sync() -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [PY, str(SCRIPTS / "check_sync.py"), str(repo)],
+            capture_output=True, text=True)
+
+    write(lesson, LESSON_BODY.format(status="pending", count=2, target="", note=""))
+    r = run_sync()
+    check("pending≥2 未处理 exit 1", r.returncode == 1, r.stdout[-200:])
+
+    write(lesson, LESSON_BODY.format(
+        status="deferred", count=2, target="", note="暂缓：等待上游接口稳定"))
+    r = run_sync()
+    check("deferred exit 0", r.returncode == 0, (r.stdout + r.stderr)[-200:])
+
+    write(lesson, LESSON_BODY.format(status="promoted", count=2, target="", note=""))
+    r = run_sync()
+    check("promoted 缺 target exit 1", r.returncode == 1, r.stdout[-200:])
+
+    write(lesson, LESSON_BODY.format(
+        status="promoted", count=2, target="AGENTS.md", note="AGENTS.md 不变量节"))
+    r = run_sync()
+    check("promoted 有 target exit 0", r.returncode == 0, (r.stdout + r.stderr)[-200:])
+
+    write(lesson, "<!-- last-updated: 2026-01-01 -->\n# 旧格式 lesson（无标记）\n")
+    r = run_sync()
+    check("缺标记仅提示 exit 0",
+          r.returncode == 0 and "lesson-meta" in r.stdout, r.stdout[-200:])
+
+
 # ---------------------------------------------------------------- 4. zh/en 镜像
 
 def test_template_mirror() -> None:
-    print("\n[3] zh/en 模板镜像")
+    print("\n[4] zh/en 模板镜像")
     zh = {str(p.relative_to(TEMPLATES / "zh"))
           for p in (TEMPLATES / "zh").rglob("*") if p.is_file()}
     en = {str(p.relative_to(TEMPLATES / "en"))
@@ -194,7 +243,7 @@ def test_template_mirror() -> None:
 # ---------------------------------------------------------------- 5. 耦合校验
 
 def test_coupling() -> None:
-    print("\n[4] 耦合校验")
+    print("\n[5] 耦合校验")
     missing = [f for f in init_project.FRONTEND_SKIP
                if not (TEMPLATES / "zh" / "aidoc" / f).is_file()
                or not (TEMPLATES / "en" / "aidoc" / f).is_file()]
@@ -237,6 +286,7 @@ def main() -> int:
         tmp = Path(td)
         test_init_behaviour(tmp)
         test_scripts_runnable(tmp)
+        test_lessons_gate(tmp)
     test_template_mirror()
     test_coupling()
     print(f"\n===== {'全部通过' if not FAILURES else f'{len(FAILURES)} 项失败'} =====")

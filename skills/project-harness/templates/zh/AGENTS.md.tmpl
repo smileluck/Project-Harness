@@ -78,7 +78,7 @@ TODO: 一句话说明模块组织原则，细节路由到 `aiDoc/modules/module-
 6. **报告区分状态**：passed / failed / skipped / not-run 分开报告；禁止把中断的命令描述为已完成。
 7. **交接要完整**：中断或移交工作时，按 `aiDoc/plans/handoff.TEMPLATE.md` 给出精确状态、已改文件、已跑命令与结果、剩余工作、阻塞、下一步安全动作。
 8. **改动收尾必过漂移自检**：完成任何代码或文档改动前，必须主动做漂移自检并处理结果——装有 project-harness skill 时运行其 `check_sync.py`，无脚本时按 `aiDoc/README.md` 路由表核对受影响文档。发现漂移必须在同一变更内回写修复，不得留待下次；自检结果是 Definition of Done 的一部分。
-9. **踩坑与反复模式必须入库**：工作中踩坑、review 反复发现同类问题、或发现可复用模式时，必须在同一变更内按 `aiDoc/memory/lessons/README.md` 记一条 lesson；已有同类 lesson 时就地累加出现次数，第二次出现时立即按晋升纪律写进约束正文。禁止只凭口头记忆不带留痕。
+9. **踩坑与反复模式必须入库**：工作中踩坑、review 反复发现同类问题、或发现可复用模式时，必须在同一变更内按 `aiDoc/memory/lessons/README.md` 记一条 lesson；已有同类 lesson 时就地累加出现次数，第二次出现时立即按晋升纪律写进约束正文。禁止只凭口头记忆不带留痕。`check_sync.py` 对 lessons 做机械扫描：`pending` 且次数 ≥2 未晋升也未显式暂缓（deferred）、或 `promoted` 缺晋升去向，会使漂移自检失败。
 
 ## Definition of Done
 

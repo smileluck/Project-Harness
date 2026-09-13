@@ -28,6 +28,7 @@ Interpret the report:
 | Referenced code path missing | Docs cite moved/deleted source | Regenerate the citing document via `--scope` |
 | Missing example reference | Example's "real reference files" stale | Regenerate that example from current code |
 | Stale `last-updated` vs code mtime | Code changed after the doc's last update | Candidate for `--incremental` regeneration |
+| Unhandled lesson (`pending` count ≥ 2, or `promoted` without `target`) | Lesson promotion discipline violated | Promote into the constraint body's home document, or mark `deferred` with the reason recorded; fill `target` for promoted entries |
 
 The script only proves mechanical facts. A clean report does **not** mean the docs are semantically correct.
 
@@ -45,7 +46,7 @@ Verify by reading code and docs together:
 4. **Routing consistency**: `aiDoc/README.md` routing table and common entries match the actual aiDoc file set; `AGENTS.md`'s "task family → aiDoc area" quick-reference matches existing aiDoc areas.
 5. **Stack accuracy**: `relations/repo-profile.md` matches current manifests (dependencies added/removed).
 6. **Command validity**: commands in `relations/development-workflow.md` and `AGENTS.md` still run (spot-check the risky ones).
-7. **Lesson promotion sweep**: scan `aiDoc/memory/lessons/` for `pending` entries with occurrence count ≥ 2 — promote them into the constraint body's home document within this sync, or record the reason for staying pending.
+7. **Lesson promotion sweep**: consume the mechanical results of `check_sync.py` checks 5/6 — resolve blocking items (a `pending` entry with count ≥ 2 is either promoted into the constraint body's home document within this sync or explicitly marked `deferred` with the reason recorded; a `promoted` entry gets its `target` filled). For every `deferred` entry, re-examine whether the recorded reason still holds. For `post ≥ 1` entries the promoted rule proved ineffective — revise the rule body and record why the first attempt failed (see [change-docs.md](change-docs.md)).
 
 ## Step 3: resync
 

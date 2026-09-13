@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-10 -->
+<!-- last-updated: 2026-09-13 -->
 # 架构与模块组织规则（architecture rules）
 
 > 范式：工具包（skill bundle + 零依赖脚本层）。所有规则引用真实代码位置。
@@ -13,6 +13,7 @@
 - 零三方依赖、Python 3.9+ 兼容（注意 `tomllib` 需 3.11+ fallback）。
 - 安全模型不可回退：默认不覆盖已存在文件、`--dry-run` 零写入、`--overwrite` 先备份、嵌套 git 拒绝、幂等。
 - 无法探测的信息留可见 `TODO` 或 `auto-scan` 标记，**禁止编造**。
+- 程序化定位/读取文档内容（填充点、记录的元字段等）必须使用文档内嵌的显式机器标记（如 `<!-- scan-fill:key -->`、`<!-- lesson-meta: ... -->`），禁止按标题等展示文本匹配。
 - 入口统一 `main(argv)` + `if __name__ == "__main__": sys.exit(main())`，退出码 0/1/2 语义见 `aiDoc/contracts/boundary.md`。
 
 ## Skill 层（`SKILL.md` + `references/`）

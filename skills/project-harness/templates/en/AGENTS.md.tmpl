@@ -64,7 +64,7 @@ Never read generated, vendored, or cached trees: `node_modules/`, `.venv/`, `__p
 - Evidence is proportional to the affected surface: run focused checks for the surface you touched, not the full suite by reflex. Never weaken filters or thresholds to get green.
 - A push, merge, deployment, or interrupted process is not successful until its observable acceptance check passes.
 - Before closing out any code or doc change, run the drift self-check — `check_sync.py` when the project-harness skill is installed, otherwise verify affected docs against the `aiDoc/README.md` routing table — and fix any drift found in the same change, never deferred. The self-check result is part of the Definition of Done.
-- Pitfalls and recurring patterns must be captured: when work hits a pitfall, review flags the same class of problem repeatedly, or a reusable pattern emerges, record one lesson per `aiDoc/memory/lessons/README.md` in the same change; on recurrence increment its count in place, and at the second occurrence promote it into the constraint body immediately. Never rely on unwritten memory.
+- Pitfalls and recurring patterns must be captured: when work hits a pitfall, review flags the same class of problem repeatedly, or a reusable pattern emerges, record one lesson per `aiDoc/memory/lessons/README.md` in the same change; on recurrence increment its count in place, and at the second occurrence promote it into the constraint body immediately. Never rely on unwritten memory. `check_sync.py` mechanically scans lessons: a `pending` entry with count ≥ 2 that is neither promoted nor explicitly deferred, or a `promoted` entry without a target, fails the drift self-check.
 
 ## Definition of Done
 

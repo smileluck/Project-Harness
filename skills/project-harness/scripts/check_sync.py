@@ -12,6 +12,11 @@
        等点目录跳过）前 5 行内应有 <!-- last-updated: YYYY-MM-DD -->。
     4. 区域一致性（提示级别，不影响退出码）: AGENTS.md 提到的 aiDoc 区域名
        与实际子目录互相对照。
+    5. lessons 晋升纪律: 按 aiDoc/memory/lessons/*.md 头部 lesson-meta 标记判定
+       （豁免 TEMPLATE/README）——pending 且 count≥2 未晋升也未显式 deferred、
+       promoted 但 target 为空、status/count 非法，均为失败项。
+    6. lessons 可扫描性（提示级别，不影响退出码）: 缺 lesson-meta 标记的 lesson、
+       post≥1（晋升后仍复发）的条目，列出但不拦截。
 
 输出为纯文本（无颜色依赖），每项 ✅/❌ + 明细，末尾总计。
 退出码: 0 全部通过；1 存在 ❌；2 目标缺 AGENTS.md 或 aiDoc/。
@@ -39,6 +44,10 @@ MD_REF_RE = re.compile(r"[A-Za-z0-9_\-./]+\.md(?:#[A-Za-z0-9_\-]*)?")
 INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 LAST_UPDATED_RE = re.compile(
     r"<!--\s*last-updated:\s*\d{4}-\d{2}-\d{2}\s*-->")
+LESSON_META_RE = re.compile(r"<!--\s*lesson-meta:\s*([^>]*?)\s*-->")
+
+# 检查 5：lesson 合法状态（deferred = 显式暂缓晋升，理由写在文件「晋升去向」节）
+LESSON_STATUSES = ("pending", "deferred", "promoted", "dropped")
 
 
 def iter_aidoc_md(aidoc: Path):
@@ -194,6 +203,66 @@ def check_sections(aidoc: Path, agents: Path) -> tuple[bool, list[str]]:
     return ok, details
 
 
+# ---------------------------------------------------------------- 检查 5/6
+
+def _parse_lesson_meta(text: str) -> dict[str, str] | None:
+    """解析头部 lesson-meta 标记为字段字典；无标记返回 None。"""
+    m = LESSON_META_RE.search(text)
+    if not m:
+        return None
+    fields: dict[str, str] = {}
+    for tok in m.group(1).split():
+        if "=" in tok:
+            key, val = tok.split("=", 1)
+            fields[key] = val
+    return fields
+
+
+def check_lessons(aidoc: Path) -> tuple[bool, list[str], list[str]]:
+    """扫描 aiDoc/memory/lessons/，返回 (阻塞项通过?, 阻塞/信息明细, 提示明细)。"""
+    lessons = aidoc / "memory" / "lessons"
+    blocking: list[str] = []
+    hints: list[str] = []
+    infos: list[str] = []
+    if not lessons.is_dir():
+        return True, ["无 memory/lessons/ 目录，跳过"], hints
+    files = [f for f in sorted(lessons.glob("*.md"))
+             if f.name.upper() not in ("TEMPLATE.MD", "README.MD")]
+    if not files:
+        return True, ["无 lesson 记录"], hints
+    for f in files:
+        rel = f.relative_to(aidoc)
+        try:
+            text = f.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        meta = _parse_lesson_meta(text)
+        if meta is None:
+            hints.append(f"缺少 lesson-meta 标记，无法机械扫描: {rel}")
+            continue
+        status = meta.get("status", "")
+        if status not in LESSON_STATUSES:
+            blocking.append(f"status 非法 ({status!r}): {rel}")
+            continue
+        try:
+            count = int(meta.get("count", ""))
+        except ValueError:
+            blocking.append(f"count 缺失或非整数: {rel}")
+            continue
+        post = meta.get("post", "0")
+        if post.isdigit() and int(post) >= 1:
+            hints.append(f"晋升后复发 post={post}，需确认已晋升规则的有效性: {rel}")
+        target = meta.get("target", "")
+        if status == "promoted" and not target:
+            blocking.append(f"promoted 但 target 为空: {rel}")
+        elif status == "pending" and count >= 2:
+            blocking.append(
+                f"pending 且次数 {count}≥2，未晋升也未显式 deferred: {rel}")
+        elif status == "deferred":
+            infos.append(f"deferred（暂缓晋升，理由见文件「晋升去向」节）: {rel}")
+    return (not blocking), blocking + infos, hints
+
+
 # ---------------------------------------------------------------- main
 
 def main(argv: list[str] | None = None) -> int:
@@ -229,6 +298,12 @@ def main(argv: list[str] | None = None) -> int:
     ok, details = check_sections(aidoc, agents)
     report.add("区域一致性 (AGENTS.md 提到的区域 vs 实际目录)", ok, details,
                hint_only=True)
+
+    ok, details, hints = check_lessons(aidoc)
+    report.add("lessons 晋升纪律 (pending≥2 已处理、promoted 有 target)",
+               ok, details)
+    report.add("lessons 可扫描性 (meta 标记齐全、无晋升后复发)",
+               not hints, hints, hint_only=True)
 
     return report.print()
 
