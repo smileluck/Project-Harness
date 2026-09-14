@@ -26,7 +26,12 @@
 
 from __future__ import annotations
 
+import contextlib
+import hashlib
+import io
 import json
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -41,6 +46,7 @@ REFERENCES = SKILL_DIR / "references"
 sys.path.insert(0, str(SCRIPTS))
 import check_sync  # noqa: E402
 import init_project  # noqa: E402
+import update_harness  # noqa: E402
 
 PY = sys.executable
 
@@ -83,7 +89,9 @@ def make_fixture(base: Path, kind: str) -> Path:
               "require('express')().listen(3000)\n")
     elif kind == "mixed":
         write(repo / "go.mod", "module example.com/demo\n\ngo 1.22\n")
-        write(repo / "web" / "package.json", '{"name": "demo-fe"}\n')
+        # react 依赖使 web/ 真正探测为 web-frontend 组件（无依赖时判 general）
+        write(repo / "web" / "package.json",
+              '{"name": "demo-fe", "dependencies": {"react": "*"}}')
         write(repo / "web" / "src" / "main.ts", "console.log(1)\n")
     return repo
 
@@ -183,6 +191,144 @@ def test_scan_framework_keywords(tmp: Path) -> None:
     check("Rust axum/clap 依赖可探测", ok, r.stdout[-200:])
 
 
+def test_labels_and_components(tmp: Path) -> None:
+    print("\n[2d] 组件探测标签断言")
+    expect = {
+        "python-cli": ("cli", {"cli"}),
+        "fullstack": ("fullstack", {"web-frontend", "web-backend"}),
+        "mixed": ("mixed", {"go-module", "web-frontend"}),
+    }
+    for kind, (label, kinds) in expect.items():
+        repo = make_fixture(tmp / "labels", kind)
+        r = subprocess.run([PY, str(SCRIPTS / "scan_repo.py"), str(repo), "--json"],
+                           capture_output=True, text=True)
+        ok = r.returncode == 0
+        if ok:
+            data = json.loads(r.stdout)
+            ok = (data["label"] == label
+                  and kinds <= {c["kind"] for c in data["components"]})
+        check(f"{kind} → label={label} 且组件含 {sorted(kinds)}", ok,
+              (r.stdout + r.stderr)[-200:])
+
+
+def test_lang_en_flow(tmp: Path) -> None:
+    print("\n[2e] --lang en 全流程")
+    repo = make_fixture(tmp / "en", "python-cli")
+    (repo / "README.md").write_text(
+        "# demo-cli\nA command line tool.\n", encoding="utf-8")
+    r = run_init(repo, "--lang", "en")
+    check("en init exit 0", r.returncode == 0, r.stderr[-300:])
+    agents = repo / "AGENTS.md"
+    check("en 模板渲染（Purpose 节）",
+          agents.is_file()
+          and "## Purpose" in agents.read_text(encoding="utf-8"))
+    leftovers = []
+    for p in repo.rglob("*.md"):
+        if ".git" in p.parts:
+            continue
+        text = p.read_text(encoding="utf-8")
+        for ph in ("{{PROJECT_NAME}}", "{{DATE}}", "<harness>", "<skill-dir>"):
+            if ph in text:
+                leftovers.append(f"{p.relative_to(repo)}: {ph}")
+    check("en 产物无占位符残留", not leftovers, "; ".join(leftovers[:3]))
+    r4 = subprocess.run([PY, str(SCRIPTS / "check_sync.py"), str(repo)],
+                        capture_output=True, text=True)
+    check("en 产物 check_sync 全过", r4.returncode == 0,
+          (r4.stdout + r4.stderr)[-300:])
+
+
+def test_no_scan(tmp: Path) -> None:
+    print("\n[2f] --no-scan 骨架模式")
+    repo = make_fixture(tmp / "noscan", "python-cli")
+    r = run_init(repo, "--no-scan")
+    check("--no-scan exit 0", r.returncode == 0, r.stderr[-300:])
+    profile = repo / "aiDoc" / "relations" / "repo-profile.md"
+    text = profile.read_text(encoding="utf-8") if profile.is_file() else ""
+    check("relations 保持骨架（无 auto-scan 标记写入）",
+          "auto-scan: init" not in text)
+    ci = repo / "aiDoc" / "relations" / "code-index.md"
+    ci_text = ci.read_text(encoding="utf-8") if ci.is_file() else ""
+    check("code-index 保持模板态（未写入扫描事实）",
+          "auto-scan" not in ci_text and "demo-cli" not in ci_text
+          and "pyproject.toml" not in ci_text)
+
+
+def test_frontend_prune(tmp: Path) -> None:
+    print("\n[2g] 无前端仓库的 frontend 裁剪")
+    repo = make_fixture(tmp / "prune", "python-cli")
+    r = run_init(repo)
+    check("裁剪 init exit 0", r.returncode == 0, r.stderr[-300:])
+    check("frontend/ 目录未生成", not (repo / "aiDoc" / "frontend").exists())
+    readme = (repo / "aiDoc" / "README.md").read_text(encoding="utf-8")
+    check("README 无 frontend 失效引用",
+          "frontend-rules" not in readme and "aiDoc/frontend/" not in readme)
+    check("报告含 deferred（未探测到前端）", "未探测到前端" in r.stdout)
+
+
+def test_check_sync_negative(tmp: Path) -> None:
+    print("\n[2h] check_sync 负例")
+    repo = make_fixture(tmp / "neg", "python-cli")
+    run_init(repo)
+
+    (repo / "aiDoc" / "modules" / "module-development.md").unlink()
+    r = subprocess.run([PY, str(SCRIPTS / "check_sync.py"), str(repo)],
+                       capture_output=True, text=True)
+    check("索引引用文件缺失 → exit 1", r.returncode == 1, r.stdout[-200:])
+
+    run_init(repo)  # 幂等恢复缺失文件
+    profile = repo / "aiDoc" / "relations" / "repo-profile.md"
+    # 负例 3：文档型文件未登记于常用入口字典
+    extra = repo / "aiDoc" / "contracts" / "extra-boundary.md"
+    extra.write_text("<!-- last-updated: 2026-01-01 -->\n# 未登记文档\n",
+                     encoding="utf-8")
+    profile.write_text(profile.read_text(encoding="utf-8").replace(
+        "<!-- last-updated: ", "<!-- updated: ", 1), encoding="utf-8")
+    r = subprocess.run([PY, str(SCRIPTS / "check_sync.py"), str(repo)],
+                       capture_output=True, text=True)
+    check("缺 last-updated 头 → exit 1", r.returncode == 1, r.stdout[-200:])
+    extra.unlink()
+    r = subprocess.run([PY, str(SCRIPTS / "check_sync.py"), str(repo)],
+                       capture_output=True, text=True)
+    check("未登记常用入口的文档 → exit 1",
+          r.returncode == 1 and "常用入口" in r.stdout, r.stdout[-200:])
+
+
+def test_install(tmp: Path) -> None:
+    print("\n[2i] install.py 行为")
+    home = tmp / "home"
+    home.mkdir()
+    env = {**os.environ, "HOME": str(home)}
+
+    def run_install(*extra: str) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [PY, str(REPO_ROOT / "install.py"), *extra],
+            capture_output=True, text=True, env=env)
+
+    r = run_install("--tool", "agents", "--scope", "user", "--dry-run")
+    check("install --dry-run exit 0", r.returncode == 0,
+          (r.stdout + r.stderr)[-200:])
+
+    r = run_install("--tool", "agents", "--scope", "user")
+    dst = home / ".agents" / "skills" / "project-harness"
+    check("user 级 copy 安装", r.returncode == 0 and (dst / "SKILL.md").is_file(),
+          (r.stdout + r.stderr)[-200:])
+    check("安装标识文件写入", (dst / ".installed-by-project-harness").is_file())
+
+    r2 = run_install("--tool", "agents", "--scope", "user")
+    check("同版本二次安装 SKIP", r2.returncode == 0 and "SKIP" in r2.stdout,
+          (r2.stdout + r2.stderr)[-200:])
+
+    target = tmp / "proj-repo"
+    target.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=target, check=True)
+    r = run_install("--tool", "agents", "--scope", "project",
+                    "--project-dir", str(target), "--link")
+    link = target / ".agents" / "skills" / "project-harness"
+    check("project 级 --link 符号链接",
+          r.returncode == 0 and link.is_symlink(),
+          (r.stdout + r.stderr)[-200:])
+
+
 def test_scripts_runnable(tmp: Path) -> None:
     print("\n[2] scan_repo.py --json")
     repo = make_fixture(tmp / "scan", "fullstack")
@@ -273,6 +419,70 @@ def test_lessons_gate(tmp: Path) -> None:
     r = run_sync()
     check("缺标记仅提示 exit 0",
           r.returncode == 0 and "lesson-meta" in r.stdout, r.stdout[-200:])
+
+
+# ---------------------------------------------------------------- 3u. update_harness 更新流
+
+def test_update_flow(tmp: Path) -> None:
+    print("\n[3u] update_harness 更新流")
+    repo = make_fixture(tmp / "upd", "python-cli")
+    run_init(repo)
+    manifest_path = repo / "aiDoc" / ".harness-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    check("manifest 字段齐全",
+          all(k in manifest for k in ("harness_version", "lang", "files")))
+    check("code-index 不登记",
+          "aiDoc/relations/code-index.md" not in manifest["files"])
+    bad = [rel for rel, info in manifest["files"].items()
+           if hashlib.sha256((repo / rel).read_bytes()).hexdigest()
+           != info["sha256"]]
+    check("manifest 基线哈希与产物一致", not bad, str(bad[:3]))
+
+    def run_update(*extra: str, templates=None) -> tuple[int, str]:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = update_harness.main([str(repo), *extra],
+                                     templates_root=templates)
+        return rc, buf.getvalue()
+
+    rc, out = run_update()
+    check("同版本短路报已是最新", rc == 0 and "已是当前版本" in out, out[-200:])
+
+    for _ in range(2):
+        rc, out = run_update("--force")
+    check("--force 收敛（末轮 0 刷新）",
+          rc == 0 and "refreshed [已刷新]: 0 项" in out, out[-300:])
+
+    agents = repo / "AGENTS.md"
+    agents.write_text(agents.read_text(encoding="utf-8") + "\n# 项目自定义\n",
+                      encoding="utf-8")
+    rc, out = run_update("--force")
+    check("项目改动被跳过", "AGENTS.md" in out and "user-modified" in out)
+    check("项目改动内容保留", "项目自定义" in agents.read_text(encoding="utf-8"))
+
+    troot = tmp / "templates-mod"
+    shutil.copytree(TEMPLATES, troot)
+    with (troot / "zh" / "aidoc" / "modules" / "architecture-rules.md").open(
+            "a", encoding="utf-8") as fh:
+        fh.write("- 新架构规则行\n")
+    rc, out = run_update("--force", templates=troot)
+    check("模板变更触发刷新", rc == 0
+          and "aiDoc/modules/architecture-rules.md" in out)
+    check("刷新含新模板内容", "新架构规则行" in
+          (repo / "aiDoc" / "modules" / "architecture-rules.md")
+          .read_text(encoding="utf-8"))
+
+    manifest_path.unlink()
+    rc, out = run_update()
+    check("adopt 重建基线", rc == 0 and "adopt 建立基线" in out
+          and manifest_path.is_file())
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    check("adopt 不登记项目已改文件", "AGENTS.md" not in manifest["files"])
+
+    before = snapshot_files(repo)
+    rc, _ = run_update("--dry-run", "--force")
+    check("update --dry-run 零写入",
+          rc == 0 and snapshot_files(repo) == before)
 
 
 # ---------------------------------------------------------------- 4. zh/en 镜像
@@ -439,7 +649,14 @@ def main() -> int:
         test_scripts_runnable(tmp)
         test_write_code_index(tmp)
         test_scan_framework_keywords(tmp)
+        test_labels_and_components(tmp)
+        test_lang_en_flow(tmp)
+        test_no_scan(tmp)
+        test_frontend_prune(tmp)
+        test_check_sync_negative(tmp)
+        test_install(tmp)
         test_lessons_gate(tmp)
+        test_update_flow(tmp)
     test_template_mirror()
     test_repo_agents_skills_rendered()
     test_boilerplate_consistency()

@@ -12,17 +12,6 @@
 
 Project-level rules are never copied into tool-private directories; Claude Code uses `@import`, other tools use thin adapter pointers (see "Tool Loading" in `../AGENTS.md`).
 
-## Directory Guide
-
-- `relations/` — repo structure, tech stack, dependencies, development workflow (includes the machine-generated `code-index.md`, never hand-edited)
-- `modules/` — architecture rules, module development guide
-- `contracts/` — contract layer: interface contract and responsibility split
-- `frontend/` — frontend rules, utility reuse rules (generated only when a frontend exists)
-- `examples/` — explanatory examples for each layer
-- `memory/` — AI memory layer (long-term preferences, business requirement records, lesson staging)
-- `notes/` — decision records (proposed / implemented / rejected)
-- `plans/` — change plans and handoffs (active / completed)
-
 ## Ownership Map
 
 One fact has one maintained home; other places only link.
@@ -46,8 +35,6 @@ Never duplicate the same rule across tiers; put a short link at the point of use
 
 ## Common Entries
 
-TODO: one line per document — path + one-sentence purpose. This is the "look up by document" index. Keep it complete; an unlisted document is effectively not in the system.
-
 | Document | Purpose |
 |---|---|
 | `relations/repo-profile.md` | Project positioning and tech stack |
@@ -60,12 +47,13 @@ TODO: one line per document — path + one-sentence purpose. This is the "look u
 | `frontend/frontend-rules.md` | Frontend development rules |
 | `frontend/frontend-utils.md` | Utility reuse rules |
 | `examples/README.md` | How to use the example layer |
+| `memory/README.md` | Memory-layer overview and usage rules |
+| `memory/long-term/README.md` | Rules for stable long-term preferences |
+| `memory/business/README.md` | Business-requirement record rules (index solely in project-memory.md) |
 | `memory/project-memory.md` | Memory index |
 | `memory/lessons/README.md` | Lesson capture and promotion discipline |
 | `notes/README.md` | Decision-record lifecycle and naming rules |
 | `plans/README.md` | Change-plan lifecycle rules |
-
-TODO: adjust to the documents that actually exist in this project.
 
 ## Task → Must-Read Docs
 

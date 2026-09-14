@@ -12,18 +12,6 @@
 
 不再把项目级规则复制到工具私有目录；支持 `@import` 的工具走 `@AGENTS.md`，其余工具走薄适配指针（见 `AGENTS.md` 的「各工具加载方式」）。
 
-## 目录说明
-
-| 目录 | 内容 |
-|---|---|
-| `relations/` | 仓库结构、技术栈、依赖关系、开发流程（含机器生成的 `code-index.md`，不手改） |
-| `modules/` | 架构与模块组织规则、模块开发指南 |
-| `contracts/` | 生产者与消费者之间的共享契约（按项目范式：web-api / library / cli） |
-| `examples/` | 讲解型示例说明 |
-| `memory/` | AI 记忆层（长期偏好 + 业务需求记录 + 经验 lessons staging 区） |
-| `notes/` | 决策记录（proposed / implemented / rejected） |
-| `plans/` | 变更计划与交接（active / completed） |
-
 ## 信息归属表
 
 一个事实只有一个维护家；他处只放链接。

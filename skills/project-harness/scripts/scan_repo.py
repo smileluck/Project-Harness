@@ -540,6 +540,168 @@ def _exts_under(files: list[str], prefix: str) -> set:
     return exts
 
 
+# ---------------------------------------------------------------- 组件检测器
+# 每个检测器只看自己关心的清单，返回 (stack, evidence) 或 None；
+# detect_components 负责编排、赋 kind、排序——加新组件类型 = 加一个检测器。
+
+def _detect_qt(pros: list, cmake, sub_exts: set, prefix: str):
+    qt_evi: list = []
+    qt_stack = "Qt"
+    if pros:
+        qt_stack = "Qt (qmake)"
+        for pro in pros:
+            desc = pro["path"]
+            if pro["target"]:
+                desc += f" (TARGET={pro['target']}"
+                if pro["template"]:
+                    desc += f", TEMPLATE={pro['template']}"
+                desc += ")"
+            qt_evi.append(f"{desc}: qmake 工程")
+    if cmake and cmake["qt"]:
+        qt_stack = "Qt (CMake)" if not pros else qt_stack
+        qt_evi.append(
+            f"{cmake['path']}: find_package(Qt5/Qt6) 或 Qt:: 链接")
+    if ".qml" in sub_exts:
+        qt_evi.append(f"{prefix or '.'}: 存在 .qml 文件")
+    if ".ui" in sub_exts:
+        qt_evi.append(f"{prefix or '.'}: 存在 .ui 文件（Qt Designer）")
+    return (qt_stack, qt_evi) if qt_evi else None
+
+
+def _detect_web_frontend(pkg):
+    if pkg and pkg["frontend_deps"]:
+        names = _dedup(FRONTEND_DEPS[d] for d in pkg["frontend_deps"])
+        return (" + ".join(names) + " (Node.js)",
+                [f"{pkg['path']}: 前端依赖 {', '.join(pkg['frontend_deps'])}"])
+    return None
+
+
+def _detect_web_backend(pkg, pyproj, reqs, setup, gomod, pom, gradle, cargo):
+    be_stack: list = []
+    be_evi: list = []
+    if pkg and pkg["web_deps"]:
+        be_stack.extend(NODE_WEB_DEPS[d] for d in pkg["web_deps"])
+        be_evi.append(
+            f"{pkg['path']}: Node Web 框架依赖 {', '.join(pkg['web_deps'])}")
+    for m in (pyproj, reqs, setup):
+        if m and m.get("web_deps"):
+            be_stack.extend(PY_WEB_DEPS[d] for d in m["web_deps"])
+            be_evi.append(
+                f"{m['path']}: Python Web 框架依赖 {', '.join(m['web_deps'])}")
+    if gomod and gomod["web"]:
+        be_stack.extend(GO_WEB_NAMES[d] for d in gomod["web"])
+        be_evi.append(
+            f"{gomod['path']}: Go Web 框架依赖 {', '.join(gomod['web'])}")
+    if pom and pom["spring"]:
+        be_stack.append("Spring Boot")
+        be_evi.append(f"{pom['path']}: spring-boot 依赖"
+                      + (f"（{pom['group']}:{pom['artifact']}）"
+                         if pom["artifact"] else ""))
+    if gradle and gradle["spring"]:
+        be_stack.append("Spring Boot")
+        be_evi.append(f"{gradle['path']}: org.springframework.boot 插件")
+    if pom and pom.get("servlet") and not pom["spring"]:
+        be_stack.append("Java Web (Servlet/Jakarta EE)")
+        be_evi.append(f"{pom['path']}: servlet/jakarta 依赖（无 spring-boot）")
+    if cargo and cargo["web"]:
+        be_stack.extend(RUST_WEB_NAMES[d] for d in cargo["web"])
+        be_evi.append(
+            f"{cargo['path']}: Rust Web 框架依赖 {', '.join(cargo['web'])}")
+    if be_stack:
+        return " + ".join(_dedup(be_stack)), be_evi
+    return None
+
+
+def _detect_cli(pkg, pyproj, reqs, gomod, cargo):
+    cli_stack: list = []
+    cli_evi: list = []
+    if pkg:
+        if pkg["bin"]:
+            cli_evi.append(f"{pkg['path']}: 含 \"bin\" 字段（CLI 入口）")
+        if pkg["cli_deps"]:
+            cli_stack.extend(NODE_CLI_DEPS[d] for d in pkg["cli_deps"])
+            cli_evi.append(
+                f"{pkg['path']}: CLI 依赖 {', '.join(pkg['cli_deps'])}")
+    if pyproj:
+        if pyproj["scripts"]:
+            cli_evi.append(
+                f"{pyproj['path']}: 含 [project.scripts] 节（CLI 入口）")
+        if pyproj["cli_deps"]:
+            cli_stack.extend(PY_CLI_DEPS[d] for d in pyproj["cli_deps"])
+            cli_evi.append(
+                f"{pyproj['path']}: CLI 依赖 {', '.join(pyproj['cli_deps'])}")
+    if reqs and reqs["cli_deps"]:
+        cli_stack.extend(PY_CLI_DEPS[d] for d in reqs["cli_deps"])
+        cli_evi.append(
+            f"{reqs['path']}: CLI 依赖 {', '.join(reqs['cli_deps'])}")
+    if gomod and gomod["cli"]:
+        cli_stack.append("Cobra")
+        cli_evi.append(f"{gomod['path']}: CLI 依赖 cobra")
+    if cargo and cargo["cli"]:
+        cli_stack.append("Clap")
+        cli_evi.append(f"{cargo['path']}: CLI 依赖 clap")
+    if cli_evi:
+        return " + ".join(_dedup(cli_stack)) or "CLI", cli_evi
+    return None
+
+
+def _detect_java_app(pom, gradle):
+    """spring/servlet 已归入 web-backend；这里只认无 Web 框架的 Java 工程。"""
+    if ((pom and not pom["spring"] and not pom.get("servlet"))
+            or (gradle and not gradle["spring"])):
+        evi = []
+        tool = []
+        if pom:
+            tool.append("Maven")
+            evi.append(f"{pom['path']}: Maven 工程（无 spring-boot）")
+        if gradle:
+            tool.append("Gradle")
+            evi.append(f"{gradle['path']}: Gradle 工程（无 spring 插件）")
+        return "Java (" + "/".join(tool) + ")", evi
+    return None
+
+
+def _detect_go_module(gomod):
+    if gomod and not gomod["web"] and not gomod["cli"]:
+        ver = f" {gomod['go_version']}" if gomod["go_version"] else ""
+        return f"Go{ver} module", [f"{gomod['path']}: Go 模块（无 Web/CLI 框架信号）"]
+    return None
+
+
+def _detect_cpp_app(cmake, makefile, sub_exts: set, prefix: str):
+    if (cmake or makefile) and (sub_exts & C_EXTS):
+        evi = []
+        tool = []
+        if cmake:
+            tool.append("CMake")
+            evi.append(f"{cmake['path']}: CMake 工程"
+                       + (f"（project={cmake['project']}）"
+                          if cmake["project"] else ""))
+        if makefile:
+            tool.append("Make")
+            evi.append(f"{makefile['path']}: Makefile")
+        exts = sorted(sub_exts & C_EXTS)
+        evi.append(f"{prefix or '.'}: C/C++ 源文件（{', '.join(exts)}）")
+        return "C/C++ (" + "/".join(tool) + ")", evi
+    return None
+
+
+def _detect_library(pkg, pyproj, setup, cargo):
+    """目录内无更强信号时的兜底：库打包标志。"""
+    if pkg and (pkg["main"] or pkg["exports"]):
+        fields = "/".join(
+            f'"{k}"' for k in ("main", "exports")
+            if (pkg["main"] if k == "main" else pkg["exports"]))
+        return "Node.js 库", [f"{pkg['path']}: 含 {fields} 字段（库入口）"]
+    if pyproj and pyproj["build_system"]:
+        return "Python 包", [f"{pyproj['path']}: 含 [build-system] 节（可构建库）"]
+    if setup:
+        return "Python 包", [f"{setup['path']}: setup.py（可构建库）"]
+    if cargo and cargo["lib"]:
+        return "Rust 库", [f"{cargo['path']}: 含 [lib] 节（Rust 库）"]
+    return None
+
+
 def detect_components(repo: Path, dirs: list[Path], manifests: dict,
                       files: list[str]) -> tuple[list, list]:
     """返回 (components, notes)。同一目录允许多组件，按 KIND_ORDER 排序。"""
@@ -574,153 +736,34 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
             comps.append({"path": rel, "kind": kind, "stack": stack,
                           "evidence": evidence})
 
-        # 1) qt
-        qt_evi: list = []
-        qt_stack = "Qt"
-        if pros:
-            qt_stack = "Qt (qmake)"
-            for pro in pros:
-                desc = pro["path"]
-                if pro["target"]:
-                    desc += f" (TARGET={pro['target']}"
-                    if pro["template"]:
-                        desc += f", TEMPLATE={pro['template']}"
-                    desc += ")"
-                qt_evi.append(f"{desc}: qmake 工程")
-        if cmake and cmake["qt"]:
-            qt_stack = "Qt (CMake)" if not pros else qt_stack
-            qt_evi.append(
-                f"{cmake['path']}: find_package(Qt5/Qt6) 或 Qt:: 链接")
-        if ".qml" in sub_exts:
-            qt_evi.append(f"{prefix or '.'}: 存在 .qml 文件")
-        if ".ui" in sub_exts:
-            qt_evi.append(f"{prefix or '.'}: 存在 .ui 文件（Qt Designer）")
-        if qt_evi:
-            comp("qt-app", qt_stack, qt_evi)
-
-        # 2) web-frontend
-        if pkg and pkg["frontend_deps"]:
-            names = _dedup(FRONTEND_DEPS[d] for d in pkg["frontend_deps"])
-            comp("web-frontend", " + ".join(names) + " (Node.js)",
-                 [f"{pkg['path']}: 前端依赖 {', '.join(pkg['frontend_deps'])}"])
-
-        # 3) web-backend
-        be_stack: list = []
-        be_evi: list = []
-        if pkg and pkg["web_deps"]:
-            be_stack.extend(NODE_WEB_DEPS[d] for d in pkg["web_deps"])
-            be_evi.append(
-                f"{pkg['path']}: Node Web 框架依赖 {', '.join(pkg['web_deps'])}")
-        for m in (pyproj, reqs, setup):
-            if m and m.get("web_deps"):
-                be_stack.extend(PY_WEB_DEPS[d] for d in m["web_deps"])
-                be_evi.append(
-                    f"{m['path']}: Python Web 框架依赖 {', '.join(m['web_deps'])}")
-        if gomod and gomod["web"]:
-            be_stack.extend(GO_WEB_NAMES[d] for d in gomod["web"])
-            be_evi.append(
-                f"{gomod['path']}: Go Web 框架依赖 {', '.join(gomod['web'])}")
-        if pom and pom["spring"]:
-            be_stack.append("Spring Boot")
-            be_evi.append(f"{pom['path']}: spring-boot 依赖"
-                          + (f"（{pom['group']}:{pom['artifact']}）"
-                             if pom["artifact"] else ""))
-        if gradle and gradle["spring"]:
-            be_stack.append("Spring Boot")
-            be_evi.append(f"{gradle['path']}: org.springframework.boot 插件")
-        if pom and pom.get("servlet") and not pom["spring"]:
-            be_stack.append("Java Web (Servlet/Jakarta EE)")
-            be_evi.append(f"{pom['path']}: servlet/jakarta 依赖（无 spring-boot）")
-        if cargo and cargo["web"]:
-            be_stack.extend(RUST_WEB_NAMES[d] for d in cargo["web"])
-            be_evi.append(
-                f"{cargo['path']}: Rust Web 框架依赖 {', '.join(cargo['web'])}")
-        if be_stack:
-            comp("web-backend", " + ".join(_dedup(be_stack)), be_evi)
-
-        # 4) cli
-        cli_stack: list = []
-        cli_evi: list = []
-        if pkg:
-            if pkg["bin"]:
-                cli_evi.append(f"{pkg['path']}: 含 \"bin\" 字段（CLI 入口）")
-            if pkg["cli_deps"]:
-                cli_stack.extend(NODE_CLI_DEPS[d] for d in pkg["cli_deps"])
-                cli_evi.append(
-                    f"{pkg['path']}: CLI 依赖 {', '.join(pkg['cli_deps'])}")
-        if pyproj:
-            if pyproj["scripts"]:
-                cli_evi.append(
-                    f"{pyproj['path']}: 含 [project.scripts] 节（CLI 入口）")
-            if pyproj["cli_deps"]:
-                cli_stack.extend(PY_CLI_DEPS[d] for d in pyproj["cli_deps"])
-                cli_evi.append(
-                    f"{pyproj['path']}: CLI 依赖 {', '.join(pyproj['cli_deps'])}")
-        if reqs and reqs["cli_deps"]:
-            cli_stack.extend(PY_CLI_DEPS[d] for d in reqs["cli_deps"])
-            cli_evi.append(
-                f"{reqs['path']}: CLI 依赖 {', '.join(reqs['cli_deps'])}")
-        if gomod and gomod["cli"]:
-            cli_stack.append("Cobra")
-            cli_evi.append(f"{gomod['path']}: CLI 依赖 cobra")
-        if cargo and cargo["cli"]:
-            cli_stack.append("Clap")
-            cli_evi.append(f"{cargo['path']}: CLI 依赖 clap")
-        if cli_evi:
-            comp("cli", " + ".join(_dedup(cli_stack)) or "CLI", cli_evi)
-
-        # 5) java-app（spring/servlet 已在上方归入 web-backend）
-        if ((pom and not pom["spring"] and not pom.get("servlet"))
-                or (gradle and not gradle["spring"])):
-            evi = []
-            tool = []
-            if pom:
-                tool.append("Maven")
-                evi.append(f"{pom['path']}: Maven 工程（无 spring-boot）")
-            if gradle:
-                tool.append("Gradle")
-                evi.append(f"{gradle['path']}: Gradle 工程（无 spring 插件）")
-            comp("java-app", "Java (" + "/".join(tool) + ")", evi)
-
-        # 6) go-module
-        if gomod and not gomod["web"] and not gomod["cli"]:
-            ver = f" {gomod['go_version']}" if gomod["go_version"] else ""
-            comp("go-module", f"Go{ver} module",
-                 [f"{gomod['path']}: Go 模块（无 Web/CLI 框架信号）"])
-
-        # 7) cpp-app
-        if not qt_evi and (cmake or makefile) and (sub_exts & C_EXTS):
-            evi = []
-            tool = []
-            if cmake:
-                tool.append("CMake")
-                evi.append(f"{cmake['path']}: CMake 工程"
-                           + (f"（project={cmake['project']}）"
-                              if cmake["project"] else ""))
-            if makefile:
-                tool.append("Make")
-                evi.append(f"{makefile['path']}: Makefile")
-            exts = sorted(sub_exts & C_EXTS)
-            evi.append(f"{prefix or '.'}: C/C++ 源文件（{', '.join(exts)}）")
-            comp("cpp-app", "C/C++ (" + "/".join(tool) + ")", evi)
-
-        # 8) library（目录内无更强信号时）
+        qt = _detect_qt(pros, cmake, sub_exts, prefix)
+        if qt:
+            comp("qt-app", *qt)
+        web_fe = _detect_web_frontend(pkg)
+        if web_fe:
+            comp("web-frontend", *web_fe)
+        web_be = _detect_web_backend(pkg, pyproj, reqs, setup, gomod,
+                                     pom, gradle, cargo)
+        if web_be:
+            comp("web-backend", *web_be)
+        cli = _detect_cli(pkg, pyproj, reqs, gomod, cargo)
+        if cli:
+            comp("cli", *cli)
+        java = _detect_java_app(pom, gradle)
+        if java:
+            comp("java-app", *java)
+        gomod_comp = _detect_go_module(gomod)
+        if gomod_comp:
+            comp("go-module", *gomod_comp)
+        # Qt 信号存在时不再判 cpp-app
+        if qt is None:
+            cpp = _detect_cpp_app(cmake, makefile, sub_exts, prefix)
+            if cpp:
+                comp("cpp-app", *cpp)
         if not comps:
-            if pkg and (pkg["main"] or pkg["exports"]):
-                fields = "/".join(
-                    f'"{k}"' for k in ("main", "exports")
-                    if (pkg["main"] if k == "main" else pkg["exports"]))
-                comp("library", "Node.js 库",
-                     [f"{pkg['path']}: 含 {fields} 字段（库入口）"])
-            elif pyproj and pyproj["build_system"]:
-                comp("library", "Python 包",
-                     [f"{pyproj['path']}: 含 [build-system] 节（可构建库）"])
-            elif setup:
-                comp("library", "Python 包",
-                     [f"{setup['path']}: setup.py（可构建库）"])
-            elif cargo and cargo["lib"]:
-                comp("library", "Rust 库",
-                     [f"{cargo['path']}: 含 [lib] 节（Rust 库）"])
+            lib = _detect_library(pkg, pyproj, setup, cargo)
+            if lib:
+                comp("library", *lib)
 
         # 无判定价值的清单说明
         if pkg and not (pkg["frontend_deps"] or pkg["web_deps"]

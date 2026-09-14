@@ -101,7 +101,7 @@ When `init` ran with its default static scan, parts of `relations/` are pre-fill
 
 Generate files per [aidoc-structure.md](aidoc-structure.md), which defines the tree, per-file requirements, and writing style.
 
-**Adaptive rules**: file sets and per-type content emphasis are defined once — in the adaptivity table in [aidoc-structure.md](aidoc-structure.md) (six types + `mixed`). Follow that table; do not restate or diverge from it here. The short version: only the `frontend/` area is conditional; `contracts/boundary.md` and `modules/architecture-rules.md` exist for every type but use the paradigm variant matching the project type; `mixed` projects organize content per component.
+**Adaptive rules**: file sets and per-type content emphasis are defined solely in the adaptivity table in [aidoc-structure.md](aidoc-structure.md) (six types + `mixed`). Follow that table; do not restate or diverge from it here.
 
 **Parallel groups** — files within a group may be generated in parallel; groups run in order. With `--scope`, generate only the matching group(s).
 

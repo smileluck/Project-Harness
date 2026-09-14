@@ -17,6 +17,9 @@
        promoted 但 target 为空、status/count 非法，均为失败项。
     6. lessons 可扫描性（提示级别，不影响退出码）: 缺 lesson-meta 标记的 lesson、
        post≥1（晋升后仍复发）的条目，列出但不拦截。
+    7. 常用入口完整性: 文档型 aiDoc .md（各区域 README + relations/modules/
+       contracts/frontend/memory 的直接子文档）必须在 aiDoc/README.md 的
+       常用入口字典中登记——未登记 = 文档未入库。
 
 输出为纯文本（无颜色依赖），每项 ✅/❌ + 明细，末尾总计。
 退出码: 0 全部通过；1 存在 ❌；2 目标缺 AGENTS.md 或 aiDoc/。
@@ -126,6 +129,10 @@ def check_index(repo: Path, aidoc: Path) -> tuple[bool, list[str]]:
             # 仓库根绝对引用（如 /AGENTS.md）
             if not (repo / ref[1:]).exists():
                 missing.append(f"缺失: {ref}  (aiDoc/README.md 中引用)")
+        elif ref.startswith("../"):
+            # 相对 README 所在目录（aiDoc/）的上跳引用：../AGENTS.md = 仓库根
+            if not (aidoc / ref).exists():
+                missing.append(f"缺失: {ref}  (aiDoc/README.md 中引用)")
         elif ref.startswith("."):
             # 仓库根相对引用（如 .agents/skills/...）
             if not (repo / ref).exists():
@@ -171,7 +178,9 @@ def check_paths(repo: Path, aidoc: Path, agents: Path) -> tuple[bool, list[str]]
         rel_f = f.relative_to(repo)
         for lineno, line in enumerate(lines, 1):
             for cand in _code_path_candidates(line):
-                key = f"{cand}"
+                # 按 (文件, 路径) 去重：同一失效路径在每个引用文件各报一次，
+                # 不被全局去重吞掉定位信息
+                key = (str(rel_f), cand)
                 if key in seen:
                     continue
                 seen.add(key)
@@ -277,6 +286,36 @@ def check_lessons(aidoc: Path) -> tuple[bool, list[str], list[str]]:
     return (not blocking), blocking + infos, hints
 
 
+# ---------------------------------------------------------------- 检查 7
+
+# 常用入口字典应覆盖的"文档型"区域：直接子文档必须登记。
+# notes/plans 是档案区（记录非文档）、examples 分层示例由 examples/README 索引，
+# 均不在字典职责内；任意层级的 README.md 都属文档型，必须登记。
+DICT_DOC_AREAS = ("relations", "modules", "contracts", "frontend", "memory")
+
+
+def _is_dict_doc(rel: str) -> bool:
+    parts = rel.split("/")
+    if parts[-1] == "README.md":
+        return True
+    return len(parts) == 2 and parts[0] in DICT_DOC_AREAS
+
+
+def check_dict_coverage(aidoc: Path) -> tuple[bool, list[str]]:
+    readme = aidoc / "README.md"
+    if not readme.is_file():
+        return True, []
+    text = read_text_relaxed(readme) or ""
+    missing: list[str] = []
+    for f in iter_aidoc_md(aidoc):
+        rel = f.relative_to(aidoc).as_posix()
+        if rel == "README.md" or _is_template_file(f):
+            continue
+        if _is_dict_doc(rel) and f"`{rel}`" not in text:
+            missing.append(f"未登记于常用入口字典: aiDoc/{rel}")
+    return (not missing), missing
+
+
 # ---------------------------------------------------------------- main
 
 def main(argv: list[str] | None = None) -> int:
@@ -319,6 +358,10 @@ def main(argv: list[str] | None = None) -> int:
                ok, details)
     report.add("lessons 可扫描性 (meta 标记齐全、无晋升后复发)",
                not hints, hints, hint_only=True)
+
+    ok, details = check_dict_coverage(aidoc)
+    report.add("常用入口完整性 (文档型 aiDoc 文档已登记于 README 字典)",
+               ok, details)
 
     return report.print()
 

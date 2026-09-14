@@ -32,7 +32,3 @@ Stores pitfalls hit during development and patterns observed recurring. This dir
 - `pending` with `count ≥ 2`, neither promoted nor explicitly `deferred` → ❌ fail
 - `promoted` with empty `target` → ❌ fail
 - Missing `lesson-meta` marker, or `post ≥ 1` → ⚠️ listed as hints, non-blocking
-
-## Lesson Index
-
-None yet.

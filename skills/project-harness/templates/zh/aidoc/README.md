@@ -12,19 +12,6 @@
 
 不再把项目级规则复制到工具私有目录；支持 `@import` 的工具走 `@AGENTS.md`，其余工具走薄适配指针（见 `AGENTS.md` 的「各工具加载方式」）。
 
-## 目录说明
-
-| 目录 | 内容 |
-|---|---|
-| `relations/` | 仓库结构、技术栈、依赖关系、开发流程（含机器生成的 `code-index.md`，不手改） |
-| `modules/` | 架构与模块组织规则、模块开发指南 |
-| `contracts/` | 生产者与消费者之间的共享契约（按项目范式：web-api / library / cli） |
-| `frontend/` | 前端规范、工具函数复用规则（仅当前端存在时生成） |
-| `examples/` | 讲解型示例说明 |
-| `memory/` | AI 记忆层（长期偏好 + 业务需求记录） |
-| `notes/` | 决策记录（proposed / implemented / rejected） |
-| `plans/` | 变更计划与交接（active / completed） |
-
 ## 信息归属表
 
 一个事实只有一个维护家；他处只放链接。
@@ -52,8 +39,6 @@
 
 ## 常用入口
 
-<!-- TODO: generate 工作流补全——每个文件一行：文档路径 + 一句话用途，作为"按文档查字典"的索引。路径相对 aiDoc/ -->
-
 | 文档 | 用途 |
 |---|---|
 | `relations/repo-profile.md` | 项目定位与技术栈速查 |
@@ -66,6 +51,9 @@
 | `frontend/frontend-rules.md` | 前端开发规范 |
 | `frontend/frontend-utils.md` | 前端工具函数复用清单 |
 | `examples/README.md` | 讲解型示例的阅读入口 |
+| `memory/README.md` | 记忆层总览与使用规则 |
+| `memory/long-term/README.md` | 长期稳定偏好的沉淀规则 |
+| `memory/business/README.md` | 业务需求记录规则（索引唯一维护于 project-memory.md） |
 | `memory/project-memory.md` | 记忆层索引 |
 | `memory/lessons/README.md` | 经验记录的捕获与晋升纪律 |
 | `notes/README.md` | 决策记录的分类与维护纪律 |

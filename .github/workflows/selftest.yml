@@ -1,0 +1,26 @@
+name: selftest
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9/3.10 走 tomllib 正则回退路径——矩阵是唯一系统性覆盖它的方式
+        python-version: ["3.9", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Syntax check
+        run: python3 -m py_compile install.py skills/project-harness/scripts/*.py tests/selftest.py
+      - name: Selftest (fixtures + mirror + coupling)
+        run: python3 tests/selftest.py
+      - name: Drift check on this repo
+        run: python3 skills/project-harness/scripts/check_sync.py .

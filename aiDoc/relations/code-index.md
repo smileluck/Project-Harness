@@ -14,14 +14,14 @@
 
 | 扩展名 | 文件数 |
 |---|---|
-| .py | 5 |
+| .py | 7 |
 
 ## 模块清单
 
 | 模块 | 路径 | 文件数 |
 |---|---|---|
-| skills | `skills` | 75 |
-| aiDoc | `aiDoc` | 44 |
+| skills | `skills` | 77 |
+| aiDoc | `aiDoc` | 49 |
 | (root) | . | 7 |
 | .agents | `.agents` | 2 |
 | tests | `tests` | 1 |

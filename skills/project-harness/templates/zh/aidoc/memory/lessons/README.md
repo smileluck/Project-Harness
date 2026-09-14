@@ -32,7 +32,3 @@
 - `pending` 且 `count≥2` 未晋升也未显式 `deferred` → ❌ 失败
 - `promoted` 但 `target` 为空 → ❌ 失败
 - 缺 `lesson-meta` 标记、或 `post≥1` → ⚠️ 提示级列出，不拦截
-
-## 经验索引
-
-暂无。

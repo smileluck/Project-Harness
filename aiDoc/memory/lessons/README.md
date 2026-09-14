@@ -33,6 +33,3 @@
 - `promoted` 但 `target` 为空 → ❌ 失败
 - 缺 `lesson-meta` 标记、或 `post≥1` → ⚠️ 提示级列出，不拦截
 
-## 经验索引
-
-- [2026-09-13-explicit-markers-over-heading-text.md](2026-09-13-explicit-markers-over-heading-text.md)：程序化填充点用显式标记，不用标题文本匹配（promoted，2 次 → `modules/architecture-rules.md` 脚本层）

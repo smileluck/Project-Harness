@@ -2,7 +2,7 @@
 <!-- last-updated: {{DATE}} -->
 # 代码索引（code index）
 
-> 本文件由 init 的静态扫描（scan_repo.py）机器生成，是仓库探测的事实底座；agent 不要手工修改。`--no-scan` 初始化时保留本骨架；之后可随时运行 `python3 <skill-dir>/scripts/scan_repo.py <repo>` 重新生成。
+> 本文件由 init 的静态扫描（scan_repo.py）机器生成，是仓库探测的事实底座；agent 不要手工修改。`--no-scan` 初始化时保留本骨架；之后可随时运行 `python3 <skill-dir>/scripts/scan_repo.py <repo> --write-code-index` 重新生成。
 
 ## 组件清单
 
