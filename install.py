@@ -29,7 +29,6 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -38,24 +37,10 @@ REPO_ROOT = Path(__file__).resolve().parent
 SOURCE = REPO_ROOT / "skills" / "project-harness"
 
 sys.path.insert(0, str(SOURCE / "scripts"))
-from harness_common import find_git_root  # noqa: E402
+from harness_common import find_git_root, git_version  # noqa: E402
 
 # 安装标识文件：copy 安装后写入，用于识别"本脚本安装的目录"
 MARKER = ".installed-by-project-harness"
-
-
-def source_version(root: Path) -> str:
-    """harness 版本：git describe --tags --always --dirty，回退 short HEAD，再回退 unknown。"""
-    for git_args in (("describe", "--tags", "--always", "--dirty"),
-                     ("rev-parse", "--short", "HEAD")):
-        try:
-            r = subprocess.run(["git", "-C", str(root), *git_args],
-                               capture_output=True, text=True, timeout=10)
-            if r.returncode == 0 and r.stdout.strip():
-                return r.stdout.strip()
-        except (OSError, subprocess.SubprocessError):
-            break
-    return "unknown"
 
 
 def installed_version(target: Path) -> str | None:
@@ -204,7 +189,7 @@ def main(argv: list[str] | None = None) -> int:
     tools = list(TOOLS) if args.tool == "all" else [args.tool]
     project_dir = Path(args.project_dir).expanduser().resolve() \
         if args.project_dir else Path.cwd().resolve()
-    version = source_version(REPO_ROOT)
+    version = git_version(REPO_ROOT)
 
     print(f"源: {SOURCE}")
     print(f"版本: {version}")

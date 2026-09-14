@@ -37,6 +37,8 @@ In the completion report, group scan-filled files under **auto-filled** (distinc
 
 `--overwrite` requires explicit user approval. State exactly which files would be replaced before running it; the script writes backups before replacing anything.
 
+Every run finishes by writing `aiDoc/.harness-manifest.json` — the toolkit version plus a sha256 baseline of every file the run wrote. It is the mechanical baseline the [update workflow](update-harness.md) uses to tell template-faithful files from project-modified ones; never hand-edit it.
+
 ## Path A: new / lightly documented repo
 
 1. Run the initializer (after dry-run approval). The skeleton adapts to six project types — `fullstack` / `backend` / `frontend` / `library` / `cli` / `general` — plus `mixed` for multi-component repos detected by the scan, and only the `frontend/` area is conditional (created only when a real frontend exists); all other aiDoc areas are created for every type.

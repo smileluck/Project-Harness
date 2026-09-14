@@ -19,7 +19,7 @@
     5. 默认绝不覆盖已存在文件；--overwrite 会先备份到 aiDoc/.harness-backups/。
     6. 幂等：第二次运行文档全部 SKIP，code-index.md 重新生成且内容一致。
     7. 收尾写 aiDoc/.harness-manifest.json（工具包版本 + 本次写入文件的
-       sha256 基线），是 update_harness.py 判定"项目是否改过"的依据。
+       sha256 基线），供未来 update/漂移对比工作流使用。
 
 退出码: 0 成功；2 参数错误 / 嵌套 git 拒绝。
 """
@@ -31,7 +31,6 @@ import hashlib
 import json
 import os
 import shutil
-import subprocess
 import sys
 from datetime import date, datetime
 from pathlib import Path
@@ -41,12 +40,12 @@ TEMPLATES_ROOT = SCRIPT_DIR.parent / "templates"
 
 try:
     import scan_repo
-    from harness_common import find_git_root
+    from harness_common import find_git_root, git_version
     from render_data import CONFIG_PURPOSE, DIR_CONVENTIONS
 except ImportError:  # 被其他脚本 import 时兜底
     sys.path.insert(0, str(SCRIPT_DIR))
     import scan_repo
-    from harness_common import find_git_root
+    from harness_common import find_git_root, git_version
     from render_data import CONFIG_PURPOSE, DIR_CONVENTIONS
 
 # 与模板布局对应的条件性跳过清单（相对 aidoc/ 根）。
@@ -611,24 +610,10 @@ MANIFEST_REL = "aiDoc/.harness-manifest.json"
 
 
 def harness_version() -> str:
-    """工具包版本：git describe --tags --always --dirty，回退 short HEAD / unknown。
-
-    与仓库根 install.py 的 source_version 是跨分发边界的有意镜像
-    （skill 被单独拷走时两者无法共享代码）。
-    """
+    """工具包版本：harness_common.git_version 作用于 _harness_root()；
+    skill 被单独拷走（根不可解析）时返回 unknown。"""
     root = _harness_root()
-    if root is None:
-        return "unknown"
-    for git_args in (("describe", "--tags", "--always", "--dirty"),
-                     ("rev-parse", "--short", "HEAD")):
-        try:
-            r = subprocess.run(["git", "-C", str(root), *git_args],
-                               capture_output=True, text=True, timeout=10)
-            if r.returncode == 0 and r.stdout.strip():
-                return r.stdout.strip()
-        except (OSError, subprocess.SubprocessError):
-            break
-    return "unknown"
+    return git_version(root) if root is not None else "unknown"
 
 
 def template_rel_for(repo_rel: str, templates: Path) -> str | None:
@@ -776,7 +761,7 @@ def main(argv: list[str] | None = None) -> int:
         apply_scan_fill(repo, templates, scan, plan, lang=args.lang,
                         project_name=project_name, dry_run=args.dry_run)
 
-    # 产物 manifest（update_harness.py 的判定基线；须在扫描填充/裁剪之后算哈希）
+    # 产物 manifest（供未来 update/漂移对比工作流；须在扫描填充/裁剪之后算哈希）
     manifest = write_manifest(repo, templates, plan,
                               version=harness_version(),
                               project_name=project_name, lang=args.lang,

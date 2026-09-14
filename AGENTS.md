@@ -30,7 +30,7 @@
 | `skills/project-harness/SKILL.md` | skill 入口路由：init / generate / sync / record 四工作流 |
 | `skills/project-harness/references/` | 工作流细则与 aiDoc 目录契约（英文，清单见 `aiDoc/README.md`） |
 | `skills/project-harness/templates/` | 注入目标仓库的骨架，zh/ 与 en/ 两套严格镜像 |
-| `skills/project-harness/scripts/` | 零依赖 Python 脚本：`init_project.py`（骨架+扫描）、`scan_repo.py`（静态扫描与 code-index 再生成）、`check_sync.py`（漂移检测）、`harness_common.py`（公共工具）、`render_data.py`（双语展示文案表） |
+| `skills/project-harness/scripts/` | 零依赖 Python 脚本：`init_project.py`（骨架+扫描+manifest 基线）、`update_harness.py`（托管文件版本刷新）、`scan_repo.py`（静态扫描与 code-index 再生成）、`check_sync.py`（漂移检测）、`harness_common.py`（公共工具）、`render_data.py`（双语展示文案表） |
 | `tests/` | `selftest.py` 自检：init 行为、脚本可运行性、lessons 闸门、zh/en 镜像与耦合契约 |
 | `aiDoc/` | 本仓库自身的 AI 协作文档层（本仓库是 toolkit 的首个应用对象） |
 

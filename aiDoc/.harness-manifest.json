@@ -1,0 +1,60 @@
+{
+  "harness_version": "f638fa1-dirty",
+  "project_name": "Project-Harness",
+  "lang": "zh",
+  "generated": "2026-09-13",
+  "files": {
+    "aiDoc/contracts/boundary.md": {
+      "sha256": "61d8635470a4236d02cc7d30e60f31ca9776b820adbcb71636fd8527c02bee38",
+      "template": "aidoc/contracts/boundary.md"
+    },
+    "aiDoc/memory/README.md": {
+      "sha256": "2e6ae0d862b17721191a247463ca088a163e5b5c1f851e17fa5b005d44a837cb",
+      "template": "aidoc/memory/README.md"
+    },
+    "aiDoc/memory/business/README.md": {
+      "sha256": "886bac3558e5df2170550ad496f210373619a0e4fc072dedec325ebcf2fc9ab1",
+      "template": "aidoc/memory/business/README.md"
+    },
+    "aiDoc/memory/business/TEMPLATE.md": {
+      "sha256": "43c72dea4d66656a9e468edfb016bd240c9fe7f803cafaa5a1cb6180aa01c056",
+      "template": "aidoc/memory/business/TEMPLATE.md"
+    },
+    "aiDoc/memory/lessons/TEMPLATE.md": {
+      "sha256": "35e8bdddb64d6e702e1e29a7b04316efa40eb5e7541e1c7a964b838423eba9a2",
+      "template": "aidoc/memory/lessons/TEMPLATE.md"
+    },
+    "aiDoc/memory/long-term/README.md": {
+      "sha256": "f9cdbf38cf17b19f596255715c264415233a404df1cf3392343374a9c5371960",
+      "template": "aidoc/memory/long-term/README.md"
+    },
+    "aiDoc/notes/README.md": {
+      "sha256": "3737b6e76670d3ca70a0763643e386e2d4adefbeca47d01d08512d3de363f18b",
+      "template": "aidoc/notes/README.md"
+    },
+    "aiDoc/notes/TEMPLATE.md": {
+      "sha256": "7ec259c39bdf7b2ea3ca2050d73b61276882986fc8d3ae0aa5eca9db648ddc46",
+      "template": "aidoc/notes/TEMPLATE.md"
+    },
+    "aiDoc/plans/README.md": {
+      "sha256": "bf2a972fbdf3c428b4ffb82357de98aeb58672965b14e816637c527eabc8be15",
+      "template": "aidoc/plans/README.md"
+    },
+    "aiDoc/plans/change-plan.TEMPLATE.md": {
+      "sha256": "23bb39177c7b220fa8e6cf324e831092c56296c22e11ac7a26633c80d8e63fca",
+      "template": "aidoc/plans/change-plan.TEMPLATE.md"
+    },
+    "aiDoc/plans/handoff.TEMPLATE.md": {
+      "sha256": "b31c5263e8809c07cc5c8b6f1e2845886e9f4499acc5ebf08975fc7cd63de8cc",
+      "template": "aidoc/plans/handoff.TEMPLATE.md"
+    },
+    "CLAUDE.md": {
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "template": "CLAUDE.md"
+    },
+    ".agents/skills/project-code-review/SKILL.md": {
+      "sha256": "20ef0a2529c7b139e75e43f34672324a6e7c33021f68bec2f04c8b762b6d6c9f",
+      "template": "agents-skills/project-code-review/SKILL.md"
+    }
+  }
+}

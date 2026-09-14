@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 
@@ -23,3 +24,17 @@ def read_text_relaxed(path: Path) -> str | None:
         return path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return None
+
+
+def git_version(root: Path) -> str:
+    """harness 版本：git describe --tags --always --dirty，回退 short HEAD / unknown。"""
+    for git_args in (("describe", "--tags", "--always", "--dirty"),
+                     ("rev-parse", "--short", "HEAD")):
+        try:
+            r = subprocess.run(["git", "-C", str(root), *git_args],
+                               capture_output=True, text=True, timeout=10)
+            if r.returncode == 0 and r.stdout.strip():
+                return r.stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            break
+    return "unknown"

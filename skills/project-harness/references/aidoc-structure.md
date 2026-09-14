@@ -34,6 +34,8 @@ aiDoc/
     business/TEMPLATE.md         # template for a new business record
     lessons/README.md            # lesson capture rules + promotion discipline + index
     lessons/TEMPLATE.md          # template for a new lesson record
+  .harness-manifest.json         # machine artifact: toolkit version + per-file sha256 baseline
+                                 # (written by init, consumed/updated by update_harness.py; never hand-edit)
   notes/<lifecycle>/<class>/     # decision records (see change-docs.md)
   plans/active|completed/        # change plans (see change-docs.md)
 .agents/skills/                  # two project-local workflow skills

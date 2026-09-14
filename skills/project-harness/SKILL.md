@@ -20,6 +20,7 @@ Parse `$ARGUMENTS` (or `$action`) and dispatch:
 | `generate [--incremental \| --scope <area> \| --dry-run] [--lang zh\|en]` | Probe the codebase and generate/update `AGENTS.md` + the `aiDoc/` documentation system. | [references/generate-aidoc.md](references/generate-aidoc.md) |
 | `sync` | Detect documentation drift (mechanical checks via `scripts/check_sync.py`, then agent-driven semantic drift handling) and resync incrementally. | [references/sync-aidoc.md](references/sync-aidoc.md) |
 | `record [note \| plan \| handoff \| lesson]` | Create a decision note, change plan, handoff, or lesson record under the correct lifecycle/class discipline. | [references/change-docs.md](references/change-docs.md) |
+| `update` | Refresh a repo's harness-managed files to the current template version after a toolkit upgrade (mechanical refresh via `scripts/update_harness.py`, then semantic merge for project-modified files). | [references/update-harness.md](references/update-harness.md) |
 
 Supporting references, loaded on demand:
 
@@ -45,7 +46,8 @@ No arguments: print a usage summary of the table above plus the script locations
 
 Scripts and templates ship inside this skill directory, next to this `SKILL.md`:
 
-- `scripts/init_project.py` — skeleton bootstrap (supports `--dry-run`, `--overwrite`)
+- `scripts/init_project.py` — skeleton bootstrap (supports `--dry-run`, `--overwrite`); writes the `aiDoc/.harness-manifest.json` baseline
+- `scripts/update_harness.py` — mechanical refresh of harness-managed files to the current template version (supports `--dry-run`, `--force`)
 - `scripts/check_sync.py` — mechanical drift checks between docs and code
 - `templates/<lang>/` — document skeletons, including `templates/<lang>/adapters/` for tool adapters and `templates/<lang>/aidoc/` for notes/plans templates
 
