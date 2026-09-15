@@ -19,9 +19,9 @@
 | 脚本 | 关键参数 | 退出码 |
 |---|---|---|
 | `install.py` | `--tool --scope --link --dry-run [--force] [--check]`；版本=`harness_common.git_version`（git describe），已装版本一致则 SKIP，`--check` 只报告 | 0 成功（--check 全部最新）；1 有目标被拒/失败（--check 有旧版或未安装）；2 参数/目标错误 |
-| `init_project.py` | `[--project-name] [--lang] [--dry-run] [--overwrite] [--no-scan]`；收尾写 `aiDoc/.harness-manifest.json` | 0 成功；2 参数错误/嵌套 git 拒绝 |
-| `update_harness.py` | `[--dry-run] [--force] [--lang]`；按 manifest 基线刷新未改文件，项目已改文件跳过 | 0 成功；2 参数错误/前置不满足（嵌套 git、缺 AGENTS.md/aiDoc） |
-| `scan_repo.py` | `[--json] [--write-code-index [--lang zh\|en]]`（`--write-code-index` 写入唯一机器产物 `aiDoc/relations/code-index.md`，是 code-index 漂移修复路径） | 0 成功；2 参数错误 |
+| `init_project.py` | `[--project-name] [--lang auto\|zh\|en] [--dry-run] [--overwrite] [--no-scan]`（auto=探测仓库既有文档语言：中文字符占比>30% 判 zh，否则 en，回退 zh）；收尾写 `aiDoc/.harness-manifest.json` | 0 成功；2 参数错误/嵌套 git 拒绝 |
+| `update_harness.py` | `[--dry-run] [--force] [--lang auto\|zh\|en]`；按 manifest 基线刷新未改文件，项目已改文件跳过 | 0 成功；2 参数错误/前置不满足（嵌套 git、缺 AGENTS.md/aiDoc） |
+| `scan_repo.py` | `[--json] [--write-code-index [--lang auto\|zh\|en]]`（`--write-code-index` 写入唯一机器产物 `aiDoc/relations/code-index.md`，是 code-index 漂移修复路径） | 0 成功；2 参数错误 |
 | `check_sync.py` | `[repo-path]`（默认 `.`；路径真实性检查白名单 = 常见源码目录 + `skills`、`templates`、`references`、`aiDoc`） | 0 全过；1 有 ❌；2 缺 AGENTS.md/aiDoc |
 
 脚本层内部模块契约：`harness_common.py`（`find_git_root`/`read_text_relaxed`/`git_version` 唯一实现，各脚本禁止再复制）；`render_data.py`（双语展示文案表 `CONFIG_PURPOSE`/`DIR_CONVENTIONS` 唯一维护点）。
@@ -45,4 +45,5 @@
 
 - [ ] 本文件三类契约表与实际行为一致
 - [ ] references 中引用的参数/标记/路径与脚本逐字一致
-- [ ] zh/en 模板占位符与结构镜像
+
+（zh/en 镜像与占位符一致性属根 `AGENTS.md` Definition of Done，此处不重复。）

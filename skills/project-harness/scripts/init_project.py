@@ -2,7 +2,7 @@
 """init_project.py — 把 project-harness 模板骨架安装到任意目标仓库。
 
 用法:
-    python3 init_project.py <repo-path> [--project-name NAME] [--lang zh|en]
+    python3 init_project.py <repo-path> [--project-name NAME] [--lang auto|zh|en]
                             [--dry-run] [--overwrite] [--no-scan]
 
 行为概述:
@@ -40,12 +40,12 @@ TEMPLATES_ROOT = SCRIPT_DIR.parent / "templates"
 
 try:
     import scan_repo
-    from harness_common import find_git_root, git_version
+    from harness_common import find_git_root, git_version, detect_doc_lang
     from render_data import CONFIG_PURPOSE, DIR_CONVENTIONS
 except ImportError:  # 被其他脚本 import 时兜底
     sys.path.insert(0, str(SCRIPT_DIR))
     import scan_repo
-    from harness_common import find_git_root, git_version
+    from harness_common import find_git_root, git_version, detect_doc_lang
     from render_data import CONFIG_PURPOSE, DIR_CONVENTIONS
 
 # 与模板布局对应的条件性跳过清单（相对 aidoc/ 根）。
@@ -699,8 +699,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("repo_path", help="目标仓库根目录")
     parser.add_argument("--project-name", default=None,
                         help="项目名（默认取仓库目录名）")
-    parser.add_argument("--lang", choices=("zh", "en"), default="zh",
-                        help="模板语言（默认 zh）")
+    parser.add_argument("--lang", choices=("auto", "zh", "en"),
+                        default="auto",
+                        help="模板语言（auto=探测仓库既有文档语言：中文字符"
+                             "占比>30% 判 zh，否则 en，无文档回退 zh）")
     parser.add_argument("--dry-run", action="store_true",
                         help="只打印 CREATE/SKIP/BACKUP+OVERWRITE 计划，不写文件")
     parser.add_argument("--overwrite", action="store_true",
@@ -725,7 +727,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     # 模板目录
-    templates = TEMPLATES_ROOT / args.lang
+    lang = args.lang if args.lang != "auto" else detect_doc_lang(repo)
+    templates = TEMPLATES_ROOT / lang
     if not templates.is_dir():
         print(f"错误: 模板目录不存在: {templates}", file=sys.stderr)
         return 2
@@ -739,6 +742,8 @@ def main(argv: list[str] | None = None) -> int:
     ptype, clues, has_frontend = detect_project(repo, scan=scan)
     print("===== 项目探测 =====")
     print(f"仓库: {repo}")
+    print(f"文档语言: {args.lang}"
+          + (f"（探测为 {lang}）" if args.lang == "auto" else ""))
     print(f"项目类型: {ptype}")
     components = scan["components"]
     if components:
@@ -758,13 +763,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.no_scan:
         print("\n(--no-scan：跳过扫描填充，保留骨架 TODO)")
     else:
-        apply_scan_fill(repo, templates, scan, plan, lang=args.lang,
+        apply_scan_fill(repo, templates, scan, plan, lang=lang,
                         project_name=project_name, dry_run=args.dry_run)
 
     # 产物 manifest（供未来 update/漂移对比工作流；须在扫描填充/裁剪之后算哈希）
     manifest = write_manifest(repo, templates, plan,
                               version=harness_version(),
-                              project_name=project_name, lang=args.lang,
+                              project_name=project_name, lang=lang,
                               dry_run=args.dry_run)
     if args.dry_run:
         plan.auto_filled.append(

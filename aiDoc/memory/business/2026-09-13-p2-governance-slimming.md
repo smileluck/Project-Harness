@@ -7,7 +7,7 @@
 
 ## 状态
 
-in-progress（WS-C 与 WS-E 全部完成；WS-D 进行中；WS-A/WS-B 因与另一会话的 update 工作流开发在同一工作树并行碰撞而暂停，待其落地后续作并 reconcile）
+done（2026-09-15 完成。阶段一 WS-C/E/D 见 9042f1c；update 工作流落地后续作阶段二：WS-A 不变量 9→6 + DoD 唯一化、WS-B 占位符统一 + --lang auto；update_harness 悬案按"被并行实现取代"处理）
 
 ## 涉及范围
 
@@ -34,7 +34,7 @@ in-progress（WS-C 与 WS-E 全部完成；WS-D 进行中；WS-A/WS-B 因与另�
 
 ## 相关文件
 
-- 计划：`aiDoc/plans/active/2026-09-13-p2-governance-slimming.md`
+- 计划：`aiDoc/plans/completed/2026-09-13-p2-governance-slimming.md`
 - 碰撞事件：`aiDoc/memory/lessons/2026-09-13-untracked-files-vs-concurrent-agents.md`
 
 ## 记录日期

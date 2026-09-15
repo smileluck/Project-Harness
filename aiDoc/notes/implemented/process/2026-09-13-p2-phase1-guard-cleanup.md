@@ -43,6 +43,6 @@ P0+P1 后仍存三类缺口：① 保障盲区——`--lang en` 从未走过 ini
 
 ## 交叉链接
 
-- 计划：`aiDoc/plans/active/2026-09-13-p2-governance-slimming.md`（未归档，WS-A/B 待续）
+- 计划：`aiDoc/plans/completed/2026-09-13-p2-governance-slimming.md`（未归档，WS-A/B 待续）
 - 碰撞 lesson：`aiDoc/memory/lessons/2026-09-13-untracked-files-vs-concurrent-agents.md`
 - 前置：`aiDoc/notes/implemented/bug-fix/2026-09-13-code-index-deadlock-whitelist.md`、`aiDoc/notes/implemented/simplification/2026-09-13-single-source-dedup.md`

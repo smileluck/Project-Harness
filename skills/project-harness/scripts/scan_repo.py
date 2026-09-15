@@ -43,8 +43,11 @@ from pathlib import Path
 from render_data import DIR_CONVENTIONS
 
 try:
-    from harness_common import read_text_relaxed
+    from harness_common import detect_doc_lang, read_text_relaxed
 except ImportError:  # 被拷贝到无同级模块的位置时兜底
+    def detect_doc_lang(repo: Path) -> str:
+        return "zh"
+
     def read_text_relaxed(path: Path) -> str | None:
         try:
             return path.read_text(encoding="utf-8", errors="replace")
@@ -1145,8 +1148,10 @@ def main(argv: list | None = None) -> int:
     parser.add_argument("--write-code-index", action="store_true",
                         help="扫描后重新生成机器产物 "
                              "aiDoc/relations/code-index.md（默认只读不写文件）")
-    parser.add_argument("--lang", choices=("zh", "en"), default="zh",
-                        help="--write-code-index 的渲染语言（默认 zh）")
+    parser.add_argument("--lang", choices=("auto", "zh", "en"),
+                        default="auto",
+                        help="--write-code-index 的渲染语言"
+                             "（auto=探测仓库既有文档语言）")
     args = parser.parse_args(argv)
 
     repo = Path(args.repo_path).expanduser().resolve()
@@ -1156,7 +1161,8 @@ def main(argv: list | None = None) -> int:
     result = scan_repo(repo)
     if args.write_code_index:
         dst = repo / CODE_INDEX_REL
-        content = render_code_index(result, lang=args.lang)
+        lang = args.lang if args.lang != "auto" else detect_doc_lang(repo)
+        content = render_code_index(result, lang=lang)
         try:
             unchanged = dst.is_file() and \
                 dst.read_text(encoding="utf-8") == content

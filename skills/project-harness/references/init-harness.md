@@ -1,6 +1,6 @@
 # Init workflow
 
-Non-destructive skeleton bootstrap of a target repository. Creates only missing files; never replaces established conventions without explicit approval. Script: `scripts/init_project.py` (relative to this skill directory, e.g. `${KIMI_SKILL_DIR}/scripts/init_project.py`).
+Non-destructive skeleton bootstrap of a target repository. Creates only missing files; never replaces established conventions without explicit approval. Script: `scripts/init_project.py` (relative to this skill directory, `<skill-dir>/scripts/init_project.py`).
 
 ## When to use
 

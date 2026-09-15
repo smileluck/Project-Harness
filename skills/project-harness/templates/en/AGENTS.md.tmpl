@@ -60,20 +60,20 @@ Never read generated, vendored, or cached trees: `node_modules/`, `.venv/`, `__p
 
 - One fact has one maintained home; everywhere else links to it.
 - Rule bodies live only in `AGENTS.md` and `aiDoc/`; tool-private directories hold pointers only.
-- Non-trivial decisions are recorded in `aiDoc/notes/`; when a decision changes an architecture, contract, or process constraint, the constraint's home doc (`aiDoc/modules/architecture-rules.md`, `aiDoc/contracts/boundary.md`, or this file) is updated in the same change — a note never substitutes for updating the rule itself. Multi-step changes are planned in `aiDoc/plans/`.
-- Evidence is proportional to the affected surface: run focused checks for the surface you touched, not the full suite by reflex. Never weaken filters or thresholds to get green.
-- A push, merge, deployment, or interrupted process is not successful until its observable acceptance check passes.
-- Before closing out any code or doc change, run the drift self-check — `check_sync.py` when the project-harness skill is installed, otherwise verify affected docs against the `aiDoc/README.md` routing table — and fix any drift found in the same change, never deferred. The self-check result is part of the Definition of Done.
-- Pitfalls and recurring patterns must be captured: when work hits a pitfall, review flags the same class of problem repeatedly, or a reusable pattern emerges, record one lesson per `aiDoc/memory/lessons/README.md` in the same change; on recurrence increment its count in place, and at the second occurrence promote it into the constraint body immediately. Never rely on unwritten memory. `check_sync.py` mechanically scans lessons: a `pending` entry with count ≥ 2 that is neither promoted nor explicitly deferred, or a `promoted` entry without a target, fails the drift self-check.
+- Changes leave a trace: non-trivial decisions are recorded in `aiDoc/notes/`, and when a decision changes an architecture, contract, or process constraint, the constraint's home doc (`aiDoc/modules/architecture-rules.md`, `aiDoc/contracts/boundary.md`, or this file) is updated in the same change — a note never substitutes for updating the rule itself. Multi-step, risky, or delegated changes are planned in `aiDoc/plans/`.
+- Evidence and reporting discipline: run focused checks proportional to the affected surface (never the full suite by reflex; never weaken filters or thresholds to get green). Report results as passed / failed / skipped / not-run; an interrupted process is never described as completed.
+- Handoffs are complete: exact state, changed files, commands with results, remaining work, blockers, and the next safe action (see `aiDoc/plans/handoff.TEMPLATE.md`).
+- Closing double gate: before closing out any change, run the drift self-check — `check_sync.py` when the project-harness skill is installed, otherwise verify affected docs against the `aiDoc/README.md` routing table — and fix any drift in the same change; pitfalls and recurring patterns are captured per `aiDoc/memory/lessons/README.md` (the single source for capture and mechanical-gate rules). Both are part of the Definition of Done.
 
 ## Definition of Done
 
-- Code follows the layering and module rules documented in `aiDoc/`.
-- Both sides of every changed contract (producer and consumer) are traced and updated; `aiDoc/contracts/boundary.md` is updated when applicable.
-- Required evidence ran and passed; passed / failed / skipped / not-run are reported separately.
-- The closing drift self-check ran (check_sync.py or routing-table review) and any drift found was fixed in the same change.
-- Decision notes and memory indexes are updated when the change alters behavior, contracts, process, testing strategy, or persistent data.
-- When work is handed off unfinished, the handoff records exact state, changed files, commands run with results, remaining work, blockers, and the next safe action. An interrupted command is never described as completed.
+- [ ] Code changes follow the rules in this file and the routed aiDoc child documents
+- [ ] Validation commands ran per "Evidence and reporting discipline"; results reported honestly by category
+- [ ] Both sides of every changed contract (producer and consumer) are traced and synchronized
+- [ ] Changes needing a decision note are written to `aiDoc/notes/`; changes needing a plan are updated in `aiDoc/plans/`
+- [ ] Affected aiDoc documents are updated in place (facts refreshed, no appended changelog)
+- [ ] Paths and symbol references in docs match the real code
+- [ ] Closing double gate passed: the drift self-check (check_sync.py or routing-table review) is green, any drift was fixed in the same change, and pitfalls were captured per lessons discipline
 
 ## Doc Index and Task Routing
 

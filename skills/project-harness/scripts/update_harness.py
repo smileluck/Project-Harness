@@ -2,7 +2,7 @@
 """update_harness.py — 把目标仓库的 harness 托管文件机械更新到当前模板版本。
 
 用法:
-    python3 update_harness.py <repo-path> [--dry-run] [--force] [--lang zh|en]
+    python3 update_harness.py <repo-path> [--dry-run] [--force] [--lang auto|zh|en]
 
 判定依据：init_project.py 生成的 aiDoc/.harness-manifest.json（工具包版本 +
 每个托管文件的 sha256 基线）。逐文件分类：
@@ -39,12 +39,12 @@ TEMPLATES_ROOT = SCRIPT_DIR.parent / "templates"
 try:
     import init_project
     import scan_repo
-    from harness_common import find_git_root
+    from harness_common import detect_doc_lang, find_git_root
 except ImportError:  # 被其他脚本 import 时兜底
     sys.path.insert(0, str(SCRIPT_DIR))
     import init_project
     import scan_repo
-    from harness_common import find_git_root
+    from harness_common import detect_doc_lang, find_git_root
 
 # 需要做裁剪模拟的索引文件（无前端项目剔除 frontend 引用行）
 _PRUNE_SIM_RELS = ("AGENTS.md", "aiDoc/README.md")
@@ -202,8 +202,9 @@ def main(argv: list[str] | None = None, *,
                         help="只打印更新计划，不写文件")
     parser.add_argument("--force", action="store_true",
                         help="版本相同也逐文件重检（默认版本一致直接报已是最新）")
-    parser.add_argument("--lang", choices=("zh", "en"), default=None,
-                        help="模板语言（默认取 manifest 登记值；adopt 时默认 zh）")
+    parser.add_argument("--lang", choices=("auto", "zh", "en"), default=None,
+                        help="模板语言（auto=探测仓库既有文档语言；默认取 "
+                             "manifest 登记值；adopt 时默认 zh）")
     args = parser.parse_args(argv)
 
     repo = Path(args.repo_path).expanduser().resolve()
@@ -224,7 +225,10 @@ def main(argv: list[str] | None = None, *,
 
     version = init_project.harness_version()
     manifest = _load_manifest(repo)
-    lang = args.lang or (manifest or {}).get("lang") or "zh"
+    if args.lang == "auto":
+        lang = detect_doc_lang(repo)
+    else:
+        lang = args.lang or (manifest or {}).get("lang") or "zh"
     templates_root = templates_root or TEMPLATES_ROOT
     templates_lang = templates_root / lang
     if not templates_lang.is_dir():

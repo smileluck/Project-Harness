@@ -1,7 +1,7 @@
 <!-- last-updated: 2026-09-13 -->
 # 变更计划：P2 治理减负与保障补盲
 
-> 路径：`aiDoc/plans/active/2026-09-13-p2-governance-slimming.md`
+> 路径：`aiDoc/plans/completed/2026-09-13-p2-governance-slimming.md`
 
 ## 目标
 
@@ -52,12 +52,12 @@ P0+P1 之后完成第三阶段：治理强度与对象规模校准（不变量 9
 | 6 | WS-E4 检查 2 去重修正 | main | 无 | check_sync | 完成 |
 | 7 | WS-E5 detect_components 拆分 | main | 1 | selftest 标签断言 | 完成 |
 | 8 | WS-E6 adaptivity 指针化 | main | 无 | selftest | 完成 |
-| 9 | WS-B1 占位符统一 | main | 无 | grep | 暂停（SKILL.md 与并行会话冲突） |
-| 10 | WS-B2 --lang auto | main | 1 | selftest 用例 | 暂停（init_project/harness_common 冲突） |
+| 9 | WS-B1 占位符统一 | main | 无 | grep | 完成 |
+| 10 | WS-B2 --lang auto | main | 1 | selftest 用例 | 完成 |
 | 11 | WS-D1 README 四表收敛 | main | 无 | check_sync + selftest | 完成 |
 | 12 | WS-D2 检查 7 入口完整性 | main | 11 | check_sync + 负例 | 完成 |
-| 13 | WS-A1 不变量合并 + DoD 唯一化 | main | 1-12 | check_sync + selftest | 暂停（AGENTS.md 与并行会话冲突） |
-| 14 | 治理收尾 + 归档 | main | 1-13 | 全量验证 | 阶段一已留痕；归档待 WS-A/B 完成 |
+| 13 | WS-A1 不变量合并 + DoD 唯一化 | main | 1-12 | check_sync + selftest | 完成 |
+| 14 | 治理收尾 + 归档 | main | 1-13 | 全量验证 | 完成 |
 
 ## 验证命令
 
@@ -73,10 +73,10 @@ python3 -m py_compile skills/project-harness/scripts/*.py install.py tests/selft
 
 ## 当前状态
 
-**阶段一完成，WS-A/WS-B 暂停待续。** 执行中发现另一会话在相同工作树并行实现 update 工作流（update_harness.py + references + SKILL.md 路由 + manifest 基线），与本计划 WS-A/WS-B 的目标文件重叠；本会话曾按过时决策删除其未跟踪脚本（已由对方重建，lesson 已记）。处置：只完成冷文件上的剩余工作（WS-D 全部 + 留痕），不 commit（避免收编对方半成品），WS-A/WS-B 待 update 工作流落地后续作并 reconcile（含 init_project 两处"供未来"措辞的口径修正）。
+已完成。update 工作流落地（3c0f639）后阶段二续作完毕，全部验收标准达成。 执行中发现另一会话在相同工作树并行实现 update 工作流（update_harness.py + references + SKILL.md 路由 + manifest 基线），与本计划 WS-A/WS-B 的目标文件重叠；本会话曾按过时决策删除其未跟踪脚本（已由对方重建，lesson 已记）。处置：只完成冷文件上的剩余工作（WS-D 全部 + 留痕），不 commit（避免收编对方半成品），WS-A/WS-B 待 update 工作流落地后续作并 reconcile（含 init_project 两处"供未来"措辞的口径修正）。
 
 阶段一验证：selftest 全部通过（含并行方 [3u] 用例共存）、check_sync 7/7、脚本编译全过。
 
 ## 交付摘要（完成时填写）
 
-阶段一交付（详见 `aiDoc/notes/implemented/process/2026-09-13-p2-phase1-guard-cleanup.md`）：CI 上线（ubuntu × 3.9/3.11/3.12）、selftest 六组新用例、mixed fixture 修正、check_index `../` 解析修复、模板 code-index 死锁话术修正、lessons 索引唯一化、generic-adapter 删除、检查 2 去重修正、detect_components 拆分（8 检测器 + 编排）、README 四表收敛与模板字典补全、检查 7 常用入口完整性 + 负例。剩余：WS-A（不变量 9→6 + DoD 唯一化）、WS-B（占位符统一 + --lang auto）。
+阶段一交付（详见 `aiDoc/notes/implemented/process/2026-09-13-p2-phase1-guard-cleanup.md`）：CI 上线（ubuntu × 3.9/3.11/3.12）、selftest 六组新用例、mixed fixture 修正、check_index `../` 解析修复、模板 code-index 死锁话术修正、lessons 索引唯一化、generic-adapter 删除、检查 2 去重修正、detect_components 拆分（8 检测器 + 编排）、README 四表收敛与模板字典补全、检查 7 常用入口完整性 + 负例。阶段二交付（详见 `aiDoc/notes/implemented/process/2026-09-13-p2-phase2-slimming.md`）：占位符统一（${KIMI_SKILL_DIR} → <skill-dir>）、--lang auto 三脚本接入（detect_doc_lang，中文>30% 判 zh）、SKILL 参数可见性、AGENTS.md 不变量 9→6（机械细节下沉 lessons 正典）、DoD 唯一化（boundary/module-dev 清单瘦身）、zh/en 模板不变量与 DoD 同构合并（en 补齐交接条）。

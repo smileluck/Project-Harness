@@ -13,7 +13,7 @@
 - `business/2026-09-13-rsi-optimization.md`：AI 自进化（RSI）回路优化——lessons 机械闸门 + 晋升后复发闭环，已完成
 - `business/2026-09-13-harness-update.md`：harness 更新功能——git 版本标识 + manifest 基线 + update 工作流（install/skill/产物三层），已完成
 - `business/2026-09-13-p0p1-remediation.md`：架构评审后的 P0+P1 整改——破损修复（code-index 死锁/白名单盲区/漂移清理）与单源化去冗余，已完成
-- `business/2026-09-13-p2-governance-slimming.md`：P2 治理减负与保障补盲——CI 上线、测试盲区补齐、lessons 索引唯一化、组件检测拆分等，部分完成（WS-A/B 待 update 工作流落地后续作）
+- `business/2026-09-13-p2-governance-slimming.md`：P2 治理减负与保障补盲——CI 上线、测试盲区补齐、lessons 索引唯一化、不变量 9→6、--lang auto、占位符统一，已完成
 
 ## 经验记忆（lessons）
 

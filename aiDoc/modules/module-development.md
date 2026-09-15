@@ -26,9 +26,9 @@
 
 - [ ] `python3 -m py_compile` 全部脚本通过
 - [ ] /tmp fixture 实测（至少正例 + 幂等 + dry-run）
-- [ ] zh/en 模板镜像 diff 为空
 - [ ] references 交叉引用路径真实存在
-- [ ] 契约变更已同步 `aiDoc/contracts/boundary.md`
+
+（zh/en 镜像与契约同步属根 `AGENTS.md` Definition of Done，此处不重复。）
 
 ## 真实参考文件
 

@@ -38,3 +38,25 @@ def git_version(root: Path) -> str:
         except (OSError, subprocess.SubprocessError):
             break
     return "unknown"
+
+
+def detect_doc_lang(repo: Path) -> str:
+    """探测目标仓库既有文档的主语言：CJK 字符占比 >30% 判 zh，否则 en。
+
+    读取 AGENTS.md / README 系列文件（各截前 20000 字符）；无既有文档或
+    全空时回退 zh（2026-09-13 用户确认的阈值与回退）。
+    """
+    texts: list[str] = []
+    for name in ("AGENTS.md", "README.md", "README.zh-CN.md", "README.rst"):
+        f = repo / name
+        if f.is_file():
+            content = read_text_relaxed(f)
+            if content:
+                texts.append(content[:20000])
+    if not texts:
+        return "zh"
+    text = "".join(texts)
+    if not text.strip():
+        return "zh"
+    cjk = sum(1 for ch in text if "\u4e00" <= ch <= "\u9fff")
+    return "zh" if cjk / len(text) > 0.30 else "en"

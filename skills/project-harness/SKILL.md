@@ -16,8 +16,8 @@ Parse `$ARGUMENTS` (or `$action`) and dispatch:
 
 | Action | Purpose | Read first |
 |---|---|---|
-| `init [--no-generate]` | Non-destructive skeleton bootstrap of a new or lightly documented repo (AGENTS.md, aiDoc/ tree, tool adapters). Runs `scripts/init_project.py`, then continues into the `generate` workflow by default; `--no-generate` stops at the skeleton. | [references/init-harness.md](references/init-harness.md) |
-| `generate [--incremental \| --scope <area> \| --dry-run] [--lang zh\|en]` | Probe the codebase and generate/update `AGENTS.md` + the `aiDoc/` documentation system. | [references/generate-aidoc.md](references/generate-aidoc.md) |
+| `init [--no-generate]` | Non-destructive skeleton bootstrap of a new or lightly documented repo (AGENTS.md, aiDoc/ tree, tool adapters). Runs `scripts/init_project.py`, then continues into the `generate` workflow by default; `--no-generate` stops at the skeleton. Script-level flags (`--dry-run`/`--overwrite`/`--no-scan`/`--lang`) are documented by the script's `--help`. | [references/init-harness.md](references/init-harness.md) |
+| `generate [--incremental \| --scope <area> \| --dry-run] [--lang auto\|zh\|en]` | Probe the codebase and generate/update `AGENTS.md` + the `aiDoc/` documentation system. | [references/generate-aidoc.md](references/generate-aidoc.md) |
 | `sync` | Detect documentation drift (mechanical checks via `scripts/check_sync.py`, then agent-driven semantic drift handling) and resync incrementally. | [references/sync-aidoc.md](references/sync-aidoc.md) |
 | `record [note \| plan \| handoff \| lesson]` | Create a decision note, change plan, handoff, or lesson record under the correct lifecycle/class discipline. | [references/change-docs.md](references/change-docs.md) |
 | `update` | Refresh a repo's harness-managed files to the current template version after a toolkit upgrade (mechanical refresh via `scripts/update_harness.py`, then semantic merge for project-modified files). | [references/update-harness.md](references/update-harness.md) |
@@ -51,4 +51,4 @@ Scripts and templates ship inside this skill directory, next to this `SKILL.md`:
 - `scripts/check_sync.py` — mechanical drift checks between docs and code
 - `templates/<lang>/` — document skeletons, including `templates/<lang>/adapters/` for tool adapters and `templates/<lang>/aidoc/` for notes/plans templates
 
-Resolve the skill directory via `${KIMI_SKILL_DIR}` when available (a Kimi Code-specific variable; in other agent tools use the skill's actual install path instead). Example: `python3 ${KIMI_SKILL_DIR}/scripts/init_project.py <repo-root> --dry-run`.
+Resolve the skill directory from this file's location — references use the `<skill-dir>` placeholder for it (in Kimi Code, `${KIMI_SKILL_DIR}` holds this path). Example: `python3 <skill-dir>/scripts/init_project.py <repo-root> --dry-run`. Each script prints its full parameter surface with `--help`.

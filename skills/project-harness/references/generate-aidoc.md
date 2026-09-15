@@ -19,7 +19,7 @@ Parse `$ARGUMENTS`:
 | `--scope plans` | Refresh plans indexes/templates only — never rewrite existing plans |
 | `--scope core` | Regenerate `AGENTS.md` + `aiDoc/README.md` (load contract and routing layer) |
 | `--dry-run` | Output Phase 1 probe results and the generation plan; write nothing |
-| `--lang zh\|en` | Language of generated prose (identifiers stay English). Default: match the repo's existing docs language |
+| `--lang auto\|zh\|en` | Language of generated prose (identifiers stay English). Default `auto`: detect from the repo's existing docs (CJK ratio > 30% → zh, else en; falls back to zh) — same rule as the scripts' `--lang auto` |
 
 `--dry-run` may combine with any mode.
 

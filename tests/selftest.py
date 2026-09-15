@@ -237,6 +237,39 @@ def test_lang_en_flow(tmp: Path) -> None:
           (r4.stdout + r4.stderr)[-300:])
 
 
+def test_lang_auto(tmp: Path) -> None:
+    print("\n[2j] --lang auto 探测（中文占比>30% 判 zh）")
+    repo = make_fixture(tmp / "auto-en", "python-cli")
+    (repo / "README.md").write_text(
+        "# demo-cli\nA command line tool for demo purposes.\n",
+        encoding="utf-8")
+    r = run_init(repo)
+    agents = repo / "AGENTS.md"
+    check("英文 README → 默认 en 模板",
+          r.returncode == 0
+          and "## Purpose" in agents.read_text(encoding="utf-8")
+          and "探测为 en" in r.stdout, r.stdout[-200:])
+
+    repo = make_fixture(tmp / "auto-zh", "python-cli")
+    (repo / "README.md").write_text(
+        "# 演示命令行工具\n这是一个用于演示的命令行项目，包含常用功能。\n",
+        encoding="utf-8")
+    r = run_init(repo)
+    agents = repo / "AGENTS.md"
+    check("中文 README → 默认 zh 模板",
+          r.returncode == 0
+          and "## 目的" in agents.read_text(encoding="utf-8")
+          and "探测为 zh" in r.stdout, r.stdout[-200:])
+
+    repo = make_fixture(tmp / "auto-ovr", "python-cli")
+    (repo / "README.md").write_text(
+        "# 中文项目\n这是一个中文项目。\n", encoding="utf-8")
+    r = run_init(repo, "--lang", "en")
+    check("显式 --lang en 覆盖探测",
+          r.returncode == 0
+          and "## Purpose" in (repo / "AGENTS.md").read_text(encoding="utf-8"))
+
+
 def test_no_scan(tmp: Path) -> None:
     print("\n[2f] --no-scan 骨架模式")
     repo = make_fixture(tmp / "noscan", "python-cli")
@@ -651,6 +684,7 @@ def main() -> int:
         test_scan_framework_keywords(tmp)
         test_labels_and_components(tmp)
         test_lang_en_flow(tmp)
+        test_lang_auto(tmp)
         test_no_scan(tmp)
         test_frontend_prune(tmp)
         test_check_sync_negative(tmp)
