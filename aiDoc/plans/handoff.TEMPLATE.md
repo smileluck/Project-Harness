@@ -23,7 +23,7 @@ TODO:
 
 ## 已跑命令与结果
 
-<!-- 逐条列出命令与真实结果；区分 passed / failed / skipped / not-run -->
+<!-- 逐条列出命令与真实结果；区分 passed / failed / skipped / unavailable / not-run -->
 
 | 命令 | 结果 |
 |---|---|

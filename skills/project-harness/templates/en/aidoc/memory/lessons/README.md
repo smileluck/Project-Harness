@@ -27,8 +27,8 @@ Stores pitfalls hit during development and patterns observed recurring. This dir
 
 ## Mechanical Scan
 
-`check_sync.py` judges solely from the header `lesson-meta` marker (never heading-text matching):
+`check_sync.py` judges solely from the header `lesson-meta` marker (never heading-text matching), scanning subdirectories recursively:
 
 - `pending` with `count ≥ 2`, neither promoted nor explicitly `deferred` → ❌ fail
 - `promoted` with empty `target` → ❌ fail
-- Missing `lesson-meta` marker, or `post ≥ 1` → ⚠️ listed as hints, non-blocking
+- Missing `lesson-meta` marker, `post ≥ 1`, or non-numeric `post` → ⚠️ listed as hints, non-blocking

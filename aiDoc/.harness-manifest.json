@@ -1,20 +1,36 @@
 {
-  "harness_version": "5f0ca5f-dirty",
+  "harness_version": "991451b-dirty",
   "project_name": "Project-Harness",
   "lang": "zh",
   "generated": "2026-09-15",
   "files": {
     ".agents/skills/project-code-review/SKILL.md": {
-      "sha256": "20ef0a2529c7b139e75e43f34672324a6e7c33021f68bec2f04c8b762b6d6c9f",
+      "sha256": "85e629c77d5e4a31fb3336e49b89ac893a4276f13bb6edc68bdd83e958fc4bad",
       "template": "agents-skills/project-code-review/SKILL.md"
+    },
+    ".agents/skills/project-pre-push-checks/SKILL.md": {
+      "sha256": "f693c09c74a692a3ccd5b1de88c8336cabc04d0ce54598031dd2fae366b3a087",
+      "template": "agents-skills/project-pre-push-checks/SKILL.md"
+    },
+    "AGENTS.md": {
+      "sha256": "cc98578e58a78b760db4baa581396d41bb852e13bbb4dc057fa51eaa5bdec97d",
+      "template": "AGENTS.md.tmpl"
     },
     "CLAUDE.md": {
       "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
       "template": "CLAUDE.md"
     },
+    "aiDoc/README.md": {
+      "sha256": "d653d0be23fce4f324ff51425949a46ddcbe2cd2bf4974828a5b0585591d0219",
+      "template": "aidoc/README.md"
+    },
     "aiDoc/contracts/boundary.md": {
-      "sha256": "61d8635470a4236d02cc7d30e60f31ca9776b820adbcb71636fd8527c02bee38",
+      "sha256": "e7ac98036b838eef943d0570cd38d89cbb1da6da11c6748c0070f4caed99edaa",
       "template": "aidoc/contracts/boundary.md"
+    },
+    "aiDoc/examples/README.md": {
+      "sha256": "df5568a49972f50778c26c68baf0b51c24b7ef8f61b63d153df5d6d291fa05e5",
+      "template": "aidoc/examples/README.md"
     },
     "aiDoc/memory/README.md": {
       "sha256": "a27efdaf6b806700df6b8c3db14b075d7f8739b6abdc00d2ebbf6da9480e933c",
@@ -28,6 +44,10 @@
       "sha256": "47a324ad6d652f45affa17e123692b17b7f20d119f960ae3b3c42699ff2715e5",
       "template": "aidoc/memory/business/TEMPLATE.md"
     },
+    "aiDoc/memory/lessons/README.md": {
+      "sha256": "0e925173aa07810e5a479d7896cdb2fbb49b8e34c4f4e6983b4b66b391916531",
+      "template": "aidoc/memory/lessons/README.md"
+    },
     "aiDoc/memory/lessons/TEMPLATE.md": {
       "sha256": "6b0e24bab49b9afbbb185b6234018a9c984ef485db618b453936ee07e0193e43",
       "template": "aidoc/memory/lessons/TEMPLATE.md"
@@ -35,6 +55,18 @@
     "aiDoc/memory/long-term/README.md": {
       "sha256": "aa60fac0009223f66265e58473bae7fedcfb44266506e62c8abeeee86731f9c8",
       "template": "aidoc/memory/long-term/README.md"
+    },
+    "aiDoc/memory/project-memory.md": {
+      "sha256": "427b9417b04f95e636870bab134d255f24d2f0fe2051b35111d2b0d92cf38a50",
+      "template": "aidoc/memory/project-memory.md"
+    },
+    "aiDoc/modules/architecture-rules.md": {
+      "sha256": "efb201b31206b639c3c1d5d6aa9732a7980e8c318002def20fd763573e3f0f4d",
+      "template": "aidoc/modules/architecture-rules.md"
+    },
+    "aiDoc/modules/module-development.md": {
+      "sha256": "8e86b31fad118921e90d670efda2efe382ac1031c1c3f01ea75207f401702edd",
+      "template": "aidoc/modules/module-development.md"
     },
     "aiDoc/notes/README.md": {
       "sha256": "a5aed1c6eb77b94b18f4de55cc1f93b14bcb03144ccc4dc0bf1344ca7e14ccd3",
@@ -53,12 +85,20 @@
       "template": "aidoc/plans/change-plan.TEMPLATE.md"
     },
     "aiDoc/plans/handoff.TEMPLATE.md": {
-      "sha256": "7e31383d8dd2f2309a7bf3d111490603c47194f8539f09e7f992b2f5c55bf215",
+      "sha256": "3f8b5dbd4ddfdbd3cc072c9a2075042f45ddf1ff8342fedaa74bef2f5bc742f4",
       "template": "aidoc/plans/handoff.TEMPLATE.md"
     },
-    ".agents/skills/project-pre-push-checks/SKILL.md": {
-      "sha256": "0ef4cbe2ff2f672a35a89ce1b5518fc1c83de1a5cbdacbe2137d72da90c78171",
-      "template": "agents-skills/project-pre-push-checks/SKILL.md"
+    "aiDoc/relations/development-workflow.md": {
+      "sha256": "a09887e2f28fe1aefad9ff9244e054ced1a775d21ba633255697e730e91685d6",
+      "template": "aidoc/relations/development-workflow.md"
+    },
+    "aiDoc/relations/repo-profile.md": {
+      "sha256": "29ee9de532ef661bb2448427b8f30bfbb3e3bca59069bf8497695562c465b490",
+      "template": "aidoc/relations/repo-profile.md"
+    },
+    "aiDoc/relations/system-map.md": {
+      "sha256": "86ccb5401c43c130ce735323e1b28b15c983db3d3e43c837ef0e61540ef7e898",
+      "template": "aidoc/relations/system-map.md"
     }
   }
 }

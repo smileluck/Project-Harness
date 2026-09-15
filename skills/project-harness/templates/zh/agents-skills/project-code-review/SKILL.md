@@ -62,7 +62,7 @@ whenToUse: 当用户要求审查代码改动、评审 PR/diff、或在提交前�
 ## 验证证据
 | 命令 | 结果 |
 |---|---|
-| `...` | passed/failed/skipped/not-run |
+| `...` | passed/failed/skipped/unavailable/not-run |
 
 ## 未覆盖的风险
 [本次审查未能验证的部分]

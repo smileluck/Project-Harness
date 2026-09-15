@@ -64,7 +64,7 @@ Confirm against the actual change:
 ### Project validation
 | Command | Result |
 |---|---|
-| `...` | passed/failed/skipped/not-run |
+| `...` | passed/failed/skipped/unavailable/not-run |
 
 ### Record completeness
 [item-by-item: passed / failed / not applicable]

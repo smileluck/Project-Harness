@@ -14,12 +14,14 @@
     4. lessons 机械闸门：pending≥2 未处理 / promoted 缺 target → exit 1；
        deferred、promoted 有 target、缺 lesson-meta 标记（仅提示）→ exit 0。
     5. zh/en 模板镜像：文件清单一致 + 占位符计数一致 + 标题层级序列一致；
-       本仓 .agents/skills == zh 模板渲染实例（逐字节）。
+       本仓 .agents/skills == zh 模板渲染实例（无 TODO 文件逐字节；含 TODO
+       占位的文件要求本仓实例已解析且标题结构镜像）。
     6. aiDoc↔模板固定样板一致性（剥离首行后逐字节相等）。
     7. 耦合校验：FRONTEND_SKIP 文件存在；AIDOC_SECTIONS == 模板子目录；
        auto-scan 标记全文仅正典 init-harness.md 一处；冲突优先级链/
        lesson-meta 标记/--write-code-index 命令仅正典一处；generate-aidoc.md
-       不复制关键词表；scan-fill 标记 zh/en 模板逐字各一次。
+       不复制关键词表；scan-fill 标记 zh/en 模板逐字各一次；SKILL.md 引用的
+       references 文件全部存在。
 
 退出码: 0 全过；1 有失败。
 """
@@ -31,6 +33,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -111,10 +114,16 @@ def test_init_behaviour(tmp: Path) -> None:
         check(f"{kind} 首跑 exit 0", r.returncode == 0, r.stderr[-300:])
         check(f"{kind} 首跑有 CREATE", "CREATE" in r.stdout or "已创建" in r.stdout)
 
+        manifest = repo / "aiDoc" / ".harness-manifest.json"
+        n1 = len(json.loads(manifest.read_text(encoding="utf-8"))["files"])
+        check(f"{kind} 首跑 manifest 基线非空", n1 > 0, f"files={n1}")
+
         r2 = run_init(repo)
         check(f"{kind} 二跑幂等 exit 0", r2.returncode == 0, r2.stderr[-300:])
         created_again = "已创建: 0 项" in r2.stdout or "created [已创建]: 0 项" in r2.stdout
         check(f"{kind} 二跑零新建", created_again)
+        n2 = len(json.loads(manifest.read_text(encoding="utf-8"))["files"])
+        check(f"{kind} 二跑 manifest 基线保留", n2 == n1, f"{n1} -> {n2}")
 
         r3 = run_init(repo, "--dry-run")
         check(f"{kind} --dry-run exit 0", r3.returncode == 0, r3.stderr[-300:])
@@ -130,6 +139,17 @@ def test_init_behaviour(tmp: Path) -> None:
     before = snapshot_files(repo)
     r = run_init(repo, "--dry-run")
     check("dry-run 零写入", r.returncode == 0 and snapshot_files(repo) == before)
+
+    # 用户改过的托管文件在重跑后保留旧基线哈希（不掩盖 user_modified 判定）
+    repo = make_fixture(tmp / "baseline", "python-cli")
+    run_init(repo)
+    manifest = repo / "aiDoc" / ".harness-manifest.json"
+    h1 = json.loads(manifest.read_text(encoding="utf-8"))["files"]["AGENTS.md"]["sha256"]
+    write(repo / "AGENTS.md", "# 用户改过\n")
+    run_init(repo)
+    m2 = json.loads(manifest.read_text(encoding="utf-8"))["files"]
+    check("SKIP 文件保留旧基线哈希",
+          m2["AGENTS.md"]["sha256"] == h1, f"{h1[:8]} -> {m2['AGENTS.md']['sha256'][:8]}")
 
     # 嵌套 git 拒绝：目标是某 git 仓库的子目录（自身无 .git）
     repo = make_fixture(tmp / "nested", "python-cli")
@@ -209,6 +229,23 @@ def test_labels_and_components(tmp: Path) -> None:
                   and kinds <= {c["kind"] for c in data["components"]})
         check(f"{kind} → label={label} 且组件含 {sorted(kinds)}", ok,
               (r.stdout + r.stderr)[-200:])
+
+
+def test_scan_untracked_files(tmp: Path) -> None:
+    print("\n[2k] scan_repo 覆盖未跟踪文件（git 仓内新增未提交目录）")
+    repo = tmp / "untracked"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    write(repo / "tracked.py", "x = 1\n")
+    subprocess.run(["git", "add", "tracked.py"], cwd=repo, check=True)
+    write(repo / "newmod" / "foo.py", "y = 2\n")
+    r = subprocess.run([PY, str(SCRIPTS / "scan_repo.py"), str(repo), "--json"],
+                       capture_output=True, text=True)
+    ok = r.returncode == 0
+    if ok:
+        data = json.loads(r.stdout)
+        ok = any(d["name"] == "newmod" for d in data["top_dirs"])
+    check("未跟踪目录进入扫描结果 top_dirs", ok, r.stdout[-200:])
 
 
 def test_lang_en_flow(tmp: Path) -> None:
@@ -325,6 +362,28 @@ def test_check_sync_negative(tmp: Path) -> None:
     check("未登记常用入口的文档 → exit 1",
           r.returncode == 1 and "常用入口" in r.stdout, r.stdout[-200:])
 
+    # 负例：行内代码引用不存在的源码路径（检查 2 路径真实性）
+    smap = repo / "aiDoc" / "relations" / "system-map.md"
+    smap.write_text(smap.read_text(encoding="utf-8")
+                    + "\n引用失效源码 `src/ghost_module.py` 示例。\n",
+                    encoding="utf-8")
+    r = subprocess.run([PY, str(SCRIPTS / "check_sync.py"), str(repo)],
+                       capture_output=True, text=True)
+    check("失效源码路径引用 → exit 1",
+          r.returncode == 1 and "不存在: src/ghost_module.py" in r.stdout,
+          r.stdout[-300:])
+
+    # 检查 9：manifest 内容级漂移为提示级（不拦截但可见）
+    repo2 = make_fixture(tmp / "neg-manifest", "python-cli")
+    run_init(repo2)
+    write(repo2 / "AGENTS.md", "# 用户改过\n")
+    r = subprocess.run([PY, str(SCRIPTS / "check_sync.py"), str(repo2)],
+                       capture_output=True, text=True)
+    check("manifest 内容漂移列为提示且 exit 0",
+          r.returncode == 0
+          and "内容与 manifest 基线不一致" in r.stdout
+          and "AGENTS.md" in r.stdout, (r.stdout + r.stderr)[-300:])
+
 
 def test_install(tmp: Path) -> None:
     print("\n[2i] install.py 行为")
@@ -360,6 +419,15 @@ def test_install(tmp: Path) -> None:
     check("project 级 --link 符号链接",
           r.returncode == 0 and link.is_symlink(),
           (r.stdout + r.stderr)[-200:])
+
+    # link 安装以 copy 模式重跑：切换回独立副本
+    r = run_install("--tool", "agents", "--scope", "project",
+                    "--project-dir", str(target))
+    check("link -> copy 切换为独立副本",
+          r.returncode == 0 and link.is_dir() and not link.is_symlink()
+          and (link / "SKILL.md").is_file(), (r.stdout + r.stderr)[-200:])
+    check("copy 安装不含 __pycache__",
+          not list(link.rglob("__pycache__")))
 
 
 def test_scripts_runnable(tmp: Path) -> None:
@@ -452,6 +520,33 @@ def test_lessons_gate(tmp: Path) -> None:
     r = run_sync()
     check("缺标记仅提示 exit 0",
           r.returncode == 0 and "lesson-meta" in r.stdout, r.stdout[-200:])
+
+    # 非法 status / count 为阻塞项
+    write(lesson, LESSON_BODY.format(status="wip", count=1, target="", note=""))
+    r = run_sync()
+    check("status 非法 exit 1",
+          r.returncode == 1 and "status 非法" in r.stdout, r.stdout[-200:])
+
+    write(lesson, LESSON_BODY.format(status="pending", count="x", target="", note=""))
+    r = run_sync()
+    check("count 非整数 exit 1",
+          r.returncode == 1 and "count 缺失或非整数" in r.stdout, r.stdout[-200:])
+
+    # post 畸形标记：提示但不静默逃逸
+    write(lesson, LESSON_BODY.format(status="promoted", count=2,
+                                     target="AGENTS.md", note="x").replace(
+        "post=0", "post=x"))
+    r = run_sync()
+    check("post 非数字列为提示 exit 0",
+          r.returncode == 0 and "post 字段缺失或非数字" in r.stdout,
+          r.stdout[-200:])
+
+    # lessons 子目录内的文件也纳入扫描
+    lesson.unlink()
+    sub = repo / "aiDoc" / "memory" / "lessons" / "arch" / "2026-01-02-sub.md"
+    write(sub, LESSON_BODY.format(status="pending", count=2, target="", note=""))
+    r = run_sync()
+    check("lessons 子目录 pending≥2 exit 1", r.returncode == 1, r.stdout[-200:])
 
 
 # ---------------------------------------------------------------- 3u. update_harness 更新流
@@ -591,21 +686,36 @@ def test_template_mirror() -> None:
 
 
 def test_repo_agents_skills_rendered() -> None:
-    """本仓 .agents/skills 必须是 zh 模板的渲染实例（<harness>/ 已替换为真实路径）。"""
-    print("\n[4b] 本仓 .agents/skills == zh 模板渲染实例")
+    """本仓 .agents/skills 与 zh 模板的关系：
+
+    - 模板无 TODO 的文件：实例必须等于模板渲染结果（逐字节，<harness>/ 已剥离）；
+    - 模板含 TODO 占位的文件（如 pre-push 验证命令表）：本仓 dogfood 实例应已
+      填入真实命令——要求实例无 `TODO:` 残留且标题结构镜像模板。
+    """
+    print("\n[4b] 本仓 .agents/skills == zh 模板渲染实例（TODO 占位已解析）")
     src = TEMPLATES / "zh" / "agents-skills"
     bad = []
     for p in sorted(src.rglob("*")):
         if not p.is_file():
             continue
         rel = p.relative_to(src)
-        rendered = p.read_text(encoding="utf-8").replace("<harness>/", "")
+        tmpl = p.read_text(encoding="utf-8")
+        rendered = tmpl.replace("<harness>/", "")
         inst = REPO_ROOT / ".agents" / "skills" / rel
         if not inst.is_file():
             bad.append(f"实例缺失: .agents/skills/{rel}")
-        elif inst.read_text(encoding="utf-8") != rendered:
-            bad.append(f"实例与模板渲染不一致: .agents/skills/{rel}")
-    check(".agents/skills 与 zh 模板渲染实例逐字节一致", not bad, "; ".join(bad[:2]))
+            continue
+        text = inst.read_text(encoding="utf-8")
+        if "TODO:" not in tmpl:
+            if text != rendered:
+                bad.append(f"实例与模板渲染不一致: .agents/skills/{rel}")
+        else:
+            if "TODO:" in text:
+                bad.append(f"实例 TODO 占位未解析: .agents/skills/{rel}")
+            if _heading_levels(text) != _heading_levels(rendered):
+                bad.append(f"实例与模板标题结构不一致: .agents/skills/{rel}")
+    check(".agents/skills 与 zh 模板一致（无 TODO 文件逐字节；含 TODO 文件已解析且结构镜像）",
+          not bad, "; ".join(bad[:2]))
 
 
 # ---------------------------------------------------------------- 5. 耦合校验
@@ -686,6 +796,14 @@ def test_coupling() -> None:
     check("scan_repo 关键词常量含合并后的全部关键词", not missing,
           f"缺: {missing}")
 
+    # SKILL.md 引用的 references/ 文件必须存在（重命名/删除 reference 要有红色）
+    skill_text = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
+    missing_refs = sorted({
+        m for m in re.findall(r"references/([A-Za-z0-9_\-./]+\.md)", skill_text)
+        if not (REFERENCES / m).is_file()})
+    check("SKILL.md 引用的 references 文件全部存在", not missing_refs,
+          f"缺失: {missing_refs}")
+
     # scan-fill 标记：zh/en 模板的填充点必须逐字一致（脚本按标记定位小节）
     fill_targets = {
         "relations/repo-profile.md":
@@ -714,6 +832,7 @@ def main() -> int:
         test_write_code_index(tmp)
         test_scan_framework_keywords(tmp)
         test_labels_and_components(tmp)
+        test_scan_untracked_files(tmp)
         test_lang_en_flow(tmp)
         test_lang_auto(tmp)
         test_no_scan(tmp)

@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-10 -->
+<!-- last-updated: 2026-09-15 -->
 # 开发流程（development workflow）
 
 > 本仓库的日常开发、验证与提交规范。命令在仓库根目录执行。
@@ -10,6 +10,8 @@
 | 安装 skill 到工具 | `python3 install.py --tool agents\|kimi\|claude\|codex\|all [--link]` |
 | 语法检查 | `python3 -m py_compile install.py skills/project-harness/scripts/*.py tests/selftest.py` |
 | 脚本自测 | `python3 tests/selftest.py`（fixture 端到端 + zh/en 镜像 + 耦合校验，零依赖） |
+| 漂移自检 | `python3 skills/project-harness/scripts/check_sync.py .`（收尾双闸门之一） |
+| CI | `.github/workflows/selftest.yml`：ubuntu × Python 3.9/3.11/3.12，py_compile + selftest + 本仓 check_sync（3.9 覆盖 tomllib 正则回退路径） |
 
 ## 推荐开发顺序
 

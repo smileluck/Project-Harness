@@ -49,7 +49,7 @@ python3 install.py --tool all       # all of the above
 # Options: --scope project (into the current repo), --link (symlink for live updates), --dry-run
 ```
 
-## The four workflows
+## The five workflows
 
 Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`):
 
@@ -59,6 +59,7 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 | `generate [--incremental\|--scope <area>\|--dry-run] [--lang zh\|en]` | Agent-driven: probes the codebase and writes the real content of `AGENTS.md` + `aiDoc/` from actual code — layering rules, API contracts, examples, routing tables. Supports incremental and scoped regeneration. |
 | `sync` | Drift detection: `check_sync.py` verifies index integrity, referenced paths, `last-updated` headers, and area consistency; the agent then resolves semantic drift. It also runs as a mandatory completion gate on every change, sweeping due lessons (count ≥ 2) for promotion. |
 | `record [note\|plan\|handoff\|lesson]` | Create decision notes, change plans, handoffs, or lesson records following the lifecycle discipline (no invented alternatives; implemented notes updated in place; reversals get new cross-linked notes; lessons capture pitfalls and recurring patterns, promoted into constraint docs at the second occurrence). |
+| `update [--dry-run] [--force]` | Managed-file refresh: `update_harness.py` compares the `aiDoc/.harness-manifest.json` baseline against current templates — untouched files are refreshed in place (with backups), project-modified files are skipped for the semantic layer, repos without a manifest enter adopt mode (baseline only). |
 
 ## What a target repo gets
 
@@ -101,8 +102,11 @@ Project-Harness/
     ├── templates/zh/  templates/en/   # bilingual skeletons injected into target repos
     └── scripts/
         ├── init_project.py       # non-destructive scaffolding
+        ├── update_harness.py     # managed-file refresh / adopt baseline
         ├── scan_repo.py          # zero-dependency static scan (runs during init by default)
-        └── check_sync.py         # mechanical drift checks
+        ├── check_sync.py         # mechanical drift checks
+        ├── harness_common.py     # shared helpers (git root, relaxed reading, version, lang detect)
+        └── render_data.py        # bilingual display strings for scan rendering
 ```
 
 ## Acknowledgements

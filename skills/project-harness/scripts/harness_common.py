@@ -35,8 +35,10 @@ def git_version(root: Path) -> str:
                                capture_output=True, text=True, timeout=10)
             if r.returncode == 0 and r.stdout.strip():
                 return r.stdout.strip()
-        except (OSError, subprocess.SubprocessError):
-            break
+        except OSError:
+            break  # git 不存在，回退无意义
+        except subprocess.SubprocessError:
+            continue  # 超时等：仍可尝试下一种命令
     return "unknown"
 
 

@@ -19,7 +19,7 @@
 
 ## Commands Run and Results
 
-<!-- Exact commands and their outcomes. Separate passed / failed / skipped / not-run. Never describe an interrupted command as completed. -->
+<!-- Exact commands and their outcomes. Separate passed / failed / skipped / unavailable / not-run. Never describe an interrupted command as completed. -->
 
 ## Remaining Work
 

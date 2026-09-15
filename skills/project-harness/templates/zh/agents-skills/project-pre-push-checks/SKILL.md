@@ -64,7 +64,7 @@ python3 <harness>/skills/project-harness/scripts/check_sync.py .
 ### 项目验证
 | 命令 | 结果 |
 |---|---|
-| `...` | passed/failed/skipped/not-run |
+| `...` | passed/failed/skipped/unavailable/not-run |
 
 ### 记录完整性
 [逐项 passed / failed / 不适用]

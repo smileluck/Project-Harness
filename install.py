@@ -18,7 +18,8 @@
 目标已存在且非本脚本安装的普通目录时，需要 --force 才覆盖。
 版本判定：版本 = 源仓库 `git describe --tags --always --dirty`。copy 安装把
 版本写入标识文件；已安装版本与源版本一致时 SKIP（不删重装），不同或缺失才
-UPDATE。--link 恒指向源，视为最新。--check 只报告各目标版本不写入。
+UPDATE。--link 恒指向源，视为最新；对 link 安装以 copy 模式重跑可切换回
+独立副本。copytree 排除 __pycache__/*.pyc。--check 只报告各目标版本不写入。
 
 退出码: 0 成功（--check：全部最新）；1 有目标被拒绝/失败（--check：有旧版
 或未安装）；2 参数错误。
@@ -107,8 +108,12 @@ def install_one(tool: str, target: Path, *, link: bool, dry_run: bool,
     if existed:
         if target.is_symlink():
             if target.resolve() == SOURCE.resolve():
-                return True, f"[{tool}] SKIP (link 恒指向源，已是最新) {target}"
-            action = "UPDATE"
+                if link:
+                    return True, f"[{tool}] SKIP (link 恒指向源，已是最新) {target}"
+                # link 安装 -> copy 模式：允许切换回独立副本
+                action = f"UPDATE (link -> copy, {version})"
+            else:
+                action = "UPDATE"
         elif target.is_dir() and is_own_install(target):
             old = installed_version(target)
             if old is not None and old == version and version != "unknown":
@@ -139,7 +144,8 @@ def install_one(tool: str, target: Path, *, link: bool, dry_run: bool,
     if link:
         target.symlink_to(SOURCE, target_is_directory=True)
     else:
-        shutil.copytree(SOURCE, target)
+        shutil.copytree(SOURCE, target,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         marker = target / MARKER
         marker.write_text(
             f"source: {SOURCE}\nversion: {version}\n"

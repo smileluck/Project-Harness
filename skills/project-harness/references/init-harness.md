@@ -57,7 +57,7 @@ Every run finishes by writing `aiDoc/.harness-manifest.json` — the toolkit ver
 
 Before handing off an initialized harness:
 
-1. Remove or resolve every generated `TODO` that can be learned from the repository; mark the rest as explicit unknowns.
+1. Remove or resolve every generated `TODO` that can be learned from the repository; mark the rest as explicit unknowns. (`check_sync.py` flags residual `TODO:` placeholders under `.agents/skills/` as a hint-level check.)
 2. Verify every link and command points to a real file or script that executes.
 3. Run the dry-run again — a second default run must create nothing and change nothing (idempotence).
 4. Confirm the load chain works: `CLAUDE.md` contains `@AGENTS.md` (where applicable), `AGENTS.md` routes to `aiDoc/README.md`, adapters point at the canonical files.

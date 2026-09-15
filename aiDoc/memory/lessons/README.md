@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-13 -->
+<!-- last-updated: 2026-09-15 -->
 # 经验记忆（lessons）
 
 存放开发过程中踩过的坑与反复出现的模式。本目录是**经验 staging 区**：经验在此低成本采集，达到晋升条件后写进约束正文（`/AGENTS.md`、`modules/architecture-rules.md`、`contracts/boundary.md` 等），本目录只留记录与去向链接。
@@ -27,9 +27,9 @@
 
 ## 机械扫描
 
-`check_sync.py` 只按头部 `lesson-meta` 标记机械判定（不解析标题文本）：
+`check_sync.py` 只按头部 `lesson-meta` 标记机械判定（不解析标题文本），递归扫描子目录：
 
 - `pending` 且 `count≥2` 未晋升也未显式 `deferred` → ❌ 失败
 - `promoted` 但 `target` 为空 → ❌ 失败
-- 缺 `lesson-meta` 标记、或 `post≥1` → ⚠️ 提示级列出，不拦截
+- 缺 `lesson-meta` 标记、`post≥1`、或 `post` 非数字 → ⚠️ 提示级列出，不拦截
 

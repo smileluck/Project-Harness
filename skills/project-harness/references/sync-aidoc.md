@@ -30,6 +30,8 @@ Interpret the report:
 | Section mismatch (hint) | `AGENTS.md` mentions aiDoc areas that don't exist, or existing areas go unmentioned | Fix the `AGENTS.md` quick-reference |
 | Unhandled lesson (`pending` count ≥ 2, or `promoted` without `target`) | Lesson promotion discipline violated | Apply the promotion discipline in [change-docs.md](change-docs.md) |
 | Lesson not scannable / recurrence after promotion (hint) | Missing `lesson-meta` marker, or `post ≥ 1` | Add the marker; re-verify the promoted rule per the recurrence loop in [change-docs.md](change-docs.md) |
+| Residual `TODO:` placeholder in `.agents/skills/` (hint) | Generated verification-command table not yet filled in | Fill real commands per [init-harness.md](init-harness.md) completion checklist item 1 |
+| Manifest baseline mismatch (hint) | A managed file's content differs from the `aiDoc/.harness-manifest.json` sha256 baseline | Distinguish intentional edits (re-baseline via `update` workflow) from unintended drift (restore or regenerate); see [update-harness.md](update-harness.md) |
 
 The script does **not** check example validity ("real reference files" freshness) — that is Step 2 item 3 below — nor whether a doc is newer than the code it describes; both are semantic judgments.
 

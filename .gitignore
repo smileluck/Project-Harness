@@ -8,6 +8,7 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+.zcode/
 
 # Test scratch
 /tmp-test/

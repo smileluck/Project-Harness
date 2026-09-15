@@ -49,7 +49,7 @@ python3 install.py --tool all       # 以上全部
 # 选项：--scope project（装进当前仓库）、--link（符号链接，仓库更新即时生效）、--dry-run
 ```
 
-## 四个工作流
+## 五个工作流
 
 在 agent 中调用 skill（如 Kimi Code：`/skill:project-harness <参数>`）：
 
@@ -59,6 +59,7 @@ python3 install.py --tool all       # 以上全部
 | `generate [--incremental\|--scope <区域>\|--dry-run] [--lang zh\|en]` | Agent 驱动：探测代码库并基于真实代码撰写 `AGENTS.md` + `aiDoc/` 内容——分层规则、API 契约、示例、路由表。支持增量与局部再生成。 |
 | `sync` | 漂移检测：`check_sync.py` 校验索引完整性、引用路径、`last-updated` 头部、区域一致性；agent 再处理语义漂移。同时是每次变更收尾的强制自检闸门，并兜底晋升到期 lessons（出现次数 ≥2）。 |
 | `record [note\|plan\|handoff\|lesson]` | 按生命周期纪律创建决策记录 / 变更计划 / 交接 / 经验记录（不编造备选方案；implemented 就地更新；推翻旧决策新建交叉链接 note；lesson 记录踩坑与反复模式，第二次出现时晋升进约束层）。 |
+| `update [--dry-run] [--force]` | 托管文件刷新：`update_harness.py` 按 `aiDoc/.harness-manifest.json` 基线比对当前模板——未改过的文件原地刷新（含备份），项目已改的文件跳过交语义层合入；无 manifest 的旧仓库进入 adopt 模式（只建基线）。 |
 
 ## 目标仓库会得到什么
 
@@ -101,8 +102,11 @@ Project-Harness/
     ├── templates/zh/  templates/en/   # 注入目标仓库的双语骨架
     └── scripts/
         ├── init_project.py       # 非破坏性脚手架
+        ├── update_harness.py     # 托管文件刷新 / adopt 建基线
         ├── scan_repo.py          # 零依赖静态扫描（init 默认执行）
-        └── check_sync.py         # 机械漂移检查
+        ├── check_sync.py         # 机械漂移检查
+        ├── harness_common.py     # 公共工具（git 根、容错读取、版本、语言探测）
+        └── render_data.py        # 扫描渲染的双语展示文案表
 ```
 
 ## 致谢

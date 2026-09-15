@@ -33,6 +33,8 @@
 | `skills/project-harness/scripts/` | 零依赖 Python 脚本：`init_project.py`（骨架+扫描+manifest 基线）、`update_harness.py`（托管文件版本刷新）、`scan_repo.py`（静态扫描与 code-index 再生成）、`check_sync.py`（漂移检测）、`harness_common.py`（公共工具）、`render_data.py`（双语展示文案表） |
 | `tests/` | `selftest.py` 自检：init 行为、脚本可运行性、lessons 闸门、zh/en 镜像与耦合契约 |
 | `aiDoc/` | 本仓库自身的 AI 协作文档层（本仓库是 toolkit 的首个应用对象） |
+| `.agents/skills/` | 本仓 dogfood 的项目级 skill 实例（project-code-review / project-pre-push-checks），由模板渲染生成 |
+| `.github/workflows/` | CI：selftest.yml 在 ubuntu × Python 3.9/3.11/3.12 跑 py_compile + selftest + check_sync |
 
 ## 工程规则
 
@@ -71,7 +73,7 @@
 1. **一个事实一个维护家**：同一规则只在一个文件维护正文，他处只放相对路径链接。
 2. **规则不进工具私有目录**：项目级规则正文只在 `AGENTS.md` 与 `aiDoc/`。
 3. **变更要留痕**：改变行为、架构、共享契约、流程、测试策略或持久数据的变更，必须按 `aiDoc/notes/README.md` 写决策记录，涉及架构/契约/流程约束的在同一变更内回写约束正文（禁止只记决策不改规则）；跨组件、有风险或需交接的工作，先按 `aiDoc/plans/README.md` 建变更计划。
-4. **证据与报告纪律**：证据按影响面选择——逻辑改动跑聚焦测试，接口改动跑 typecheck + 契约测试，用户可见输出走真实入口冒烟，文档改动做链接/格式检查；禁止反射式全量测试，禁止为变绿放宽过滤。结果按 passed / failed / skipped / not-run 分开报告，禁止把中断的命令描述为已完成。
+4. **证据与报告纪律**：证据按影响面选择——逻辑改动跑聚焦测试，接口改动跑 typecheck + 契约测试，用户可见输出走真实入口冒烟，文档改动做链接/格式检查；禁止反射式全量测试，禁止为变绿放宽过滤。结果按 passed / failed / skipped / unavailable / not-run 分开报告，禁止把中断的命令描述为已完成。
 5. **交接要完整**：中断或移交工作时，按 `aiDoc/plans/handoff.TEMPLATE.md` 给出精确状态、已改文件、已跑命令与结果、剩余工作、阻塞、下一步安全动作。
 6. **收尾双闸门**：任何改动收尾必须过漂移自检——本仓库运行 `python3 skills/project-harness/scripts/check_sync.py .`，无脚本时按 `aiDoc/README.md` 路由表核对，发现的漂移在同一变更内修复；踩坑与反复模式必须按 `aiDoc/memory/lessons/README.md` 入库（捕获与机械闸门规则的唯一正典在该文件）。二者是 Definition of Done 的一部分。
 

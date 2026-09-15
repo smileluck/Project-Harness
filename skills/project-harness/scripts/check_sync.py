@@ -12,14 +12,20 @@
        等点目录跳过）前 5 行内应有 <!-- last-updated: YYYY-MM-DD -->。
     4. 区域一致性（提示级别，不影响退出码）: AGENTS.md 提到的 aiDoc 区域名
        与实际子目录互相对照。
-    5. lessons 晋升纪律: 按 aiDoc/memory/lessons/*.md 头部 lesson-meta 标记判定
-       （豁免 TEMPLATE/README）——pending 且 count≥2 未晋升也未显式 deferred、
-       promoted 但 target 为空、status/count 非法，均为失败项。
+    5. lessons 晋升纪律: 按 aiDoc/memory/lessons/ 下（含子目录）.md 头部
+       lesson-meta 标记判定（豁免 TEMPLATE/README）——pending 且 count≥2
+       未晋升也未显式 deferred、promoted 但 target 为空、status/count 非法，
+       均为失败项。
     6. lessons 可扫描性（提示级别，不影响退出码）: 缺 lesson-meta 标记的 lesson、
        post≥1（晋升后仍复发）的条目，列出但不拦截。
     7. 常用入口完整性: 文档型 aiDoc .md（各区域 README + relations/modules/
        contracts/frontend/memory 的直接子文档）必须在 aiDoc/README.md 的
        常用入口字典中登记——未登记 = 文档未入库。
+    8. agents-skills 占位解析（提示级别，不影响退出码）: .agents/skills/ 下的
+       .md 不应残留 `TODO:` 占位（init 生成的验证命令表等需按项目实情填写）。
+    9. manifest 基线一致性（提示级别，不影响退出码）: 若存在
+       aiDoc/.harness-manifest.json，登记的托管文件 sha256 基线与现内容比对，
+       不一致 = 内容级漂移（用户改动或 update 后未 re-baseline），列出供核对。
 
 输出为纯文本（无颜色依赖），每项 ✅/❌ + 明细，末尾总计。
 退出码: 0 全部通过；1 存在 ❌；2 目标缺 AGENTS.md 或 aiDoc/。
@@ -28,6 +34,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import re
 import sys
 from pathlib import Path
@@ -250,8 +258,10 @@ def check_lessons(aidoc: Path) -> tuple[bool, list[str], list[str]]:
     infos: list[str] = []
     if not lessons.is_dir():
         return True, ["无 memory/lessons/ 目录，跳过"], hints
-    files = [f for f in sorted(lessons.glob("*.md"))
-             if f.name.upper() not in ("TEMPLATE.MD", "README.MD")]
+    files = [f for f in sorted(lessons.rglob("*.md"))
+             if f.name.upper() not in ("TEMPLATE.MD", "README.MD")
+             and not any(part.startswith(".")
+                         for part in f.relative_to(lessons).parts)]
     if not files:
         return True, ["无 lesson 记录"], hints
     for f in files:
@@ -273,7 +283,9 @@ def check_lessons(aidoc: Path) -> tuple[bool, list[str], list[str]]:
             blocking.append(f"count 缺失或非整数: {rel}")
             continue
         post = meta.get("post", "0")
-        if post.isdigit() and int(post) >= 1:
+        if not post.isdigit():
+            hints.append(f"post 字段缺失或非数字 ({post!r})，无法判定复发: {rel}")
+        elif int(post) >= 1:
             hints.append(f"晋升后复发 post={post}，需确认已晋升规则的有效性: {rel}")
         target = meta.get("target", "")
         if status == "promoted" and not target:
@@ -314,6 +326,54 @@ def check_dict_coverage(aidoc: Path) -> tuple[bool, list[str]]:
         if _is_dict_doc(rel) and f"`{rel}`" not in text:
             missing.append(f"未登记于常用入口字典: aiDoc/{rel}")
     return (not missing), missing
+
+
+# ---------------------------------------------------------------- 检查 8
+
+def check_agents_skills_todo(repo: Path) -> tuple[bool, list[str]]:
+    """目标仓 .agents/skills/ 下 .md 不应残留 `TODO:` 占位（提示级别）。"""
+    skills_dir = repo / ".agents" / "skills"
+    if not skills_dir.is_dir():
+        return True, ["无 .agents/skills/ 目录，跳过"]
+    bad: list[str] = []
+    for f in sorted(skills_dir.rglob("*.md")):
+        text = read_text_relaxed(f)
+        if text is None:
+            continue
+        for lineno, line in enumerate(text.splitlines(), 1):
+            if "TODO:" in line:
+                bad.append(f"残留 TODO 占位: {f.relative_to(repo)}:{lineno}")
+    return (not bad), bad
+
+
+# ---------------------------------------------------------------- 检查 9
+
+MANIFEST_REL = "aiDoc/.harness-manifest.json"
+
+
+def check_manifest_drift(repo: Path, aidoc: Path) -> tuple[bool, list[str]]:
+    """manifest 基线 vs 托管文件现状（提示级别）：哈希不一致 = 内容级漂移。"""
+    manifest = repo / MANIFEST_REL
+    if not manifest.is_file():
+        return True, ["无 manifest（init 未写基线），跳过"]
+    try:
+        data = json.loads(read_text_relaxed(manifest) or "")
+    except ValueError:
+        return True, ["manifest 不可解析，跳过"]
+    if not isinstance(data, dict):
+        return True, ["manifest 结构异常，跳过"]
+    bad: list[str] = []
+    for rel, entry in sorted((data.get("files") or {}).items()):
+        if not isinstance(entry, dict):
+            continue
+        f = repo / rel
+        if not f.is_file():
+            bad.append(f"基线登记的文件已不存在: {rel}")
+            continue
+        digest = hashlib.sha256(f.read_bytes()).hexdigest()
+        if digest != entry.get("sha256"):
+            bad.append(f"内容与 manifest 基线不一致（用户改动或漂移）: {rel}")
+    return (not bad), bad
 
 
 # ---------------------------------------------------------------- main
@@ -362,6 +422,14 @@ def main(argv: list[str] | None = None) -> int:
     ok, details = check_dict_coverage(aidoc)
     report.add("常用入口完整性 (文档型 aiDoc 文档已登记于 README 字典)",
                ok, details)
+
+    ok, details = check_agents_skills_todo(repo)
+    report.add("agents-skills 占位解析 (.agents/skills 无残留 TODO)",
+               ok, details, hint_only=True)
+
+    ok, details = check_manifest_drift(repo, aidoc)
+    report.add("manifest 基线一致性 (托管文件内容与 sha256 基线比对)",
+               ok, details, hint_only=True)
 
     return report.print()
 

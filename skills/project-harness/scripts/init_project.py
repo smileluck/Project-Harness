@@ -18,8 +18,9 @@
        aiDoc/relations/code-index.md（机器产物，覆盖规则例外）。
     5. 默认绝不覆盖已存在文件；--overwrite 会先备份到 aiDoc/.harness-backups/。
     6. 幂等：第二次运行文档全部 SKIP，code-index.md 重新生成且内容一致。
-    7. 收尾写 aiDoc/.harness-manifest.json（工具包版本 + 本次写入文件的
-       sha256 基线），供未来 update/漂移对比工作流使用。
+    7. 收尾写 aiDoc/.harness-manifest.json（工具包版本 + 托管文件的 sha256
+       基线；本次未重写的既有条目保留旧哈希，重跑不清空基线），供未来
+       update/漂移对比工作流使用。
 
 退出码: 0 成功；2 参数错误 / 嵌套 git 拒绝。
 """
@@ -648,6 +649,11 @@ def write_manifest(repo: Path, templates: Path, plan: Plan, *,
 
     必须在扫描填充与索引裁剪之后调用（哈希按最终内容）。code-index.md 是
     机器产物、每次重新生成，不登记。dry-run 不写文件，只返回数据。
+
+    基线合并：本次未重写的既有条目（SKIP 的文件）保留旧哈希而非丢弃——
+    重跑 init 不得清空基线；保留旧哈希（而非按现内容重算）是为了不掩盖
+    用户对托管文件的修改，update_harness 的 user_modified 判定依赖这一点。
+    已不存在的文件条目剔除。
     """
     files: dict[str, dict] = {}
     for rel in sorted(plan.written):
@@ -661,6 +667,20 @@ def write_manifest(repo: Path, templates: Path, plan: Plan, *,
         except OSError:
             continue
         files[rel] = {"sha256": digest, "template": trel}
+    # 合并未重写文件的旧基线
+    try:
+        old = json.loads((repo / MANIFEST_REL).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        old = {}
+    for rel, entry in (old.get("files") or {}).items():
+        if rel in files or rel == CODE_INDEX_REL or not isinstance(entry, dict):
+            continue
+        if template_rel_for(rel, templates) is None:
+            continue
+        if not (repo / rel).is_file():
+            continue
+        files[rel] = entry
+    files = dict(sorted(files.items()))
     data = {"harness_version": version, "project_name": project_name,
             "lang": lang, "generated": date.today().isoformat(),
             "files": files}

@@ -24,8 +24,9 @@
     notes             无判定价值的清单说明（如空 package.json）
 
 仅使用标准库；toml 解析在 Python 3.11+ 用 tomllib，否则正则回退。
-默认只读：不写任何文件、不执行 git 写操作（git ls-files 只读）。唯一例外是
-显式传入 --write-code-index：只写入机器产物 aiDoc/relations/code-index.md，
+默认只读：不写任何文件、不执行 git 写操作（git ls-files 只读，覆盖已跟踪
+与未忽略未跟踪文件）。唯一例外是显式传入 --write-code-index：只写入机器产物
+aiDoc/relations/code-index.md，
 这是 references 中 code-index.md 漂移修复路径的实现（agent 禁止手编该文件）。
 """
 
@@ -40,7 +41,10 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-from render_data import DIR_CONVENTIONS
+try:
+    from render_data import DIR_CONVENTIONS
+except ImportError:  # 被拷贝到无同级模块的位置时兜底（退化为无约定标注）
+    DIR_CONVENTIONS = {}
 
 try:
     from harness_common import detect_doc_lang, read_text_relaxed
@@ -145,10 +149,14 @@ def _dedup(names):
 # ---------------------------------------------------------------- 文件清单
 
 def list_files(repo: Path) -> list[str]:
-    """优先 git ls-files（只读）；失败/为空退回 os.walk（排除常见噪音目录）。"""
+    """优先 git ls-files（只读）：已跟踪 + 未跟踪但未被 .gitignore 排除的文件
+    都纳入（--cached --others --exclude-standard）——init 的典型场景是
+    「新仓库代码尚未提交」，只看已跟踪文件会系统性漏扫。
+    git 不可用/为空时退回 os.walk（排除常见噪音目录）。"""
     try:
         out = subprocess.run(
-            ["git", "ls-files", "-z"], cwd=str(repo),
+            ["git", "ls-files", "-z", "--cached", "--others",
+             "--exclude-standard"], cwd=str(repo),
             capture_output=True, timeout=30)
         if out.returncode == 0 and out.stdout:
             files = [p for p in out.stdout.decode(

@@ -64,7 +64,7 @@ Evidence must be proportional to the affected surface.
 ## Verification evidence
 | Command | Result |
 |---|---|
-| `...` | passed/failed/skipped/not-run |
+| `...` | passed/failed/skipped/unavailable/not-run |
 
 ## Uncovered risks
 [what this review could not verify]

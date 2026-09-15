@@ -27,8 +27,8 @@
 
 ## 机械扫描
 
-`check_sync.py` 只按头部 `lesson-meta` 标记机械判定（不解析标题文本）：
+`check_sync.py` 只按头部 `lesson-meta` 标记机械判定（不解析标题文本），递归扫描子目录：
 
 - `pending` 且 `count≥2` 未晋升也未显式 `deferred` → ❌ 失败
 - `promoted` 但 `target` 为空 → ❌ 失败
-- 缺 `lesson-meta` 标记、或 `post≥1` → ⚠️ 提示级列出，不拦截
+- 缺 `lesson-meta` 标记、`post≥1`、或 `post` 非数字 → ⚠️ 提示级列出，不拦截

@@ -32,14 +32,12 @@ python3 skills/project-harness/scripts/check_sync.py .
 
 ### 3. 项目自身验证（按影响面选择）
 
-<!-- TODO: init/generate 时按项目真实工具链填写下列命令占位 -->
-
 | 检查 | 命令 | 何时必跑 |
 |---|---|---|
-| 类型检查 | `TODO:` | 接口/类型改动 |
-| 聚焦测试 | `TODO:` | 逻辑改动 |
-| 构建 | `TODO:` | 构建配置/导出/生成物改动 |
-| Lint / 格式 | `TODO:` | 项目已配置时 |
+| 语法检查 | `python3 -m py_compile install.py skills/project-harness/scripts/*.py tests/selftest.py` | 脚本/接口改动 |
+| 聚焦测试 | `python3 tests/selftest.py` | 逻辑/模板/references 改动 |
+| 构建 | 无构建步骤（纯 Python 零依赖工具包） | — |
+| Lint / 格式 | 未配置 | — |
 
 - 禁止反射式全量测试；按 `aiDoc/README.md` 路由与根 `AGENTS.md` 操作不变量选择
 - 禁止为变绿放宽过滤或阈值
@@ -64,7 +62,7 @@ python3 skills/project-harness/scripts/check_sync.py .
 ### 项目验证
 | 命令 | 结果 |
 |---|---|
-| `...` | passed/failed/skipped/not-run |
+| `...` | passed/failed/skipped/unavailable/not-run |
 
 ### 记录完整性
 [逐项 passed / failed / 不适用]
