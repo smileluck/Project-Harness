@@ -62,6 +62,7 @@ Paths are relative to `aiDoc/`. TODO: complete for every task type that exists i
 | Task type | Must-read docs |
 |---|---|
 | New module / feature / command | `modules/module-development.md`, `modules/architecture-rules.md`, `examples/` |
+| Modify existing logic | `modules/architecture-rules.md`, `relations/system-map.md` |
 | New frontend page / feature | `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/` (frontend examples) |
 | Contract / field alignment | `contracts/boundary.md` |
 | Understand repo structure / stack / workflow | `relations/repo-profile.md`, `relations/system-map.md`, `relations/development-workflow.md` |
@@ -69,6 +70,7 @@ Paths are relative to `aiDoc/`. TODO: complete for every task type that exists i
 | New business requirement from user | `memory/business/TEMPLATE.md`, `memory/project-memory.md` (index must be updated) |
 | Recording a pitfall / recurring pattern | `memory/lessons/README.md`, `memory/lessons/TEMPLATE.md` (index must be updated) |
 | Multi-step / cross-component change | `plans/README.md`, `plans/change-plan.TEMPLATE.md` |
+| Interrupted work or handoff to another agent | `plans/handoff.TEMPLATE.md` |
 | Recording a non-trivial decision | `notes/README.md`, `notes/TEMPLATE.md` |
 | Code review | `../.agents/skills/project-code-review/SKILL.md` |
 | Pre-push verification | `../.agents/skills/project-pre-push-checks/SKILL.md` |

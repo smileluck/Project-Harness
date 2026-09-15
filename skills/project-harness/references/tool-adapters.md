@@ -30,7 +30,7 @@ structured_context: /aiDoc
 ---
 ```
 
-- Generate adapters from `templates/<lang>/adapters/<tool>.md`, filling only the tool name; do not expand project rules into the template.
+- Generate adapters from the templates in `templates/<lang>/adapters/` — shipped: `trae-rules.md`, `cursor-rules.md`, `copilot-instructions.md`; tools without a shipped template (windsurf, aider, …) are written from the frontmatter pattern above in the same thin-adapter shape. Fill in only the tool name; do not expand project rules into the template.
 
 ## Adapter state registry
 

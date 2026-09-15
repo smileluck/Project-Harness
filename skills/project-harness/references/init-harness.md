@@ -4,7 +4,7 @@ Non-destructive skeleton bootstrap of a target repository. Creates only missing 
 
 ## When to use
 
-- New or lightly documented repositories that need the full harness skeleton (`AGENTS.md`, `aiDoc/` tree, `CLAUDE.md`, tool adapters, `.agents/skills/`).
+- New or lightly documented repositories that need the full harness skeleton (`AGENTS.md`, `CLAUDE.md`, `aiDoc/` tree, `.agents/skills/`; tool adapters are added by the generate workflow, not by init).
 - Mature repositories as a **gap audit**: fill only missing pieces, merge with what exists.
 
 ## Preflight

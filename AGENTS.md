@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-13 -->
+<!-- last-updated: 2026-09-15 -->
 # AGENTS.md
 
 ## 目的
@@ -27,7 +27,7 @@
 | 目录/文件 | 职责 |
 |---|---|
 | `install.py` | 多工具安装器 CLI：把 skill 目录 copy/symlink 到 agents/kimi/claude/codex 的 skills 路径 |
-| `skills/project-harness/SKILL.md` | skill 入口路由：init / generate / sync / record 四工作流 |
+| `skills/project-harness/SKILL.md` | skill 入口路由：init / generate / sync / record / update 五工作流 |
 | `skills/project-harness/references/` | 工作流细则与 aiDoc 目录契约（英文，清单见 `aiDoc/README.md`） |
 | `skills/project-harness/templates/` | 注入目标仓库的骨架，zh/ 与 en/ 两套严格镜像 |
 | `skills/project-harness/scripts/` | 零依赖 Python 脚本：`init_project.py`（骨架+扫描+manifest 基线）、`update_harness.py`（托管文件版本刷新）、`scan_repo.py`（静态扫描与 code-index 再生成）、`check_sync.py`（漂移检测）、`harness_common.py`（公共工具）、`render_data.py`（双语展示文案表） |

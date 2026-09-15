@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-13 -->
+<!-- last-updated: 2026-09-15 -->
 # 项目档案（repo profile）
 
 > 项目定位与技术栈速查。所有内容必须来自真实配置文件与代码探测，禁止编造。
@@ -24,7 +24,7 @@ Project-Harness 是一个可安装的多工具通用工具包：把任意仓库�
 
 | 特性 | 说明 | 位置 |
 |---|---|---|
-| 四工作流 | init / generate / sync / record | `skills/project-harness/SKILL.md` |
+| 五工作流 | init / generate / sync / record / update | `skills/project-harness/SKILL.md` |
 | 非破坏性初始化 | 默认不覆盖、--dry-run、--overwrite 自动备份、幂等 | `skills/project-harness/scripts/init_project.py` |
 | 静态扫描 | 多语言 manifest 解析 + 组件探测（混合项目）+ code-index 生成与漂移修复（`--write-code-index`） | `skills/project-harness/scripts/scan_repo.py` |
 | 漂移检测 | 索引完整性/路径真实性/last-updated/区域一致性/lessons 晋升闸门 | `skills/project-harness/scripts/check_sync.py` |

@@ -13,6 +13,11 @@
     文件已被项目删除   -> 不复活，从 manifest 移除
     模板侧已移除       -> 报告保留，首版不自动删项目文件
 
+模板新增文件（模板有、manifest 无——旧版 init 的 manifest 不会自动长出）：
+    目标不存在         -> 写入期望内容并登记
+    目标存在且与期望一致 -> 仅补登记基线（内容不动）
+    目标存在且内容不同  -> 报告冲突，不覆盖不登记，交语义层处理
+
 无 manifest 的旧仓库进入 adopt 模式：与期望内容比对（忽略 last-updated 行，
 消除日期漂移），一致的登记基线；含 auto-scan 标记的扫描填充产物直接登记；
 其余视为项目已改不登记——adopt 只建立基线。
@@ -123,12 +128,19 @@ class UpdateReport:
         self.user_modified: list[str] = []  # 项目已改 -> 跳过
         self.removed_in_template: list[str] = []  # 模板已删 -> 项目文件保留
         self.deleted_by_user: list[str] = []      # 项目已删 -> 不复活
+        self.created_new: list[str] = []    # 模板新增 -> 已写入并登记
+        self.adopted_new: list[str] = []    # 模板新增且项目文件一致 -> 补登记
+        self.new_conflict: list[str] = []   # 模板新增但项目已有不同内容 -> 不动
 
     def print(self) -> None:
         groups = (
             ("refreshed [已刷新]", self.refreshed),
             ("unchanged [内容已一致]", self.unchanged),
             ("user-modified [项目已改，跳过]", self.user_modified),
+            ("new-in-template [模板新增，已写入并登记]", self.created_new),
+            ("adopted-new [模板新增，项目文件一致，补登记]", self.adopted_new),
+            ("new-conflict [模板新增但项目已有不同内容，不覆盖不登记]",
+             self.new_conflict),
             ("removed-in-template [模板已移除，项目文件保留]",
              self.removed_in_template),
             ("deleted-by-user [项目已删除，不复活]", self.deleted_by_user),
@@ -157,7 +169,9 @@ def adopt(repo: Path, templates_lang: Path, render_ctx: dict,
     adopted: list[str] = []
     user_modified: list[str] = []
     for rel, trel in iter_managed(templates_lang):
-        if rel in skip_set or rel == init_project.CODE_INDEX_REL:
+        # skip_set 是 aidoc 树相对形式（frontend/...），rel 是仓库相对（aiDoc/...）
+        aidoc_rel = rel[len("aiDoc/"):] if rel.startswith("aiDoc/") else rel
+        if aidoc_rel in skip_set or rel == init_project.CODE_INDEX_REL:
             continue
         dst = repo / rel
         src = templates_lang / trel
@@ -304,6 +318,42 @@ def main(argv: list[str] | None = None, *,
                 report.refreshed.append(rel)
             new_files[rel] = {"sha256": "dry-run" if args.dry_run
                               else _sha256(dst), "template": trel}
+
+        # 模板新增文件（模板有、manifest 无）：旧版 init 的 manifest 不会
+        # 自动长出新文件，update 是它们进入托管链路的唯一通道。
+        for rel, trel in iter_managed(templates_lang):
+            aidoc_rel = rel[len("aiDoc/"):] if rel.startswith("aiDoc/") else rel
+            if rel in manifest.get("files", {}) \
+                    or rel == init_project.CODE_INDEX_REL \
+                    or aidoc_rel in skip_set:
+                continue
+            src = templates_lang / trel
+            dst = repo / rel
+            if not src.is_file():
+                continue
+            expected = _expected_content(src, rel, render_ctx, fill_map,
+                                         skip_set)
+            if expected is None:
+                continue
+            if dst.is_file():
+                try:
+                    cur_text = dst.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError):
+                    cur_text = None
+                if cur_text is not None \
+                        and _normalized(cur_text) == _normalized(expected):
+                    new_files[rel] = {"sha256": _sha256(dst),
+                                      "template": trel}
+                    report.adopted_new.append(rel)
+                else:
+                    report.new_conflict.append(rel)
+            else:
+                if not args.dry_run:
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    dst.write_text(expected, encoding="utf-8")
+                new_files[rel] = {"sha256": "dry-run" if args.dry_run
+                                  else _sha256(dst), "template": trel}
+                report.created_new.append(rel)
         report.print()
         new_manifest = {"harness_version": version,
                         "project_name": project_name, "lang": lang,

@@ -16,7 +16,7 @@ Parse `$ARGUMENTS` (or `$action`) and dispatch:
 
 | Action | Purpose | Read first |
 |---|---|---|
-| `init [--no-generate]` | Non-destructive skeleton bootstrap of a new or lightly documented repo (AGENTS.md, aiDoc/ tree, tool adapters). Runs `scripts/init_project.py`, then continues into the `generate` workflow by default; `--no-generate` stops at the skeleton. Script-level flags (`--dry-run`/`--overwrite`/`--no-scan`/`--lang`) are documented by the script's `--help`. | [references/init-harness.md](references/init-harness.md) |
+| `init [--no-generate]` | Non-destructive skeleton bootstrap of a new or lightly documented repo (AGENTS.md, CLAUDE.md, aiDoc/ tree, `.agents/skills/` helpers — tool adapters are written later by the generate workflow, not by the script). Runs `scripts/init_project.py`, then continues into the `generate` workflow by default; `--no-generate` stops at the skeleton. Script-level flags (`--dry-run`/`--overwrite`/`--no-scan`/`--lang`) are documented by the script's `--help`. | [references/init-harness.md](references/init-harness.md) |
 | `generate [--incremental \| --scope <area> \| --dry-run] [--lang auto\|zh\|en]` | Probe the codebase and generate/update `AGENTS.md` + the `aiDoc/` documentation system. | [references/generate-aidoc.md](references/generate-aidoc.md) |
 | `sync` | Detect documentation drift (mechanical checks via `scripts/check_sync.py`, then agent-driven semantic drift handling) and resync incrementally. | [references/sync-aidoc.md](references/sync-aidoc.md) |
 | `record [note \| plan \| handoff \| lesson]` | Create a decision note, change plan, handoff, or lesson record under the correct lifecycle/class discipline. | [references/change-docs.md](references/change-docs.md) |
@@ -32,6 +32,8 @@ Supporting references, loaded on demand:
 
 No arguments: print a usage summary of the table above plus the script locations below, and ask which action to run. Unknown action: print the same summary and stop.
 
+Flags inside the Action column are workflow-level (parsed by the agent, e.g. `--no-generate`, generate's `--dry-run`); flags like init's `--dry-run` belong to `init_project.py` and are listed by its `--help` — do not mix the two namespaces when invoking scripts.
+
 ## Operating invariants
 
 - One fact has one maintained home; every other document links to it.
@@ -46,8 +48,8 @@ No arguments: print a usage summary of the table above plus the script locations
 
 Scripts and templates ship inside this skill directory, next to this `SKILL.md`:
 
-- `scripts/init_project.py` — skeleton bootstrap (supports `--dry-run`, `--overwrite`); writes the `aiDoc/.harness-manifest.json` baseline
-- `scripts/update_harness.py` — mechanical refresh of harness-managed files to the current template version (supports `--dry-run`, `--force`)
+- `scripts/init_project.py` — skeleton bootstrap; writes the `aiDoc/.harness-manifest.json` baseline
+- `scripts/update_harness.py` — mechanical refresh of harness-managed files to the current template version
 - `scripts/check_sync.py` — mechanical drift checks between docs and code
 - `templates/<lang>/` — document skeletons, including `templates/<lang>/adapters/` for tool adapters and `templates/<lang>/aidoc/` for notes/plans templates
 

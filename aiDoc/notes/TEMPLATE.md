@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-13 -->
+<!-- last-updated: 2026-09-15 -->
 # 决策记录模板
 
 > 路径：`aiDoc/notes/<proposed|implemented|rejected>/<class>/yyyy-mm-dd-topic.md`

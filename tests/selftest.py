@@ -485,6 +485,9 @@ def test_update_flow(tmp: Path) -> None:
         rc, out = run_update("--force")
     check("--force 收敛（末轮 0 刷新）",
           rc == 0 and "refreshed [已刷新]: 0 项" in out, out[-300:])
+    check("无前端仓库 update 不下发 frontend 文件",
+          not (repo / "aiDoc" / "frontend").exists()
+          and "frontend" not in out, out[-300:])
 
     agents = repo / "AGENTS.md"
     agents.write_text(agents.read_text(encoding="utf-8") + "\n# 项目自定义\n",
@@ -504,6 +507,34 @@ def test_update_flow(tmp: Path) -> None:
     check("刷新含新模板内容", "新架构规则行" in
           (repo / "aiDoc" / "modules" / "architecture-rules.md")
           .read_text(encoding="utf-8"))
+
+    # 模板新增文件（模板有、manifest 无）三条路径：下发 / 补登记 / 冲突不动
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    del manifest["files"]["CLAUDE.md"]
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False,
+                                        indent=2) + "\n", encoding="utf-8")
+    (repo / "CLAUDE.md").unlink()
+    rc, out = run_update("--force", templates=troot)
+    check("模板新增文件被下发", rc == 0 and (repo / "CLAUDE.md").is_file()
+          and "CLAUDE.md" in out, out[-300:])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    check("下发文件已登记", "CLAUDE.md" in manifest["files"])
+
+    notes_readme = repo / "aiDoc" / "notes" / "README.md"
+    notes_readme.write_text(
+        notes_readme.read_text(encoding="utf-8") + "\n项目自定义内容\n",
+        encoding="utf-8")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    del manifest["files"]["aiDoc/notes/README.md"]
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False,
+                                        indent=2) + "\n", encoding="utf-8")
+    rc, out = run_update("--force", templates=troot)
+    check("模板新增但项目已有不同内容：不覆盖",
+          "new-conflict" in out
+          and "项目自定义内容" in notes_readme.read_text(encoding="utf-8"),
+          out[-300:])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    check("冲突文件不登记", "aiDoc/notes/README.md" not in manifest["files"])
 
     manifest_path.unlink()
     rc, out = run_update()

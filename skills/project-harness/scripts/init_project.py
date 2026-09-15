@@ -40,7 +40,8 @@ TEMPLATES_ROOT = SCRIPT_DIR.parent / "templates"
 
 try:
     import scan_repo
-    from harness_common import find_git_root, git_version, detect_doc_lang
+    from harness_common import (find_git_root, git_version, detect_doc_lang,
+                                read_text_relaxed)
     from render_data import CONFIG_PURPOSE, DIR_CONVENTIONS
 except ImportError:  # 被其他脚本 import 时兜底
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -137,17 +138,18 @@ def _prep_dst(dst: Path, repo: Path, plan: Plan, *, overwrite: bool,
     rel = dst.relative_to(repo)
     if dst.exists():
         if not overwrite:
-            plan.skipped.append(str(rel))
+            plan.skipped.append(rel.as_posix())
             return False
         backup = backup_root / rel
-        plan.overwritten.append(f"{rel}  (备份 -> {backup.relative_to(repo)})")
-        plan.backups.append(str(backup.relative_to(repo)))
+        plan.overwritten.append(
+            f"{rel.as_posix()}  (备份 -> {backup.relative_to(repo).as_posix()})")
+        plan.backups.append(backup.relative_to(repo).as_posix())
         if dry_run:
             return False
         backup.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(dst, backup)
     else:
-        plan.created.append(str(rel))
+        plan.created.append(rel.as_posix())
         if dry_run:
             return False
     return True
@@ -163,7 +165,9 @@ def _copy_file(src: Path, dst: Path, repo: Path, plan: Plan, *,
     if render is not None:
         try:
             text = src.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except (OSError, UnicodeDecodeError) as exc:
+            print(f"警告: 模板 {src.name} 不可按 utf-8 解码（{exc.__class__.__name__}），"
+                  "占位符未渲染、原样拷贝，请人工检查产物内容。", file=sys.stderr)
             shutil.copy2(src, dst)
         else:
             dst.write_text(_render(text, render), encoding="utf-8")
@@ -201,7 +205,7 @@ def _walk_copy(src_root: Path, dst_root: Path, repo: Path, plan: Plan, *,
         for name in sorted(files):
             src = root_p / name
             rel = rel_dir / name
-            rel_str = str(rel)
+            rel_str = rel.as_posix()
             if rel_str in skip_set:
                 plan.deferred.append(f"{dst_label}{rel_str}  (未探测到前端)")
                 continue
@@ -212,7 +216,7 @@ def _walk_copy(src_root: Path, dst_root: Path, repo: Path, plan: Plan, *,
                        dry_run=dry_run, render=render, backup_root=backup_root)
         if keep_empty_dirs and not files and not dirs:
             dst_dir = dst_root / rel_dir
-            if str(rel_dir) != "." and not dst_dir.exists():
+            if rel_dir.as_posix() != "." and not dst_dir.exists():
                 plan.created.append(f"{dst_label}{rel_dir}/  (空目录)")
                 if not dry_run:
                     dst_dir.mkdir(parents=True, exist_ok=True)
@@ -579,12 +583,14 @@ def build_and_run(repo: Path, templates: Path, project_name: str,
     gitignore = repo / ".gitignore"
     existing = ""
     if gitignore.is_file():
-        try:
-            existing = gitignore.read_text(encoding="utf-8")
-        except OSError:
-            existing = ""
-    lines = [ln.strip() for ln in existing.splitlines()]
-    if GITIGNORE_LINE in lines:
+        # 容错读取：GBK 等非 utf-8 编码的 .gitignore 不应让 init 崩在中途
+        # （此刻前序文件已写入，崩溃会留下无 manifest 的半安装状态）
+        existing = read_text_relaxed(gitignore) or ""
+    def _norm_ignore(ln: str) -> str:
+        # 前导 / 与尾随 / 的写法在 gitignore 语义上等价（目录锚定差异可忽略）
+        return ln.strip().strip("/")
+    if any(_norm_ignore(ln) == _norm_ignore(GITIGNORE_LINE)
+           for ln in existing.splitlines()):
         plan.skipped.append(".gitignore (已含 aiDoc/.harness-backups/)")
     elif gitignore.exists():
         plan.created.append(".gitignore  (追加 aiDoc/.harness-backups/)")
@@ -734,6 +740,10 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     project_name = args.project_name or repo.name
+    if any(ch in project_name for ch in ("\n", "\r", "|")):
+        print("错误: --project-name 含换行或 |（会破坏 markdown 表格/标题结构）。",
+              file=sys.stderr)
+        return 2
 
     # 静态扫描（只读）：项目探测与扫描填充共用同一份结果
     scan = scan_repo.scan_repo(repo)
@@ -772,8 +782,8 @@ def main(argv: list[str] | None = None) -> int:
                               project_name=project_name, lang=lang,
                               dry_run=args.dry_run)
     if args.dry_run:
-        plan.auto_filled.append(
-            f"{MANIFEST_REL}  (dry-run 计划生成，{len(manifest['files'])} 个托管文件)")
+        # dry-run 下 plan.written 为空、无文件可算哈希，不显示误导性计数
+        plan.auto_filled.append(f"{MANIFEST_REL}  (dry-run 计划生成)")
     else:
         plan.auto_filled.append(
             f"{MANIFEST_REL}  (已生成，{len(manifest['files'])} 个托管文件)")

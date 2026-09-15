@@ -24,11 +24,14 @@ Interpret the report:
 | Finding | Meaning | Action |
 |---|---|---|
 | Indexed path missing | Routing table or entries reference a deleted file | Regenerate `aiDoc/README.md`; fix the referencing doc |
-| Unindexed aiDoc file | A doc exists but is not in the routing table | Update `aiDoc/README.md` entries + routing table (same change) |
+| Unindexed aiDoc file (entries dictionary) | A doc-type aiDoc file is not registered in the `aiDoc/README.md` common-entries dictionary | Register it in the entries dictionary (+ routing table if also unlisted), same change |
 | Referenced code path missing | Docs cite moved/deleted source | Regenerate the citing document via `--scope` |
-| Missing example reference | Example's "real reference files" stale | Regenerate that example from current code |
-| Stale `last-updated` vs code mtime | Code changed after the doc's last update | Candidate for `--incremental` regeneration |
+| Missing / invalid `last-updated` header | An aiDoc doc lacks `<!-- last-updated: YYYY-MM-DD -->` in its first 5 lines | Add the header when updating the doc |
+| Section mismatch (hint) | `AGENTS.md` mentions aiDoc areas that don't exist, or existing areas go unmentioned | Fix the `AGENTS.md` quick-reference |
 | Unhandled lesson (`pending` count ≥ 2, or `promoted` without `target`) | Lesson promotion discipline violated | Apply the promotion discipline in [change-docs.md](change-docs.md) |
+| Lesson not scannable / recurrence after promotion (hint) | Missing `lesson-meta` marker, or `post ≥ 1` | Add the marker; re-verify the promoted rule per the recurrence loop in [change-docs.md](change-docs.md) |
+
+The script does **not** check example validity ("real reference files" freshness) — that is Step 2 item 3 below — nor whether a doc is newer than the code it describes; both are semantic judgments.
 
 The script only proves mechanical facts. A clean report does **not** mean the docs are semantically correct.
 
@@ -55,7 +58,7 @@ Choose the narrowest sufficient mode of the [generate workflow](generate-aidoc.m
 | Drift scope | Mode |
 |---|---|
 | Scattered staleness across areas, uncertain extent | `generate --incremental` |
-| One area (backend / frontend / relations / memory / notes / plans / core) | `generate --scope <area>` |
+| One area (modules / contracts / frontend / relations / memory / notes / plans / core) | `generate --scope <area>` |
 | Widespread drift, most docs stale | full `generate` |
 
 Always regenerate `aiDoc/README.md`'s routing table and the `AGENTS.md` quick-reference whenever the aiDoc file set changed — they are cross-file metadata and do not self-heal.

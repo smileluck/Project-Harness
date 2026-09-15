@@ -76,6 +76,8 @@
 | 非平凡决策（行为/架构/契约/流程变更） | `notes/README.md`、`notes/TEMPLATE.md` |
 | 多步骤 / 跨组件 / 有风险的变更 | `plans/README.md`、`plans/change-plan.TEMPLATE.md` |
 | 工作中断或移交他人 | `plans/handoff.TEMPLATE.md` |
+| 代码审查 | `../.agents/skills/project-code-review/SKILL.md` |
+| 推送前检查 | `../.agents/skills/project-pre-push-checks/SKILL.md` |
 
 ## 维护原则
 

@@ -96,7 +96,7 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 Project-Harness/
 ├── install.py                    # multi-tool installer (copy or symlink)
 └── skills/project-harness/       # the whole skill; installing = copying this directory
-    ├── SKILL.md                  # entry routing: init / generate / sync / record
+    ├── SKILL.md                  # entry routing: init / generate / sync / record / update
     ├── references/               # workflow details (harness model, aiDoc contract, quality, collaboration, ...)
     ├── templates/zh/  templates/en/   # bilingual skeletons injected into target repos
     └── scripts/

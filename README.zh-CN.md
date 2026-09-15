@@ -96,7 +96,7 @@ python3 install.py --tool all       # 以上全部
 Project-Harness/
 ├── install.py                    # 多工具安装器（copy 或 symlink）
 └── skills/project-harness/       # 完整 skill；安装 = 拷贝此目录
-    ├── SKILL.md                  # 入口路由：init / generate / sync / record
+    ├── SKILL.md                  # 入口路由：init / generate / sync / record / update
     ├── references/               # 工作流细则（harness 模型、aiDoc 契约、质量、协作……）
     ├── templates/zh/  templates/en/   # 注入目标仓库的双语骨架
     └── scripts/

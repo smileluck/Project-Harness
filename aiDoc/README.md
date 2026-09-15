@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-13 -->
+<!-- last-updated: 2026-09-15 -->
 # aiDoc
 
 `aiDoc/` 是本仓库的结构化 AI 文档层（L1 路由层），用于把长期有效的项目上下文从工具目录中抽离出来，并按主题拆分成可维护的约束文档。
@@ -68,6 +68,8 @@
 | 记录 / 查询用户长期偏好 | `memory/long-term/README.md`、`memory/README.md` |
 | 踩坑 / 反复模式记录 | `memory/lessons/README.md`、`memory/lessons/TEMPLATE.md`（必更新索引） |
 | 非平凡决策（行为/架构/契约/流程变更） | `notes/README.md`、`notes/TEMPLATE.md` |
+| 代码审查 | `../.agents/skills/project-code-review/SKILL.md` |
+| 推送前检查 | `../.agents/skills/project-pre-push-checks/SKILL.md` |
 | 多步骤 / 跨组件 / 有风险的变更 | `plans/README.md`、`plans/change-plan.TEMPLATE.md` |
 | 工作中断或移交他人 | `plans/handoff.TEMPLATE.md` |
 
