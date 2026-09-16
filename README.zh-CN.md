@@ -57,7 +57,7 @@ python3 install.py --tool all       # 以上全部
 |---|---|
 | `init [--no-generate]` | 非破坏性骨架初始化：探测项目类型/技术栈，拷贝 `AGENTS.md` + `aiDoc/` 骨架，默认绝不覆盖（支持 `--dry-run`、`--overwrite` 自动备份、幂等）。默认执行静态扫描（多语言 manifest 解析 + 结构统计；支持混合项目组件探测，覆盖 java/python/go/c++/c/web/qt），生成第一版真实内容并写入 `relations/`，同时产出机器生成的 `relations/code-index.md`（`--no-scan` 关闭）。**完成后默认自动接续 `generate` 工作流填充真实内容**；`--no-generate` 只搭骨架。成熟仓库走 gap audit，只补缺失件。 |
 | `generate [--incremental\|--scope <区域>\|--dry-run] [--lang zh\|en]` | Agent 驱动：探测代码库并基于真实代码撰写 `AGENTS.md` + `aiDoc/` 内容——分层规则、API 契约、示例、路由表。支持增量与局部再生成。 |
-| `sync` | 漂移检测：`check_sync.py` 校验索引完整性、引用路径、`last-updated` 头部、区域一致性；agent 再处理语义漂移。同时是每次变更收尾的强制自检闸门，并兜底晋升到期 lessons（出现次数 ≥2）。 |
+| `sync` | 漂移检测：`check_sync.py` 跑 9 项机械检查——索引完整性、引用代码路径、`last-updated` 头部、区域一致性、lessons 晋升闸门，外加提示级的 `.agents/skills/` 残留 `TODO:` 占位与 manifest 基线漂移；agent 再处理语义漂移。同时是每次变更收尾的强制自检闸门，并兜底晋升到期 lessons（出现次数 ≥2）。 |
 | `record [note\|plan\|handoff\|lesson]` | 按生命周期纪律创建决策记录 / 变更计划 / 交接 / 经验记录（不编造备选方案；implemented 就地更新；推翻旧决策新建交叉链接 note；lesson 记录踩坑与反复模式，第二次出现时晋升进约束层）。 |
 | `update [--dry-run] [--force]` | 托管文件刷新：`update_harness.py` 按 `aiDoc/.harness-manifest.json` 基线比对当前模板——未改过的文件原地刷新（含备份），项目已改的文件跳过交语义层合入；无 manifest 的旧仓库进入 adopt 模式（只建基线）。 |
 
@@ -76,7 +76,8 @@ python3 install.py --tool all       # 以上全部
 │   ├── examples/            # 各层讲解型示例
 │   ├── memory/              # 长期偏好 + 业务需求 + lessons（踩坑/模式 staging，晋升进约束层）
 │   ├── notes/               # 决策记录：<生命周期>/<分类>/yyyy-mm-dd-主题.md
-│   └── plans/               # 变更计划（active/completed）+ 交接
+│   ├── plans/               # 变更计划（active/completed）+ 交接
+│   └── .harness-manifest.json  # 托管文件 sha256 基线（机器产物，禁止手改）
 ├── .agents/skills/
 │   ├── project-code-review/       # 语义审查清单 + 证据选择
 │   └── project-pre-push-checks/   # 最小可信出口检查
@@ -96,6 +97,9 @@ python3 install.py --tool all       # 以上全部
 ```
 Project-Harness/
 ├── install.py                    # 多工具安装器（copy 或 symlink）
+├── tests/selftest.py             # 零依赖自检（fixture 端到端 + 镜像与耦合校验）
+├── aiDoc/                        # 本仓库自身的 harness 文档层（工具包 dogfood）
+├── .github/workflows/            # CI：py_compile + selftest + check_sync（ubuntu × py3.9/3.11/3.12）
 └── skills/project-harness/       # 完整 skill；安装 = 拷贝此目录
     ├── SKILL.md                  # 入口路由：init / generate / sync / record / update
     ├── references/               # 工作流细则（harness 模型、aiDoc 契约、质量、协作……）
@@ -108,6 +112,16 @@ Project-Harness/
         ├── harness_common.py     # 公共工具（git 根、容错读取、版本、语言探测）
         └── render_data.py        # 扫描渲染的双语展示文案表
 ```
+
+## 开发
+
+```bash
+python3 -m py_compile install.py skills/project-harness/scripts/*.py tests/selftest.py
+python3 tests/selftest.py                                 # fixture 端到端 + zh/en 镜像 + 耦合校验
+python3 skills/project-harness/scripts/check_sync.py .    # 本仓文档漂移闸门
+```
+
+CI（`.github/workflows/selftest.yml`）在 ubuntu × Python 3.9/3.11/3.12 跑同样的三条命令。
 
 ## 致谢
 

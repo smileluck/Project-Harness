@@ -57,7 +57,7 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 |---|---|
 | `init [--no-generate]` | Non-destructive scaffold: probes project type/stack, copies the `AGENTS.md` + `aiDoc/` skeleton, never overwrites by default (`--dry-run`, `--overwrite` with backups, idempotent). Runs a default static scan (multi-language manifests + structure statistics; component detection for mixed projects across java/python/go/c++/c/web/qt) that writes a first version of real content into `relations/` plus the machine-generated `relations/code-index.md` (`--no-scan` disables). **On completion it continues into the `generate` workflow by default** to fill in real content; `--no-generate` stops at the skeleton. For mature repos, run a gap audit and only fill the missing pieces. |
 | `generate [--incremental\|--scope <area>\|--dry-run] [--lang zh\|en]` | Agent-driven: probes the codebase and writes the real content of `AGENTS.md` + `aiDoc/` from actual code — layering rules, API contracts, examples, routing tables. Supports incremental and scoped regeneration. |
-| `sync` | Drift detection: `check_sync.py` verifies index integrity, referenced paths, `last-updated` headers, and area consistency; the agent then resolves semantic drift. It also runs as a mandatory completion gate on every change, sweeping due lessons (count ≥ 2) for promotion. |
+| `sync` | Drift detection: `check_sync.py` runs 9 mechanical checks — index integrity, referenced code paths, `last-updated` headers, area consistency, lesson-promotion gates, plus hint-level checks for residual `TODO:` placeholders in `.agents/skills/` and manifest-baseline drift; the agent then resolves semantic drift. It also runs as a mandatory completion gate on every change, sweeping due lessons (count ≥ 2) for promotion. |
 | `record [note\|plan\|handoff\|lesson]` | Create decision notes, change plans, handoffs, or lesson records following the lifecycle discipline (no invented alternatives; implemented notes updated in place; reversals get new cross-linked notes; lessons capture pitfalls and recurring patterns, promoted into constraint docs at the second occurrence). |
 | `update [--dry-run] [--force]` | Managed-file refresh: `update_harness.py` compares the `aiDoc/.harness-manifest.json` baseline against current templates — untouched files are refreshed in place (with backups), project-modified files are skipped for the semantic layer, repos without a manifest enter adopt mode (baseline only). |
 
@@ -76,7 +76,8 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 │   ├── examples/            # explanatory examples per layer
 │   ├── memory/              # long-term preferences + business records + lessons (pitfall/pattern staging, promoted into constraint docs)
 │   ├── notes/               # decision records: <lifecycle>/<class>/yyyy-mm-dd-topic.md
-│   └── plans/               # change plans (active/completed) + handoffs
+│   ├── plans/               # change plans (active/completed) + handoffs
+│   └── .harness-manifest.json  # managed-file sha256 baseline (machine-owned, do not hand-edit)
 ├── .agents/skills/
 │   ├── project-code-review/       # semantic review checklist + evidence selection
 │   └── project-pre-push-checks/   # smallest credible outgoing checks
@@ -96,6 +97,9 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 ```
 Project-Harness/
 ├── install.py                    # multi-tool installer (copy or symlink)
+├── tests/selftest.py             # zero-dependency selftest (fixture end-to-end + mirror & coupling checks)
+├── aiDoc/                        # this repo's own harness docs (dogfooding the toolkit)
+├── .github/workflows/            # CI: py_compile + selftest + check_sync (ubuntu × py3.9/3.11/3.12)
 └── skills/project-harness/       # the whole skill; installing = copying this directory
     ├── SKILL.md                  # entry routing: init / generate / sync / record / update
     ├── references/               # workflow details (harness model, aiDoc contract, quality, collaboration, ...)
@@ -108,6 +112,16 @@ Project-Harness/
         ├── harness_common.py     # shared helpers (git root, relaxed reading, version, lang detect)
         └── render_data.py        # bilingual display strings for scan rendering
 ```
+
+## Development
+
+```bash
+python3 -m py_compile install.py skills/project-harness/scripts/*.py tests/selftest.py
+python3 tests/selftest.py                                 # fixture end-to-end + zh/en mirror + coupling checks
+python3 skills/project-harness/scripts/check_sync.py .    # doc-drift gate for this repo
+```
+
+CI (`.github/workflows/selftest.yml`) runs the same three commands on ubuntu × Python 3.9/3.11/3.12.
 
 ## Acknowledgements
 
