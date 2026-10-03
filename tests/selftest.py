@@ -7,6 +7,9 @@
 覆盖:
     1. init 行为：tmp fixture（python-cli / fullstack / mixed）首跑创建、
        二跑幂等全 SKIP、--dry-run 零写入、嵌套 git 拒绝、--overwrite 有备份。
+    1b. init-set 项目集：discovery 零写入、未知成员 exit 2、--dry-run 零写入、
+       未配置成员初始化 + 已配置跳过 + 根 AGENTS.md 索引表、二跑幂等、
+       嵌套 git 成员 blocked。
     2. init 产物跑 check_sync.py 必须 exit 0。
     3. scan_repo.py --json 可运行且输出合法 JSON；--write-code-index 重生成/
        幂等/双语渲染（code-index 漂移修复路径）；关键词表单源化后的
@@ -67,6 +70,12 @@ def check(name: str, ok: bool, detail: str = "") -> None:
 def run_init(repo: Path, *extra: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         [PY, str(SCRIPTS / "init_project.py"), str(repo), *extra],
+        capture_output=True, text=True)
+
+
+def run_init_set(set_root: Path, *extra: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [PY, str(SCRIPTS / "init_project_set.py"), str(set_root), *extra],
         capture_output=True, text=True)
 
 
@@ -187,6 +196,106 @@ def test_init_behaviour(tmp: Path) -> None:
                 script = line.strip().split()[1]
                 check("pre-push skill 中 check_sync 路径真实存在",
                       Path(script).is_file(), script)
+
+
+# ---------------------------------------------------------------- 1b. init-set 项目集
+
+def _make_set_fixture(base: Path) -> Path:
+    """项目集 fixture：proj-a（git，未配置）、proj-b（git，已配置 harness）、
+    proj-c（非 git 无清单普通目录，仅出现在候选表）。"""
+    set_root = base / "set"
+    set_root.mkdir(parents=True)
+    pa = set_root / "proj-a"
+    pa.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=pa, check=True)
+    write(pa / "pyproject.toml", '[project]\nname = "proj-a"\n')
+    pb = set_root / "proj-b"
+    pb.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=pb, check=True)
+    write(pb / "pyproject.toml", '[project]\nname = "proj-b"\n')
+    write(pb / "aiDoc" / ".harness-manifest.json", '{"files": {}}')
+    (set_root / "proj-c").mkdir()
+    return set_root
+
+
+def test_init_project_set(tmp: Path) -> None:
+    print("\n[1b] init-set 项目集批量初始化")
+
+    r = subprocess.run([PY, str(SCRIPTS / "init_project_set.py"), "--help"],
+                       capture_output=True, text=True)
+    check("init_project_set --help 可运行", r.returncode == 0, r.stderr[-200:])
+
+    # discovery 模式：只打印候选表，零写入
+    set_root = _make_set_fixture(tmp / "disc")
+    before = snapshot_files(set_root)
+    r = run_init_set(set_root)
+    check("discovery exit 0 且列出全部候选",
+          r.returncode == 0 and "proj-a" in r.stdout and "proj-b" in r.stdout
+          and "proj-c" in r.stdout, (r.stdout + r.stderr)[-300:])
+    check("discovery 零写入", snapshot_files(set_root) == before)
+    check("候选表标注 harness 状态",
+          "已配置" in r.stdout and "未配置" in r.stdout)
+
+    # 未知成员名 → exit 2
+    r = run_init_set(set_root, "--members", "nope")
+    check("未知成员 exit 2", r.returncode == 2)
+
+    # --dry-run 零写入
+    before = snapshot_files(set_root)
+    r = run_init_set(set_root, "--members", "proj-a,proj-b", "--dry-run")
+    check("init-set --dry-run exit 0 零写入",
+          r.returncode == 0 and snapshot_files(set_root) == before,
+          (r.stdout + r.stderr)[-300:])
+
+    # 正式执行：proj-a 初始化，proj-b 已配置跳过，根 AGENTS.md 生成
+    r = run_init_set(set_root, "--members", "proj-a,proj-b")
+    check("init-set 正式跑 exit 0", r.returncode == 0, (r.stdout + r.stderr)[-300:])
+    pa = set_root / "proj-a"
+    check("proj-a 获得骨架与 manifest",
+          (pa / "AGENTS.md").is_file()
+          and (pa / "aiDoc" / ".harness-manifest.json").is_file()
+          and (pa / "aiDoc" / "relations" / "code-index.md").is_file())
+    pb = set_root / "proj-b"
+    check("proj-b 已配置完全跳过",
+          json.loads((pb / "aiDoc" / ".harness-manifest.json")
+                     .read_text(encoding="utf-8")) == {"files": {}}
+          and not (pb / "AGENTS.md").exists())
+    root_agents = set_root / "AGENTS.md"
+    text = root_agents.read_text(encoding="utf-8") if root_agents.is_file() else ""
+    check("根 AGENTS.md 生成且含成员索引表",
+          "| **proj-a** |" in text and "| **proj-b** |" in text
+          and "| **proj-c** |" not in text)
+    check("根 AGENTS.md 带 auto-scan 标记待校订",
+          init_project.AUTO_SCAN_MARK in text)
+    check("根 AGENTS.md 无占位符残留",
+          "{{PROJECT_NAME}}" not in text and "{{DATE}}" not in text)
+    check("scan-fill 标记按 init 惯例保留（供再定位）",
+          "<!-- scan-fill:members -->" in text)
+    check("项目集根不写 manifest/aiDoc",
+          not (set_root / "aiDoc").exists()
+          and not (set_root / ".harness-manifest.json").exists())
+
+    # 幂等：二次运行 proj-a 变已配置跳过，根 AGENTS.md SKIP
+    r = run_init_set(set_root, "--members", "proj-a,proj-b")
+    check("二跑幂等 exit 0", r.returncode == 0, (r.stdout + r.stderr)[-300:])
+    check("二跑成员全部已配置跳过",
+          r.stdout.count("已配置 harness，跳过") == 2)
+    check("二跑根 AGENTS.md SKIP", "(已存在，SKIP)" in r.stdout)
+
+    # 嵌套 git 阻塞：set 根本身是 git 仓库，子目录非 git 根
+    nested_root = tmp / "nested-set"
+    nested_root.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=nested_root, check=True)
+    sub = nested_root / "inner"
+    sub.mkdir()
+    write(sub / "pyproject.toml", '[project]\nname = "inner"\n')
+    r = run_init_set(nested_root)
+    check("discovery 标记嵌套阻塞", "阻塞" in r.stdout, r.stdout[-300:])
+    r = run_init_set(nested_root, "--all")
+    check("嵌套成员 blocked 且 exit 0",
+          r.returncode == 0 and "嵌套于父 git 仓库" in r.stdout,
+          (r.stdout + r.stderr)[-300:])
+    check("blocked 成员零写入", not (sub / "aiDoc").exists())
 
 
 # ---------------------------------------------------------------- 2/3. 脚本可运行
@@ -806,15 +915,16 @@ def test_coupling() -> None:
 
     # scan-fill 标记：zh/en 模板的填充点必须逐字一致（脚本按标记定位小节）
     fill_targets = {
-        "relations/repo-profile.md":
+        "aidoc/relations/repo-profile.md":
             ("positioning", "stack", "pkgmgmt", "features"),
-        "relations/development-workflow.md": ("env",),
-        "relations/system-map.md": ("rootdirs", "config"),
+        "aidoc/relations/development-workflow.md": ("env",),
+        "aidoc/relations/system-map.md": ("rootdirs", "config"),
+        "project-set/AGENTS.md.tmpl": ("members",),
     }
     bad = []
     for rel, keys in fill_targets.items():
         for lang in ("zh", "en"):
-            text = (TEMPLATES / lang / "aidoc" / rel).read_text(encoding="utf-8")
+            text = (TEMPLATES / lang / rel).read_text(encoding="utf-8")
             for key in keys:
                 marker = f"{init_project.SCAN_FILL_PREFIX}{key}{init_project.SCAN_FILL_SUFFIX}"
                 if text.count(marker) != 1:
@@ -828,6 +938,7 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="ph-selftest-") as td:
         tmp = Path(td)
         test_init_behaviour(tmp)
+        test_init_project_set(tmp)
         test_scripts_runnable(tmp)
         test_write_code_index(tmp)
         test_scan_framework_keywords(tmp)

@@ -13,7 +13,7 @@
       "template": "agents-skills/project-pre-push-checks/SKILL.md"
     },
     "AGENTS.md": {
-      "sha256": "cc98578e58a78b760db4baa581396d41bb852e13bbb4dc057fa51eaa5bdec97d",
+      "sha256": "21b7156805e0849574a530af6900e33184905f1af91d7caa421203bc134289f7",
       "template": "AGENTS.md.tmpl"
     },
     "CLAUDE.md": {
@@ -25,7 +25,7 @@
       "template": "aidoc/README.md"
     },
     "aiDoc/contracts/boundary.md": {
-      "sha256": "e7ac98036b838eef943d0570cd38d89cbb1da6da11c6748c0070f4caed99edaa",
+      "sha256": "32a0228b3ec710fa069f07bb55a6ccfe70111e3ae44c7fe1b80533dfdfc219ca",
       "template": "aidoc/contracts/boundary.md"
     },
     "aiDoc/examples/README.md": {
@@ -57,7 +57,7 @@
       "template": "aidoc/memory/long-term/README.md"
     },
     "aiDoc/memory/project-memory.md": {
-      "sha256": "427b9417b04f95e636870bab134d255f24d2f0fe2051b35111d2b0d92cf38a50",
+      "sha256": "8c72d928652330072e51dc95cc76377237a92f6fd582a7309187dfd7d126bbc0",
       "template": "aidoc/memory/project-memory.md"
     },
     "aiDoc/modules/architecture-rules.md": {

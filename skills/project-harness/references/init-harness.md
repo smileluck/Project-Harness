@@ -7,6 +7,8 @@ Non-destructive skeleton bootstrap of a target repository. Creates only missing 
 - New or lightly documented repositories that need the full harness skeleton (`AGENTS.md`, `CLAUDE.md`, `aiDoc/` tree, `.agents/skills/`; tool adapters are added by the generate workflow, not by init).
 - Mature repositories as a **gap audit**: fill only missing pieces, merge with what exists.
 
+For a folder holding several independent projects (a project set), use the init-set workflow instead — see [init-project-set.md](init-project-set.md); it runs this init pipeline per member and adds a set-root `AGENTS.md`.
+
 ## Preflight
 
 Resolve the real Git root — never initialize into the shell's working directory merely because it is the workspace root. Then inspect:

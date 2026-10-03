@@ -1,0 +1,25 @@
+<!-- last-updated: {{DATE}} -->
+# AGENTS.md (project set)
+
+## Purpose
+
+This file is the **single source of truth** for cross-project coordination in the {{PROJECT_NAME}} project set: the member project index, inter-project relationships, and collaboration conventions. Each member project's internal rules and documentation live in its own `AGENTS.md` / `aiDoc/`; this file never duplicates their content.
+
+## Member project index
+
+<!-- scan-fill:members -->
+
+(Filled by the init-set script from scan results.)
+
+## Inter-project relationships
+
+<!-- TODO: written by the init-set workflow from real evidence: who depends on whom, data and interface flows, shared release cadence or contracts; back each relationship with a relative-path pointer into the member repo -->
+
+TODO: describe how the member projects relate and what each one is for.
+
+## Boundary rules
+
+- This file carries cross-project facts only; member-internal details are always linked to the member's `AGENTS.md` or `aiDoc/README.md`, never copied.
+- Conflict priority: a member's own `AGENTS.md` governs its internal affairs; this file governs cross-project coordination.
+- When a member project is added or removed, update the member index table in the same change.
+- Decision records, evidence discipline, handoffs and other operating invariants follow each member repo's own conventions; a cross-project change leaves a trail in every affected member repo under its own process.

@@ -32,6 +32,7 @@ Team coordination overlays these layers: a lead partitions work, teammates own b
 | Tool loading entry | `CLAUDE.md` (`@AGENTS.md`) + thin adapters |
 | Proof affected behavior works | Focused tests; `scripts/check_sync.py` for doc drift |
 | Harness-managed file update baseline | `aiDoc/.harness-manifest.json` (machine artifact, refreshed by `scripts/update_harness.py`) |
+| Cross-project facts for a project set | Set-root `AGENTS.md` only (member index + inter-project relationships; see [init-project-set.md](init-project-set.md)); member-internal facts stay in each member's own layers |
 
 Never duplicate a rule across tiers. Put a short link at the point of use.
 

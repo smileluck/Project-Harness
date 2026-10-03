@@ -16,6 +16,7 @@
 - `business/2026-09-13-p2-governance-slimming.md`：P2 治理减负与保障补盲——CI 上线、测试盲区补齐、lessons 索引唯一化、不变量 9→6、--lang auto、占位符统一，已完成
 - `business/2026-09-15-full-review-remediation.md`：全面评审整改——口径修正、init 正确性加固、update 模板新增文件下发链路、manifest 刷新、路由表对齐，已完成（推送与 CI 首跑为用户侧遗留）
 - `business/2026-09-15-detection-hardening-review.md`：全方位审阅（第二轮）与检测加固——manifest 基线生命周期修复、TODO 锁死解耦、check_sync 检查扩至 9 项、未跟踪文件补扫，已完成
+- `business/2026-10-03-project-set-init.md`：项目集批量初始化（init-set）——多项目根目录发现成员、未配置成员批量 init、根 AGENTS.md 跨项目索引，已完成
 
 ## 经验记忆（lessons）
 
