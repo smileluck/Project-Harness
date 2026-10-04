@@ -10,7 +10,7 @@
     manifests         清单层解析 {相对路径: {...}}（package.json / pyproject.toml /
                       requirements.txt / setup.py / go.mod / pom.xml /
                       build.gradle(.kts) / CMakeLists.txt / Makefile / *.pro /
-                      Cargo.toml）
+                      Cargo.toml / pubspec.yaml）
     configs           环境/配置存在性 [{path, kind, value}]
     components        组件探测 [{path, kind, stack, evidence}]
     label             仓库标签 fullstack/backend/frontend/library/cli/general/mixed
@@ -93,7 +93,7 @@ RUST_CLI_RE = re.compile(r"\bclap\b")
 LANG_EXTS = (
     ".py", ".js", ".jsx", ".ts", ".tsx", ".vue", ".java", ".go", ".c", ".cc",
     ".cpp", ".cxx", ".h", ".hpp", ".cs", ".rs", ".qml", ".ui", ".pro", ".kt",
-    ".swift", ".rb", ".php",
+    ".swift", ".rb", ".php", ".dart",
 )
 
 C_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp"}
@@ -115,11 +115,11 @@ MODULE_FILE_CAP = 200
 
 # 组件优先级（同一目录允许多组件；排序/展示按此序）
 KIND_ORDER = (
-    "qt-app", "web-frontend", "web-backend", "cli", "java-app", "go-module",
-    "cpp-app", "library", "generic",
+    "flutter-app", "qt-app", "web-frontend", "web-backend", "cli", "java-app",
+    "go-module", "cpp-app", "library", "generic",
 )
 
-SPECIAL_KINDS = {"qt-app", "go-module", "cpp-app"}
+SPECIAL_KINDS = {"flutter-app", "qt-app", "go-module", "cpp-app"}
 
 LOCKFILES = (
     ("pnpm-lock.yaml", "pnpm"), ("yarn.lock", "yarn"),
@@ -408,6 +408,19 @@ def parse_cargo(path: Path, rel: str) -> dict:
             "cli": ["clap"] if RUST_CLI_RE.search(text) else []}
 
 
+def parse_pubspec(path: Path, rel: str) -> dict:
+    text = _read_text(path)
+    name = re.search(r"(?m)^name:\s*(\S+)", text)
+    version = re.search(r"(?m)^version:\s*(\S+)", text)
+    # Flutter 信号：顶层 flutter: 配置节，或依赖形如 `sdk: flutter`
+    flutter = bool(re.search(r"(?m)^flutter:\s*$", text)
+                   or re.search(r"(?m)^\s+sdk:\s*flutter\s*$", text))
+    return {"type": "pubspec.yaml", "path": rel,
+            "name": name.group(1) if name else None,
+            "version": version.group(1) if version else None,
+            "flutter": flutter}
+
+
 MANIFEST_PARSERS = (
     ("package.json", parse_package_json),
     ("pyproject.toml", parse_pyproject),
@@ -418,6 +431,7 @@ MANIFEST_PARSERS = (
     ("CMakeLists.txt", parse_cmake),
     ("Makefile", parse_makefile),
     ("Cargo.toml", parse_cargo),
+    ("pubspec.yaml", parse_pubspec),
 )
 
 
@@ -554,6 +568,30 @@ def _exts_under(files: list[str], prefix: str) -> set:
 # ---------------------------------------------------------------- 组件检测器
 # 每个检测器只看自己关心的清单，返回 (stack, evidence) 或 None；
 # detect_components 负责编排、赋 kind、排序——加新组件类型 = 加一个检测器。
+
+def _flutter_roots(manifests: dict) -> list[str]:
+    """含 Flutter 信号的 pubspec.yaml 所在目录前缀（仓库根为 ""）。"""
+    roots = []
+    for m in manifests.values():
+        if m["type"] == "pubspec.yaml" and m.get("flutter"):
+            p = m["path"]
+            roots.append(p.rsplit("/", 1)[0] + "/" if "/" in p else "")
+    return sorted(roots)
+
+
+def _is_flutter_scaffold(rel: str, flutter_roots: list[str]) -> bool:
+    """Flutter 工程下 android/ 等子目录的 build.gradle 是 Flutter 脚手架，
+    不是独立 Java 工程——java-app/web-backend 判定与命令索引均应忽略。"""
+    for root in flutter_roots:
+        if rel.startswith(root) and "/" in rel[len(root):]:
+            return True
+    return False
+
+
+def _detect_flutter(pubspec):
+    if pubspec and pubspec["flutter"]:
+        return "Flutter", [f"{pubspec['path']}: 含 flutter 依赖或 flutter: 配置节"]
+    return None
 
 def _detect_qt(pros: list, cmake, sub_exts: set, prefix: str):
     qt_evi: list = []
@@ -718,6 +756,7 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
     """返回 (components, notes)。同一目录允许多组件，按 KIND_ORDER 排序。"""
     components: list = []
     notes: list = []
+    flutter_roots = _flutter_roots(manifests)
 
     for d in dirs:
         rel = "." if d == repo else d.relative_to(repo).as_posix()
@@ -737,9 +776,15 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
         cmake = mget("CMakeLists.txt")
         makefile = mget("Makefile")
         cargo = mget("Cargo.toml")
+        pubspec = mget("pubspec.yaml")
         pros = [m for r, m in sorted(manifests.items())
                 if r.startswith(prefix) and r.endswith(".pro")
                 and "/" not in r[len(prefix):]]
+
+        if gradle and _is_flutter_scaffold(gradle["path"], flutter_roots):
+            notes.append(f"{gradle['path']}: Flutter 工程脚手架 Gradle"
+                         "（不计入 Java 判定与命令索引）")
+            gradle = None
 
         comps: list = []
 
@@ -747,6 +792,9 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
             comps.append({"path": rel, "kind": kind, "stack": stack,
                           "evidence": evidence})
 
+        flutter = _detect_flutter(pubspec)
+        if flutter:
+            comp("flutter-app", *flutter)
         qt = _detect_qt(pros, cmake, sub_exts, prefix)
         if qt:
             comp("qt-app", *qt)
@@ -782,6 +830,10 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
                         or pkg["exports"]):
             notes.append(
                 f"{pkg['path']}: package.json（无明确依赖线索，不计入判定）")
+        if pubspec and not pubspec["flutter"]:
+            notes.append(
+                f"{pubspec['path']}: pubspec.yaml（无 flutter 信号，"
+                "纯 Dart 包不计入组件判定）")
 
         order = {k: i for i, k in enumerate(KIND_ORDER)}
         comps.sort(key=lambda c: order[c["kind"]])
@@ -830,8 +882,9 @@ def repo_label(components: list) -> tuple[str, bool, list]:
 
 # ---------------------------------------------------------------- 入口点 / 命令 / 包管理
 
-def collect_entry_points(manifests: dict) -> list:
+def collect_entry_points(manifests: dict, files: list[str]) -> list:
     eps: list = []
+    file_set = set(files)
     for rel, m in sorted(manifests.items()):
         t = m["type"]
         if t == "package.json":
@@ -870,6 +923,12 @@ def collect_entry_points(manifests: dict) -> list:
         elif t == "*.pro" and m.get("target"):
             eps.append({"name": m["target"], "type": "qmake TARGET",
                         "location": rel, "value": m["target"]})
+        elif t == "pubspec.yaml" and m.get("flutter"):
+            main_rel = rel[:-len("pubspec.yaml")] + "lib/main.dart"
+            if main_rel in file_set:
+                eps.append({"name": m.get("name") or "main",
+                            "type": "flutter entrypoint",
+                            "location": rel, "value": main_rel})
     return eps
 
 
@@ -884,6 +943,7 @@ def collect_commands(manifests: dict, configs: list,
                      lock_pms: list) -> list:
     """命令索引。weight 用于工作流表排序：install < run < test < build < 其他。"""
     cmds: list = []
+    flutter_roots = _flutter_roots(manifests)
 
     def add(name, command, source, detail="", weight=4):
         cmds.append({"name": name, "command": command, "source": source,
@@ -921,9 +981,19 @@ def collect_commands(manifests: dict, configs: list,
         elif t == "pom.xml":
             add("build", "mvn package", rel, weight=3)
             add("test", "mvn test", rel, weight=2)
-        elif m["type"] in ("build.gradle", "build.gradle.kts"):
-            add("build", "gradle build", rel, weight=3)
-            add("test", "gradle test", rel, weight=2)
+        elif t in ("build.gradle", "build.gradle.kts"):
+            if not _is_flutter_scaffold(rel, flutter_roots):
+                add("build", "gradle build", rel, weight=3)
+                add("test", "gradle test", rel, weight=2)
+        elif t == "pubspec.yaml":
+            if m.get("flutter"):
+                add("install", "flutter pub get", rel, weight=0)
+                add("run", "flutter run", rel, weight=1)
+                add("test", "flutter test", rel, weight=2)
+                add("build", "flutter build", rel, weight=3)
+            else:
+                add("install", "dart pub get", rel, weight=0)
+                add("test", "dart test", rel, weight=2)
     for c in configs:
         if c["kind"] == "tox":
             add("test", "tox", c["path"], weight=2)
@@ -958,14 +1028,20 @@ def infer_package_managers(manifests: dict, files: list[str]) -> tuple[list, lis
     if any(m["type"] == "pom.xml" for m in manifests.values()):
         pms.append({"tool": "Maven", "evidence": [
             m["path"] for m in manifests.values() if m["type"] == "pom.xml"]})
-    if any(m["type"] in ("build.gradle", "build.gradle.kts")
-           for m in manifests.values()):
-        pms.append({"tool": "Gradle", "evidence": [
-            m["path"] for m in manifests.values()
-            if m["type"] in ("build.gradle", "build.gradle.kts")]})
+    gradle = [m["path"] for m in manifests.values()
+              if m["type"] in ("build.gradle", "build.gradle.kts")]
+    flutter_roots = _flutter_roots(manifests)
+    gradle = [p for p in gradle if not _is_flutter_scaffold(p, flutter_roots)]
+    if gradle:
+        pms.append({"tool": "Gradle", "evidence": sorted(gradle)})
     if any(m["type"] == "Cargo.toml" for m in manifests.values()):
         pms.append({"tool": "Cargo", "evidence": [
             m["path"] for m in manifests.values() if m["type"] == "Cargo.toml"]})
+    pub = [m for m in manifests.values() if m["type"] == "pubspec.yaml"]
+    if pub:
+        tool = "flutter pub" if any(m.get("flutter") for m in pub) \
+            else "dart pub"
+        pms.append({"tool": tool, "evidence": sorted(m["path"] for m in pub)})
     return pms, lock_pms
 
 
@@ -979,7 +1055,7 @@ def scan_repo(repo) -> dict:
     configs = scan_configs(repo, files)
     components, notes = detect_components(repo, dirs, manifests, files)
     label, has_frontend, label_clues = repo_label(components)
-    entry_points = collect_entry_points(manifests)
+    entry_points = collect_entry_points(manifests, files)
     pms, lock_pms = infer_package_managers(manifests, files)
     commands = collect_commands(manifests, configs, lock_pms)
     clues = []

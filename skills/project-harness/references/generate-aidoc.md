@@ -42,6 +42,7 @@ Read these files when present:
 | `CMakeLists.txt`, `Makefile` | C/C++ build targets and layout |
 | `*.pro`, qmake project files | Qt modules and app layout |
 | `Cargo.toml` | Rust dependencies |
+| `pubspec.yaml` | Dart/Flutter dependencies and app config |
 | `.nvmrc`, `.node-version`, `.python-version` | Runtime versions |
 | `Dockerfile`, `docker-compose.yml` | Deployment setup |
 
@@ -63,9 +64,9 @@ Read these files when present:
 
 ### 1.4 Project type and components
 
-The unit of detection is the **component**: a tuple `(path, kind, language/framework, evidence)` where kind ∈ `web-frontend` / `web-backend` / `cli` / `library` / `qt-app` / `java-app` / `go-module` / `cpp-app` / `generic`. A repository has one or more components; the repo-level label derives from them:
+The unit of detection is the **component**: a tuple `(path, kind, language/framework, evidence)` where kind ∈ `web-frontend` / `web-backend` / `cli` / `library` / `flutter-app` / `qt-app` / `java-app` / `go-module` / `cpp-app` / `generic`. A repository has one or more components; the repo-level label derives from them:
 
-- Single component → one of the six types `fullstack` / `backend` / `frontend` / `library` / `cli` / `general`. Single-component `qt-app` / `go-module` / `cpp-app` maps to `general`.
+- Single component → one of the six types `fullstack` / `backend` / `frontend` / `library` / `cli` / `general`. Single-component `flutter-app` / `qt-app` / `go-module` / `cpp-app` maps to `general`.
 - Multiple components → `mixed`.
 
 Component kind table:
@@ -77,12 +78,13 @@ Component kind table:
 | `cli` | `[project.scripts]` / `bin` entries, `click`, `typer`, `commander`, `cobra` |
 | `library` | `[build-system]`, `setup.py`, package `main`/`exports` fields, `[lib]` crate type |
 | `qt-app` | `*.pro` / qmake project files, Qt dependencies, `.qml` / `.ui` files |
+| `flutter-app` | `pubspec.yaml` with a `sdk: flutter` dependency or a top-level `flutter:` section (a `build.gradle` under such a project's `android/` etc. is Flutter scaffolding, not a `java-app`) |
 | `java-app` | `pom.xml` / `build.gradle` with an application entry point |
 | `go-module` | `go.mod` with a buildable `main` package |
 | `cpp-app` | `CMakeLists.txt` / `Makefile` defining an executable target |
 | `generic` | none of the above matched |
 
-Priority when several kinds match one component (first match wins): `web-frontend` > `web-backend` > `cli` > `library` > `qt-app` > `java-app` > `go-module` > `cpp-app` > `generic`.
+Priority when several kinds match one component (first match wins): `web-frontend` > `web-backend` > `cli` > `library` > `flutter-app` > `qt-app` > `java-app` > `go-module` > `cpp-app` > `generic`.
 
 One directory may host several components (e.g. a `package.json` with both a Vite frontend and an Express server); record each with its own evidence.
 

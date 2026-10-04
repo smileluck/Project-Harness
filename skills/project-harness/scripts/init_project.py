@@ -77,7 +77,7 @@ def detect_project(repo: Path, scan: dict | None = None) -> tuple[str, list[str]
     基于 scan_repo 的组件探测实现。类型 ∈ fullstack/backend/frontend/
     library/cli/general/mixed：前端+Web 框架（同路径）→ fullstack；
     仅前端 → frontend；仅 Web/Java 框架 → backend；CLI 入口 → cli；
-    库打包标志 → library；qt/go-module/cpp 组件单独存在 → general
+    库打包标志 → library；flutter/qt/go-module/cpp 组件单独存在 → general
     （clues 注明组件）；多路径多类型 → mixed；无任何标志 → general。
     """
     if scan is None:

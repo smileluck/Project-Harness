@@ -30,7 +30,7 @@ The script creates only missing files and reports existing destinations as `SKIP
 
 ### Static scan (default)
 
-Init runs a zero-dependency static scan (`scripts/scan_repo.py`) by default; `--no-scan` disables it. The scan parses language manifests (`package.json`, `pyproject.toml`/`requirements.txt`, `go.mod`, `pom.xml`/`build.gradle`, `CMakeLists.txt`/`Makefile`, `*.pro`), takes `git ls-files` structure statistics, and detects components — mixed projects supported, each component a `(path, kind, language/framework, evidence)` tuple. It produces:
+Init runs a zero-dependency static scan (`scripts/scan_repo.py`) by default; `--no-scan` disables it. The scan parses language manifests (`package.json`, `pyproject.toml`/`requirements.txt`, `go.mod`, `pom.xml`/`build.gradle`, `CMakeLists.txt`/`Makefile`, `*.pro`, `Cargo.toml`, `pubspec.yaml`), takes `git ls-files` structure statistics, and detects components — mixed projects supported, each component a `(path, kind, language/framework, evidence)` tuple. It produces:
 
 1. Pre-filled sections in the newly generated `relations/repo-profile.md`, `relations/development-workflow.md`, and `relations/system-map.md` — each auto-filled section carries the marker `<!-- auto-scan: init 扫描生成，generate 工作流校订后移除此标记 -->`. Fill points are explicit `<!-- scan-fill:<key> -->` markers embedded in the templates (next to the section heading), so section titles can be reworded freely without breaking the fill.
 2. The machine artifact `aiDoc/relations/code-index.md`, always regenerated on each run (lifecycle and regeneration command: [aidoc-structure.md](aidoc-structure.md)).

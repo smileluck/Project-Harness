@@ -7,7 +7,7 @@
 
 ## 提案 / 决策
 
-探测产出**组件列表** `(path, kind, stack, evidence)`，kind 九种（web-frontend/web-backend/cli/library/qt-app/java-app/go-module/cpp-app/generic）；扫描根目录+一级子目录的标志文件与扩展名，同目录允许多组件。仓库标签：单成分沿用六类型，多成分标 `mixed` 并列组件清单，无信号标 `general`。`has_frontend` = 任一组件为 web-frontend（仍只驱动 `frontend/` 区域的条件生成）。判定启发式必须带 evidence，误判由 generate 校订。
+探测产出**组件列表** `(path, kind, stack, evidence)`，kind 十种（web-frontend/web-backend/cli/library/flutter-app/qt-app/java-app/go-module/cpp-app/generic，flutter-app 于 2026-10-04 增补，见 `../bug-fix/2026-10-04-flutter-scan-misdetection.md`）；扫描根目录+一级子目录的标志文件与扩展名，同目录允许多组件。Flutter 工程下 `android/` 等子目录的 build.gradle 属脚手架，不计入 java-app 判定与命令索引。仓库标签：单成分沿用六类型，多成分标 `mixed` 并列组件清单，无信号标 `general`。`has_frontend` = 任一组件为 web-frontend（仍只驱动 `frontend/` 区域的条件生成）。判定启发式必须带 evidence，误判由 generate 校订。
 
 ## 真实考虑过的备选
 

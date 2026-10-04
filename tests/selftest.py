@@ -402,6 +402,40 @@ def test_labels_and_components(tmp: Path) -> None:
               (r.stdout + r.stderr)[-200:])
 
 
+def test_flutter_detection(tmp: Path) -> None:
+    print("\n[2l] Flutter 探测（android/ 脚手架 Gradle 不得误判 java-app）")
+    repo = tmp / "flutter"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    write(repo / "pubspec.yaml",
+          "name: demo_app\nversion: 1.0.0+1\n"
+          "dependencies:\n  flutter:\n    sdk: flutter\n"
+          "flutter:\n  uses-material-design: true\n")
+    write(repo / "lib" / "main.dart", "void main() {}\n")
+    write(repo / "android" / "build.gradle.kts",
+          'plugins {\n    id("com.android.application")\n}\n')
+    r = subprocess.run([PY, str(SCRIPTS / "scan_repo.py"), str(repo), "--json"],
+                       capture_output=True, text=True)
+    ok = r.returncode == 0
+    if ok:
+        data = json.loads(r.stdout)
+        kinds = {(c["path"], c["kind"]) for c in data["components"]}
+        commands = [c["command"] for c in data["commands"]]
+        pms = [p["tool"] for p in data["package_managers"]]
+        ok = (data["label"] == "general"
+              and (".", "flutter-app") in kinds
+              and not any(k == "java-app" for _, k in kinds)
+              and ".dart" in data["languages"]
+              and any(e["value"] == "lib/main.dart"
+                      for e in data["entry_points"])
+              and {"flutter pub get", "flutter run", "flutter test"}
+              <= set(commands)
+              and not any(c.startswith("gradle") for c in commands)
+              and "flutter pub" in pms and "Gradle" not in pms)
+    check("flutter 工程识别为 flutter-app 且不误判 java-app", ok,
+          (r.stdout + r.stderr)[-300:])
+
+
 def test_scan_untracked_files(tmp: Path) -> None:
     print("\n[2k] scan_repo 覆盖未跟踪文件（git 仓内新增未提交目录）")
     repo = tmp / "untracked"
@@ -1006,6 +1040,7 @@ def main() -> int:
         test_write_code_index(tmp)
         test_scan_framework_keywords(tmp)
         test_labels_and_components(tmp)
+        test_flutter_detection(tmp)
         test_scan_untracked_files(tmp)
         test_lang_en_flow(tmp)
         test_lang_auto(tmp)

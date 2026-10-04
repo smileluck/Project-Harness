@@ -18,6 +18,7 @@
 - `business/2026-09-15-detection-hardening-review.md`：全方位审阅（第二轮）与检测加固——manifest 基线生命周期修复、TODO 锁死解耦、check_sync 检查扩至 9 项、未跟踪文件补扫，已完成
 - `business/2026-10-03-project-set-init.md`：项目集批量初始化（init-set）——多项目根目录发现成员、未配置成员批量 init、根 AGENTS.md 跨项目索引，已完成
 - `business/2026-10-04-update-project-set.md`：项目集更新（update-set）——`--refresh` 机械刷新根 AGENTS.md 成员索引（增删成员+简介列），不动成员 harness，已完成
+- `business/2026-10-04-flutter-scan-misdetection.md`：scan_repo 修复 Flutter 工程误判 Java Gradle——新增 flutter-app 探测与脚手架 gradle 抑制，已完成
 
 ## 经验记忆（lessons）
 
