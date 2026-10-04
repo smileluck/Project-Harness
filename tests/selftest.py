@@ -10,6 +10,8 @@
     1b. init-set 项目集：discovery 零写入、未知成员 exit 2、--dry-run 零写入、
        未配置成员初始化 + 已配置跳过 + 根 AGENTS.md 索引表、二跑幂等、
        嵌套 git 成员 blocked。
+    1c. update-set 索引刷新：前置 exit 2、增删成员行合并、已校订简介保留、
+       状态列机械刷新、备份、不动成员目录、幂等。
     2. init 产物跑 check_sync.py 必须 exit 0。
     3. scan_repo.py --json 可运行且输出合法 JSON；--write-code-index 重生成/
        幂等/双语渲染（code-index 漂移修复路径）；关键词表单源化后的
@@ -262,8 +264,9 @@ def test_init_project_set(tmp: Path) -> None:
           and not (pb / "AGENTS.md").exists())
     root_agents = set_root / "AGENTS.md"
     text = root_agents.read_text(encoding="utf-8") if root_agents.is_file() else ""
-    check("根 AGENTS.md 生成且含成员索引表",
-          "| **proj-a** |" in text and "| **proj-b** |" in text
+    check("根 AGENTS.md 生成且含成员索引表（5 列含简介）",
+          "| 项目 | 路径 | 类型 | 简介 | harness 状态 |" in text
+          and "| **proj-a** |" in text and "| **proj-b** |" in text
           and "| **proj-c** |" not in text)
     check("根 AGENTS.md 带 auto-scan 标记待校订",
           init_project.AUTO_SCAN_MARK in text)
@@ -296,6 +299,65 @@ def test_init_project_set(tmp: Path) -> None:
           r.returncode == 0 and "嵌套于父 git 仓库" in r.stdout,
           (r.stdout + r.stderr)[-300:])
     check("blocked 成员零写入", not (sub / "aiDoc").exists())
+
+
+# ---------------------------------------------------------------- 1c. update-set 索引刷新
+
+def test_init_project_set_refresh(tmp: Path) -> None:
+    print("\n[1c] update-set 项目集索引刷新")
+
+    # 前置不满足：无根 AGENTS.md → exit 2
+    bare = tmp / "bare-set"
+    bare.mkdir(parents=True)
+    r = run_init_set(bare, "--refresh")
+    check("无根 AGENTS.md --refresh exit 2", r.returncode == 2)
+
+    set_root = _make_set_fixture(tmp / "refr")
+    r = run_init_set(set_root, "--members", "proj-a,proj-b")
+    check("refresh 前置：init-set 建根 AGENTS.md", r.returncode == 0,
+          (r.stdout + r.stderr)[-300:])
+    root_agents = set_root / "AGENTS.md"
+
+    # 模拟 agent 校订：给 proj-a 写简介
+    text = root_agents.read_text(encoding="utf-8")
+    text = text.replace("TODO: 一句话说明", "已校订：proj-a 是核心 API", 1)
+    root_agents.write_text(text, encoding="utf-8")
+
+    # 成员增删：删除 proj-b；proj-c（fixture 里未入选的普通目录）成为新增
+    shutil.rmtree(set_root / "proj-b")
+    snap_a = snapshot_files(set_root / "proj-a")
+
+    before = snapshot_files(set_root)
+    r = run_init_set(set_root, "--refresh", "--dry-run")
+    check("refresh --dry-run exit 0 零写入",
+          r.returncode == 0 and snapshot_files(set_root) == before,
+          (r.stdout + r.stderr)[-300:])
+
+    r = run_init_set(set_root, "--refresh")
+    check("refresh exit 0", r.returncode == 0, (r.stdout + r.stderr)[-300:])
+    text = root_agents.read_text(encoding="utf-8")
+    check("refresh 删除目录已消失的成员行", "proj-b" not in text)
+    check("refresh 追加新成员行（简介 TODO 占位）",
+          "| **proj-c** |" in text and "TODO: 一句话说明" in text)
+    check("refresh 保留已校订简介", "已校订：proj-a 是核心 API" in text)
+    check("refresh 机械刷新 harness 状态列",
+          "| **proj-a** | `proj-a/` | general | 已校订：proj-a 是核心 API "
+          "| 已配置 |" in text)
+    check("refresh 重写前产生备份",
+          bool(list((set_root / ".harness-backups").rglob("AGENTS.md"))))
+    check("refresh 不动成员目录",
+          snapshot_files(set_root / "proj-a") == snap_a)
+    check("refresh 不写根级 manifest/aiDoc",
+          not (set_root / "aiDoc").exists()
+          and not (set_root / ".harness-manifest.json").exists())
+
+    # 幂等：二次 refresh 已是最新、零写入
+    before = snapshot_files(set_root)
+    r = run_init_set(set_root, "--refresh")
+    check("refresh 二跑幂等（已是最新，零写入）",
+          r.returncode == 0 and "已是最新" in r.stdout
+          and snapshot_files(set_root) == before,
+          (r.stdout + r.stderr)[-300:])
 
 
 # ---------------------------------------------------------------- 2/3. 脚本可运行
@@ -939,6 +1001,7 @@ def main() -> int:
         tmp = Path(td)
         test_init_behaviour(tmp)
         test_init_project_set(tmp)
+        test_init_project_set_refresh(tmp)
         test_scripts_runnable(tmp)
         test_write_code_index(tmp)
         test_scan_framework_keywords(tmp)

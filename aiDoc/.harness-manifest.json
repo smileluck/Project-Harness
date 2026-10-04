@@ -13,7 +13,7 @@
       "template": "agents-skills/project-pre-push-checks/SKILL.md"
     },
     "AGENTS.md": {
-      "sha256": "21b7156805e0849574a530af6900e33184905f1af91d7caa421203bc134289f7",
+      "sha256": "ebb5d9430c5a773ad855b9966a423a682444ce4ca7d9b6386b4406a5500854dd",
       "template": "AGENTS.md.tmpl"
     },
     "CLAUDE.md": {
@@ -21,11 +21,11 @@
       "template": "CLAUDE.md"
     },
     "aiDoc/README.md": {
-      "sha256": "d653d0be23fce4f324ff51425949a46ddcbe2cd2bf4974828a5b0585591d0219",
+      "sha256": "805efc312901db6597d2ba99c3b8561d6e33fe650a89a338299b2d24905b36f1",
       "template": "aidoc/README.md"
     },
     "aiDoc/contracts/boundary.md": {
-      "sha256": "32a0228b3ec710fa069f07bb55a6ccfe70111e3ae44c7fe1b80533dfdfc219ca",
+      "sha256": "14acc16ef8fd4dd2952eb8f1f125e17e0a690ace8978822d7a2b33d7ebe3f121",
       "template": "aidoc/contracts/boundary.md"
     },
     "aiDoc/examples/README.md": {
@@ -57,7 +57,7 @@
       "template": "aidoc/memory/long-term/README.md"
     },
     "aiDoc/memory/project-memory.md": {
-      "sha256": "8c72d928652330072e51dc95cc76377237a92f6fd582a7309187dfd7d126bbc0",
+      "sha256": "1fae15e89a86f3835733abdfc81578a16361cf342b33276824c82bba21799382",
       "template": "aidoc/memory/project-memory.md"
     },
     "aiDoc/modules/architecture-rules.md": {

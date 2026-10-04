@@ -17,6 +17,7 @@
 - `business/2026-09-15-full-review-remediation.md`：全面评审整改——口径修正、init 正确性加固、update 模板新增文件下发链路、manifest 刷新、路由表对齐，已完成（推送与 CI 首跑为用户侧遗留）
 - `business/2026-09-15-detection-hardening-review.md`：全方位审阅（第二轮）与检测加固——manifest 基线生命周期修复、TODO 锁死解耦、check_sync 检查扩至 9 项、未跟踪文件补扫，已完成
 - `business/2026-10-03-project-set-init.md`：项目集批量初始化（init-set）——多项目根目录发现成员、未配置成员批量 init、根 AGENTS.md 跨项目索引，已完成
+- `business/2026-10-04-update-project-set.md`：项目集更新（update-set）——`--refresh` 机械刷新根 AGENTS.md 成员索引（增删成员+简介列），不动成员 harness，已完成
 
 ## 经验记忆（lessons）
 
@@ -25,6 +26,7 @@
 - `lessons/2026-09-13-boilerplate-dual-home-drift.md`：固定样板的 dogfood 双家必须机械 diff 校验（pending，1 次；已落地 selftest 样板检查，候选晋升位 architecture-rules 模板层）
 - `lessons/2026-09-15-relpath-form-mismatch.md`：跨常量做键匹配前先核对两侧路径的相对基准（pending，1 次；selftest 收敛断言当场拦截）
 - `lessons/2026-09-15-detector-efficacy-blind-spots.md`：检测器自身的有效性需要负例回归保护——断言只看输出、逐字节锁死合法分化、检测器无负例三形态（pending，1 次）
+- `lessons/2026-10-04-full-repo-relative-paths-in-aidoc.md`：aiDoc 文档引用仓库内文件必须用根相对全路径（promoted，2 次 → `aiDoc/README.md` 维护原则）
 
 新增/晋升/累加 lesson 时必须同步本区索引，规则见 `lessons/README.md`。
 
