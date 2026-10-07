@@ -89,11 +89,15 @@ RUST_WEB_RE = re.compile(r"\b(actix-web|actix|axum)\b")
 RUST_WEB_NAMES = {"actix": "Actix", "actix-web": "Actix", "axum": "Axum"}
 RUST_CLI_RE = re.compile(r"\bclap\b")
 
+# 移动端/跨端框架（package.json 依赖信号；uni-app 另认 pages.json / .uvue）
+RN_DEPS = {"react-native": "React Native"}
+UNI_DEP_PREFIX = "@dcloudio/"
+
 # 语言构成统计覆盖的扩展名
 LANG_EXTS = (
     ".py", ".js", ".jsx", ".ts", ".tsx", ".vue", ".java", ".go", ".c", ".cc",
     ".cpp", ".cxx", ".h", ".hpp", ".cs", ".rs", ".qml", ".ui", ".pro", ".kt",
-    ".swift", ".rb", ".php", ".dart",
+    ".swift", ".rb", ".php", ".dart", ".uvue", ".uts",
 )
 
 C_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp"}
@@ -115,11 +119,13 @@ MODULE_FILE_CAP = 200
 
 # 组件优先级（同一目录允许多组件；排序/展示按此序）
 KIND_ORDER = (
-    "flutter-app", "qt-app", "web-frontend", "web-backend", "cli", "java-app",
-    "go-module", "cpp-app", "library", "generic",
+    "flutter-app", "react-native-app", "uni-app", "qt-app", "web-frontend",
+    "web-backend", "cli", "java-app", "go-module", "cpp-app", "library",
+    "generic",
 )
 
-SPECIAL_KINDS = {"flutter-app", "qt-app", "go-module", "cpp-app"}
+SPECIAL_KINDS = {"flutter-app", "react-native-app", "uni-app", "qt-app",
+                 "go-module", "cpp-app"}
 
 LOCKFILES = (
     ("pnpm-lock.yaml", "pnpm"), ("yarn.lock", "yarn"),
@@ -189,7 +195,8 @@ def parse_package_json(path: Path, rel: str) -> dict:
     info = {"type": "package.json", "path": rel, "name": None, "version": None,
             "description": None, "scripts": {}, "bin": None, "main": None,
             "exports": False, "packageManager": None, "dependencies": [],
-            "frontend_deps": [], "web_deps": [], "cli_deps": []}
+            "frontend_deps": [], "web_deps": [], "cli_deps": [],
+            "react_native": False, "dcloudio": False}
     try:
         data = json.loads(_read_text(path))
     except ValueError:
@@ -214,6 +221,8 @@ def parse_package_json(path: Path, rel: str) -> dict:
     info["frontend_deps"] = sorted(d for d in deps if d in FRONTEND_DEPS)
     info["web_deps"] = sorted(d for d in deps if d in NODE_WEB_DEPS)
     info["cli_deps"] = sorted(d for d in deps if d in NODE_CLI_DEPS)
+    info["react_native"] = any(d in RN_DEPS for d in deps)
+    info["dcloudio"] = any(d.startswith(UNI_DEP_PREFIX) for d in deps)
     return info
 
 
@@ -569,20 +578,22 @@ def _exts_under(files: list[str], prefix: str) -> set:
 # 每个检测器只看自己关心的清单，返回 (stack, evidence) 或 None；
 # detect_components 负责编排、赋 kind、排序——加新组件类型 = 加一个检测器。
 
-def _flutter_roots(manifests: dict) -> list[str]:
-    """含 Flutter 信号的 pubspec.yaml 所在目录前缀（仓库根为 ""）。"""
+def _mobile_app_roots(manifests: dict) -> list[str]:
+    """Flutter / React Native 工程根目录前缀（仓库根为 ""）。"""
     roots = []
     for m in manifests.values():
-        if m["type"] == "pubspec.yaml" and m.get("flutter"):
+        hit = (m["type"] == "pubspec.yaml" and m.get("flutter")) or \
+              (m["type"] == "package.json" and m.get("react_native"))
+        if hit:
             p = m["path"]
             roots.append(p.rsplit("/", 1)[0] + "/" if "/" in p else "")
     return sorted(roots)
 
 
-def _is_flutter_scaffold(rel: str, flutter_roots: list[str]) -> bool:
-    """Flutter 工程下 android/ 等子目录的 build.gradle 是 Flutter 脚手架，
+def _is_mobile_scaffold(rel: str, app_roots: list[str]) -> bool:
+    """Flutter/RN 工程下 android/ 等子目录的 build.gradle 是宿主工程脚手架，
     不是独立 Java 工程——java-app/web-backend 判定与命令索引均应忽略。"""
-    for root in flutter_roots:
+    for root in app_roots:
         if rel.startswith(root) and "/" in rel[len(root):]:
             return True
     return False
@@ -592,6 +603,32 @@ def _detect_flutter(pubspec):
     if pubspec and pubspec["flutter"]:
         return "Flutter", [f"{pubspec['path']}: 含 flutter 依赖或 flutter: 配置节"]
     return None
+
+
+def _detect_react_native(pkg):
+    if pkg and pkg["react_native"]:
+        matched = [d for d in RN_DEPS if d in pkg["dependencies"]]
+        names = _dedup(RN_DEPS[d] for d in matched)
+        return (" + ".join(names),
+                [f"{pkg['path']}: 依赖 {', '.join(matched)}"])
+    return None
+
+
+def _detect_uni_app(pkg, sub_exts: set, prefix: str, file_set: set):
+    """uni-app：@dcloudio/* 依赖或本目录 pages.json 路由配置（强信号）；
+    存在 .uvue 时判为 uni-app x（.uvue 单独出现不算——多为应用内页面目录）。"""
+    evi: list = []
+    if pkg and pkg["dcloudio"]:
+        evi.append(f"{pkg['path']}: 依赖 @dcloudio/*（uni-app 生态）")
+    pages = prefix + "pages.json"
+    if pages in file_set:
+        evi.append(f"{pages}: uni-app 页面路由配置")
+    if not evi:
+        return None
+    if ".uvue" in sub_exts:
+        evi.append(f"{prefix or '.'}: 存在 .uvue 文件（uni-app x 页面）")
+    stack = "uni-app x" if ".uvue" in sub_exts else "uni-app"
+    return stack, evi
 
 def _detect_qt(pros: list, cmake, sub_exts: set, prefix: str):
     qt_evi: list = []
@@ -756,7 +793,8 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
     """返回 (components, notes)。同一目录允许多组件，按 KIND_ORDER 排序。"""
     components: list = []
     notes: list = []
-    flutter_roots = _flutter_roots(manifests)
+    app_roots = _mobile_app_roots(manifests)
+    file_set = set(files)
 
     for d in dirs:
         rel = "." if d == repo else d.relative_to(repo).as_posix()
@@ -781,8 +819,8 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
                 if r.startswith(prefix) and r.endswith(".pro")
                 and "/" not in r[len(prefix):]]
 
-        if gradle and _is_flutter_scaffold(gradle["path"], flutter_roots):
-            notes.append(f"{gradle['path']}: Flutter 工程脚手架 Gradle"
+        if gradle and _is_mobile_scaffold(gradle["path"], app_roots):
+            notes.append(f"{gradle['path']}: 移动应用宿主工程脚手架 Gradle"
                          "（不计入 Java 判定与命令索引）")
             gradle = None
 
@@ -795,10 +833,17 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
         flutter = _detect_flutter(pubspec)
         if flutter:
             comp("flutter-app", *flutter)
+        rn = _detect_react_native(pkg)
+        if rn:
+            comp("react-native-app", *rn)
+        uni = _detect_uni_app(pkg, sub_exts, prefix, file_set)
+        if uni:
+            comp("uni-app", *uni)
         qt = _detect_qt(pros, cmake, sub_exts, prefix)
         if qt:
             comp("qt-app", *qt)
-        web_fe = _detect_web_frontend(pkg)
+        # RN/uni-app 伴随的 react/vue 依赖不构成 Web 前端
+        web_fe = None if (rn or uni) else _detect_web_frontend(pkg)
         if web_fe:
             comp("web-frontend", *web_fe)
         web_be = _detect_web_backend(pkg, pyproj, reqs, setup, gomod,
@@ -827,7 +872,8 @@ def detect_components(repo: Path, dirs: list[Path], manifests: dict,
         # 无判定价值的清单说明
         if pkg and not (pkg["frontend_deps"] or pkg["web_deps"]
                         or pkg["cli_deps"] or pkg["bin"] or pkg["main"]
-                        or pkg["exports"]):
+                        or pkg["exports"] or pkg["react_native"]
+                        or pkg["dcloudio"]):
             notes.append(
                 f"{pkg['path']}: package.json（无明确依赖线索，不计入判定）")
         if pubspec and not pubspec["flutter"]:
@@ -901,6 +947,12 @@ def collect_entry_points(manifests: dict, files: list[str]) -> list:
                 eps.append({"name": m.get("name") or m["main"],
                             "type": "package.json main", "location": rel,
                             "value": m["main"]})
+            if m.get("dcloudio"):
+                pages = rel[:-len("package.json")] + "pages.json"
+                if pages in file_set:
+                    eps.append({"name": m.get("name") or "pages",
+                                "type": "uni-app pages", "location": rel,
+                                "value": pages})
         elif t == "pyproject.toml":
             for name, target in sorted((m.get("scripts") or {}).items()):
                 eps.append({"name": name, "type": "project.scripts",
@@ -943,7 +995,7 @@ def collect_commands(manifests: dict, configs: list,
                      lock_pms: list) -> list:
     """命令索引。weight 用于工作流表排序：install < run < test < build < 其他。"""
     cmds: list = []
-    flutter_roots = _flutter_roots(manifests)
+    app_roots = _mobile_app_roots(manifests)
 
     def add(name, command, source, detail="", weight=4):
         cmds.append({"name": name, "command": command, "source": source,
@@ -982,7 +1034,7 @@ def collect_commands(manifests: dict, configs: list,
             add("build", "mvn package", rel, weight=3)
             add("test", "mvn test", rel, weight=2)
         elif t in ("build.gradle", "build.gradle.kts"):
-            if not _is_flutter_scaffold(rel, flutter_roots):
+            if not _is_mobile_scaffold(rel, app_roots):
                 add("build", "gradle build", rel, weight=3)
                 add("test", "gradle test", rel, weight=2)
         elif t == "pubspec.yaml":
@@ -1030,8 +1082,8 @@ def infer_package_managers(manifests: dict, files: list[str]) -> tuple[list, lis
             m["path"] for m in manifests.values() if m["type"] == "pom.xml"]})
     gradle = [m["path"] for m in manifests.values()
               if m["type"] in ("build.gradle", "build.gradle.kts")]
-    flutter_roots = _flutter_roots(manifests)
-    gradle = [p for p in gradle if not _is_flutter_scaffold(p, flutter_roots)]
+    app_roots = _mobile_app_roots(manifests)
+    gradle = [p for p in gradle if not _is_mobile_scaffold(p, app_roots)]
     if gradle:
         pms.append({"tool": "Gradle", "evidence": sorted(gradle)})
     if any(m["type"] == "Cargo.toml" for m in manifests.values()):

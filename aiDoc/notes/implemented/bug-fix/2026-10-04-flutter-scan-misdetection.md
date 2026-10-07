@@ -13,7 +13,7 @@
 
 1. **新增 `parse_pubspec`**（注册进 `MANIFEST_PARSERS`）：正则提取 `name`/`version`；Flutter 信号 = 顶层 `flutter:` 配置节或依赖中 `sdk: flutter`。
 2. **新增 `flutter-app` 组件 kind**：`_detect_flutter` 检测器（pubspec 含 flutter 信号 → stack `Flutter`）；入 `KIND_ORDER`（qt-app 前）与 `SPECIAL_KINDS`（单成分标签映射 `general`，与 qt-app 一致）；纯 Dart 包（无 flutter 信号）记 note 不参与组件判定。
-3. **脚手架抑制**：`_flutter_roots` + `_is_flutter_scaffold`——Flutter 工程子目录（如 `android/`）下的 build.gradle(.kts) 不计入 java-app/web-backend 判定、不生成 `gradle build/test` 命令、不计入 Gradle 包管理证据，并写 note 说明。Flutter 根同级的 build.gradle 不受影响。
+3. **脚手架抑制**：`_mobile_app_roots` + `_is_mobile_scaffold`（初版名为 `_flutter_roots`/`_is_flutter_scaffold`，同日随 RN 支持泛化更名）——Flutter 工程子目录（如 `android/`）下的 build.gradle(.kts) 不计入 java-app/web-backend 判定、不生成 `gradle build/test` 命令、不计入 Gradle 包管理证据，并写 note 说明。Flutter 根同级的 build.gradle 不受影响。
 4. **入口点**：`collect_entry_points` 增加 `files` 参数，flutter-app 且目标仓库 lib/main.dart 实际存在时登记入口（type `flutter entrypoint`）。
 5. **命令索引**：flutter 工程登记 `flutter pub get` / `flutter run` / `flutter test` / `flutter build`（install/run/test/build 权重）；纯 Dart 包登记 `dart pub get` / `dart test`。
 6. **包管理**：pubspec 存在 → `flutter pub`（含 flutter 信号）或 `dart pub`；被抑制的脚手架 gradle 从 Gradle 证据中剔除，全剔除则不列 Gradle。

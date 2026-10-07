@@ -57,7 +57,7 @@
       "template": "aidoc/memory/long-term/README.md"
     },
     "aiDoc/memory/project-memory.md": {
-      "sha256": "ed568bcd976c360ce3182a73ec10d89e284ec24da0f42ce21bb2e5bea580ad61",
+      "sha256": "427cbef2dad32c5029778dc691b13f57fd1da87bcb112bddf8c586a4bdf9a071",
       "template": "aidoc/memory/project-memory.md"
     },
     "aiDoc/modules/architecture-rules.md": {

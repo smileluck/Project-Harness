@@ -436,6 +436,75 @@ def test_flutter_detection(tmp: Path) -> None:
           (r.stdout + r.stderr)[-300:])
 
 
+def test_mobile_detection(tmp: Path) -> None:
+    print("\n[2m] RN / uni-app / uni-app x 探测（伴随 react/vue 不误判 web-frontend）")
+
+    def scan(repo: Path):
+        r = subprocess.run([PY, str(SCRIPTS / "scan_repo.py"), str(repo),
+                            "--json"], capture_output=True, text=True)
+        if r.returncode != 0:
+            return None
+        return json.loads(r.stdout)
+
+    # React Native：android/ 脚手架 gradle 不得误判 java-app
+    rn = tmp / "rn"
+    rn.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=rn, check=True)
+    write(rn / "package.json",
+          '{"name": "demo-rn", "main": "index.js", '
+          '"dependencies": {"react": "*", "react-native": "*"}}')
+    write(rn / "index.js", 'import {AppRegistry} from "react-native";\n')
+    write(rn / "android" / "build.gradle",
+          'plugins {\n    id("com.android.application")\n}\n')
+    data = scan(rn)
+    ok = bool(data)
+    if ok:
+        kinds = {c["kind"] for c in data["components"]}
+        commands = [c["command"] for c in data["commands"]]
+        ok = (data["label"] == "general"
+              and "react-native-app" in kinds
+              and "java-app" not in kinds and "web-frontend" not in kinds
+              and not any(c.startswith("gradle") for c in commands))
+    check("RN 工程识别为 react-native-app 且不误判 java-app/web-frontend",
+          ok, "")
+
+    # uni-app：@dcloudio 依赖 + pages.json；vue 依赖不触发 web-frontend
+    uni = tmp / "uni"
+    uni.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=uni, check=True)
+    write(uni / "package.json",
+          '{"name": "demo-uni", "dependencies": '
+          '{"vue": "*", "@dcloudio/uni-app": "*"}}')
+    write(uni / "pages.json", '{"pages": [{"path": "pages/index/index"}]}\n')
+    write(uni / "src" / "main.js", "console.log(1)\n")
+    data = scan(uni)
+    ok = bool(data)
+    if ok:
+        comps = [(c["kind"], c["stack"]) for c in data["components"]]
+        ok = (("uni-app", "uni-app") in comps
+              and not any(k == "web-frontend" for k, _ in comps)
+              and any(e["type"] == "uni-app pages"
+                      and e["value"] == "pages.json"
+                      for e in data["entry_points"]))
+    check("uni-app 工程识别（dcloudio 依赖 + pages.json 入口）", ok, "")
+
+    # uni-app x：无 package.json，pages.json + .uvue；页面目录不重复计组件
+    ux = tmp / "unix"
+    ux.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=ux, check=True)
+    write(ux / "pages.json", '{"pages": [{"path": "pages/index/index"}]}\n')
+    write(ux / "pages" / "index" / "index.uvue",
+          "<template><view/></template>\n")
+    data = scan(ux)
+    ok = bool(data)
+    if ok:
+        comps = [(c["path"], c["kind"], c["stack"])
+                 for c in data["components"]]
+        ok = (comps == [(".", "uni-app", "uni-app x")]
+              and ".uvue" in data["languages"])
+    check("uni-app x 工程识别（pages.json + .uvue，页面目录不重复计）", ok, "")
+
+
 def test_scan_untracked_files(tmp: Path) -> None:
     print("\n[2k] scan_repo 覆盖未跟踪文件（git 仓内新增未提交目录）")
     repo = tmp / "untracked"
@@ -1041,6 +1110,7 @@ def main() -> int:
         test_scan_framework_keywords(tmp)
         test_labels_and_components(tmp)
         test_flutter_detection(tmp)
+        test_mobile_detection(tmp)
         test_scan_untracked_files(tmp)
         test_lang_en_flow(tmp)
         test_lang_auto(tmp)

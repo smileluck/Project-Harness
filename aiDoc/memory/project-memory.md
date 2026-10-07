@@ -19,6 +19,7 @@
 - `business/2026-10-03-project-set-init.md`：项目集批量初始化（init-set）——多项目根目录发现成员、未配置成员批量 init、根 AGENTS.md 跨项目索引，已完成
 - `business/2026-10-04-update-project-set.md`：项目集更新（update-set）——`--refresh` 机械刷新根 AGENTS.md 成员索引（增删成员+简介列），不动成员 harness，已完成
 - `business/2026-10-04-flutter-scan-misdetection.md`：scan_repo 修复 Flutter 工程误判 Java Gradle——新增 flutter-app 探测与脚手架 gradle 抑制，已完成
+- `business/2026-10-04-mobile-framework-detection.md`：scan_repo 新增 React Native / uni-app / uni-app x 探测（含伴随 react/vue 的 web-frontend 误判抑制），已完成
 
 ## 经验记忆（lessons）
 
