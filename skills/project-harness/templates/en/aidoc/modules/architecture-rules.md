@@ -1,46 +1,50 @@
 <!-- last-updated: {{DATE}} -->
 # Architecture / Module Organization Rules
 
+> Constraints this project's architecture must obey. Every rule must cite real class names and file paths from the actual code; TODO items are filled by the generate workflow from real code.
+
 ## General Principle
 
-- Strict layering: never skip layers or call across layers in the wrong direction.
-- Every rule below cites real class names and file paths; when the code changes, update this file in the same change.
+- Strict layering: never skip layers, never depend backwards
+- Each layer interacts only through the public interface of the layer below
+- TODO: this project's actual layered call chain (e.g. Endpoint → Service → Model)
 
-<!-- variant: layered-service — the generate workflow keeps the matching variant and deletes the rest -->
-
-TODO: state the actual layer order and data-flow direction (e.g. `Router → Endpoint → Service → Model`).
-
-<!-- variant: package-module — the generate workflow keeps the matching variant and deletes the rest -->
-
-TODO: state the actual package/module structure and the dependency direction between packages.
-
-<!-- variant: plugin-system — the generate workflow keeps the matching variant and deletes the rest -->
-
-TODO: state the actual plugin architecture: core vs plugins, registration mechanism, allowed interaction paths.
-
-<!-- additional paradigms the generate workflow may substitute for the variants above:
-- qt-app: UI/logic separation, signals & slots connecting the two sides; the UI layer never touches core data structures directly
-- cpp-app: public headers/interfaces → implementation modules → build targets (CMake/Makefile)
-- java-app: package layering (e.g. controller/service/repository or api/impl) with one-way dependencies
--->
+<!-- variants: layered service / package-module structure / plugin system, etc. — the generate workflow keeps the matching variant and deletes the rest; the layer section titles below adapt to the actual paradigm -->
 
 ## Data Layer
 
-TODO: storage/persistence conventions — base classes, declaration style, naming rules, storage location — cite real paths and symbols (e.g. `app/models/common/base.py:BaseModel`).
+<!-- TODO: fill from real code, citing actual class names and paths; adapt the section title to the actual paradigm (e.g. Model layer / core data module) -->
+
+- Base-class inheritance: TODO: (cite the real base class, e.g. `app/models/base.py:Base`)
+- Field declaration style: TODO:
+- Table/collection naming rule: TODO:
+- Storage location: TODO:
 
 ## Contract Layer
 
-TODO: interface/data-shape conventions — request/response or schema/DTO base classes, serialization rules, validation approach — cite real paths and symbols.
+<!-- TODO: fill from real code, citing actual class names and paths; adapt the section title to the actual paradigm (e.g. Schema/DTO layer / public types and interfaces layer) -->
+
+- Request/response base classes: TODO:
+- Serialization rules: TODO:
+- Validation approach: TODO:
+- Location: TODO:
 
 ## Business-Logic Layer
 
-TODO: pure business logic rules, method/function signature pattern, exception handling, query optimization expectations — cite real paths and symbols.
+<!-- TODO: fill from real code, citing actual class names and paths; adapt the section title to the actual paradigm (e.g. Service layer / core logic module) -->
+
+- Pure business logic only; never handle transport/entry-layer details
+- Method signature pattern: TODO:
+- Exception handling: TODO: (cite the real exception classes)
+- Query optimization: TODO: (e.g. pagination, N+1 avoidance conventions)
 
 ## Entry Layer
 
-TODO: how external calls enter the system — parameter extraction, response formatting, registration of new entries — cite real paths and symbols (e.g. the route/command registration file).
+<!-- TODO: fill from real code, citing actual class names and paths; adapt the section title to the actual paradigm (e.g. Controller/Endpoint layer / public export module) -->
 
-The layer titles above are neutral placeholders; the generate workflow adapts them to the actual paradigm and names them after the real layers in the code.
+- Only parameter extraction, calling the business-logic layer, and output formatting
+- Pagination handling: TODO:
+- Response format: must follow the unified contract structure in [../contracts/boundary.md](../contracts/boundary.md)
 
 ## Registration Mechanism
 
@@ -50,8 +54,8 @@ TODO:
 
 ## Error Code Allocation
 
-TODO: list used error-code ranges per module if the project has an error-code system; otherwise remove this section.
+<!-- TODO: if the project has an error-code system, list the used ranges; otherwise remove this section -->
 
-| Range | Module / purpose |
+| Range | Purpose |
 |---|---|
-| TODO | TODO |
+| TODO: | TODO: |

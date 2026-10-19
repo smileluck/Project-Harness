@@ -65,16 +65,16 @@ Every generated file starts with `<!-- last-updated: YYYY-MM-DD -->`.
 ### `AGENTS.md` (root, L0)
 
 - States it is the sole source of agent collaboration rules, carrying only the minimal high-level rules every agent must always know; details route to `aiDoc/`.
-- Documents the load model: L0 auto-load (via `CLAUDE.md @AGENTS.md` where supported), L1 routing via `aiDoc/README.md`, L2 deep reads; and the conflict priority chain (single source: [SKILL.md](../SKILL.md#operating-invariants)).
+- Documents the load model: L0 auto-load (via `CLAUDE.md @AGENTS.md` where supported), L1 routing via `aiDoc/README.md`, L2 deep reads; **record layers (`memory/`, `notes/`, `plans/`) are never auto-loaded** — they are read/written on demand only when the routing table hits or a record must be created; and the conflict priority chain (single source: [SKILL.md](../SKILL.md#operating-invariants)).
 - Contains a **tool loading table** (see [tool-adapters.md](tool-adapters.md)) — the sole registry of adapter state.
 - Repository overview: top-level directories by responsibility, from real probing. Tool-private directories are not listed here; their loading is covered by the tool table.
 - Engineering rules (architecture layering, API contract, module/directory conventions), each traceable to real code.
-- Fixed short sections: examples layer purpose, memory rules (long-term = stable preferences, business = each requirement), doc maintenance rule (routing table maintained only in `aiDoc/README.md` — AGENTS.md keeps only a coarse "task family → aiDoc area" quick-reference, never a duplicated detailed list), code-reading exclusions (`node_modules/`, `.venv/`, `__pycache__/`, `vendor/`, …).
+- Fixed short sections: examples layer purpose, doc maintenance rule (routing table maintained only in `aiDoc/README.md` — AGENTS.md keeps only a coarse "task family → aiDoc area" quick-reference, never a duplicated detailed list), code-reading exclusions (`node_modules/`, `.venv/`, `__pycache__/`, `vendor/`, …). Record-keeping disciplines (memory, notes, plans) are **not** fixed sections here — L0 carries only one-line pointers to their `aiDoc/` homes.
 - A "when to regenerate aiDoc" section listing the trigger conditions for the `generate` workflow (architecture change, module/page added or removed, routing table drift, example drift), noting small changes only need `--incremental` or `--scope`.
 
 ### `aiDoc/README.md` (L1 routing layer)
 
-- Explains the load model (L0/L1/L2) in 3-4 steps.
+- Explains the load model (L0/L1/L2) in 3-4 steps, plus the rule that record layers (`memory/`, `notes/`, `plans/`) are not auto-loaded and are read on demand only.
 - One-line description per directory.
 - **Common entries** dictionary: every aiDoc file, one line each — path + one-sentence purpose.
 - **Task → required-docs routing table**: every task type the project supports, paths relative to `aiDoc/`. This table is the sole detailed routing index; AGENTS.md must not duplicate it.
@@ -143,7 +143,7 @@ Core principle: check existing utilities first, never rebuild. Inventory of the 
 - `README.md`: long-term/ = stable user preferences; business/ = one record per business requirement; drafts are not committed.
 - `project-memory.md`: index with `## Long-term` and `## Business requirements` sections, plus maintenance notes. Must be updated whenever a memory file is added or removed.
 - `long-term/README.md`: record only repeatedly confirmed stable patterns; each entry has rule, applicable scenarios, source; delete stale entries.
-- `business/README.md` + `business/TEMPLATE.md`: the template carries description, status (pending/in-progress/done/cancelled), backend scope, frontend scope, constraints, related files, record date. New records use the template and update both indexes.
+- `business/README.md` + `business/TEMPLATE.md`: the template carries description, status (pending/in-progress/done/cancelled), scope, and constraints/notes (including key file paths); the record date lives in the `yyyy-mm-dd-` filename, not the body. New records use the template and update both indexes.
 - `lessons/README.md` + `lessons/TEMPLATE.md`: staging area for pitfalls and recurring patterns. The `lesson-meta` header marker, the promotion discipline, and the post-promotion recurrence loop are defined in [change-docs.md](change-docs.md) (single source); `lessons/README.md` states the capture rules and carries the lesson index pointer.
 
 ### `aiDoc/notes/` and `aiDoc/plans/`

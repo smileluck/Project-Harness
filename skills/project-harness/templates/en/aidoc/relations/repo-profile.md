@@ -1,53 +1,55 @@
 <!-- last-updated: {{DATE}} -->
 # Repo Profile
 
-Project positioning and tech stack. Every entry must come from real manifests and code, never from assumption.
+> Project positioning and tech stack quick reference. Every entry must come from real config files and code probing — never invent.
 
 ## Project Positioning
 <!-- scan-fill:positioning -->
 
-TODO: one short paragraph. Infer from `package.json` / `pyproject.toml` name and description, `README.md`, and user input. State what the project does, who it serves, and its project type (fullstack / backend / frontend / library / cli / general).
+<!-- TODO: infer from the manifest name/description and README; one sentence on what this project is and what problem it solves -->
+
+TODO:
 
 ## Core Tech Stack
 <!-- scan-fill:stack -->
 
-<!-- init's scan fills this table per component; mixed projects get one row per component -->
+<!-- init's scan fills this table per component (mixed projects get one row per component); TODO: fill from real dependencies, delete inapplicable rows, and when there is no server side reduce the whole section to language and key dependencies -->
 
-TODO: fill from real manifests and imports. Web services fill all rows; libraries / CLI / frontend projects keep only applicable rows (e.g. language, framework, key dependencies) and drop the rest.
-
-| Concern | Choice |
+| Category | Choice |
 |---|---|
-| Language | TODO |
-| Framework | TODO |
-| ORM / data access | TODO |
-| Database | TODO |
-| Cache | TODO |
-| Migration tool | TODO |
-| Auth mechanism | TODO |
+| Language / runtime | TODO: |
+| Framework | TODO: |
+| ORM / data access | TODO: |
+| Database | TODO: |
+| Cache | TODO: |
+| Migration tool | TODO: |
+| Auth mechanism | TODO: |
 
 ## Frontend Tech Stack
 
-TODO: fill from real manifests and imports. Remove this section for projects without a frontend.
+<!-- TODO: fill from real dependencies; remove this section for projects without a frontend -->
 
-| Concern | Choice |
+| Category | Choice |
 |---|---|
-| Framework | TODO |
-| Build tool | TODO |
-| UI library | TODO |
-| State management | TODO |
-| Router | TODO |
-| Styling approach | TODO |
+| Framework | TODO: |
+| Build tool | TODO: |
+| UI library | TODO: |
+| State management | TODO: |
+| Router | TODO: |
+| Styling approach | TODO: |
 
 ## Package Management
 <!-- scan-fill:pkgmgmt -->
 
-TODO: e.g. uv / pip / npm / pnpm / yarn / go mod / cargo. Cite the lockfiles actually present in the repo.
+<!-- TODO: package manager and lockfile names, e.g. uv/pip/npm/pnpm/go mod -->
+
+TODO:
 
 ## Core Features
 <!-- scan-fill:features -->
 
-TODO: project-specific key features every contributor must know (unified response format, ID strategy, auth approach, multi-tenancy, etc.). Cite the defining code path for each.
+<!-- TODO: project-specific key features (unified response format, ID strategy, auth approach, etc.), each with its real code location -->
 
-| Feature | Convention | Where defined |
+| Feature | Description | Code location |
 |---|---|---|
-| TODO | TODO | TODO (path) |
+| TODO: | TODO: | TODO: |

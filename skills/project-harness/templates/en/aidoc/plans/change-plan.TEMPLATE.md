@@ -1,54 +1,46 @@
 <!-- last-updated: {{DATE}} -->
-# Change Plan: <Topic>
+# Change Plan Template
 
-- Status: active
-- Created: yyyy-mm-dd
-- Owners: TODO
+> Path: `aiDoc/plans/active/yyyy-mm-dd-topic.md`; on completion add the delivery summary and move the file into `completed/`
 
 ## Objective
 
-<!-- The single outcome this plan delivers. -->
+<!-- The verifiable outcome this change must achieve -->
 
-## Non-Goals
+## Scope and Assumptions
 
-<!-- What is explicitly out of scope, to prevent scope creep. -->
+<!-- What is explicitly not done, to prevent scope creep; the premises the plan depends on — if a premise is disproved, return to this section and update the plan -->
 
-## Assumptions
-
-<!-- What must hold true; flag the risky ones. -->
+- TODO:
 
 ## Affected Areas
 
-<!-- Directories, modules, and contracts this plan touches. -->
+<!-- Components / modules / contracts involved; drives evidence selection -->
+
+- TODO:
 
 ## Acceptance Criteria
 
-<!-- Observable conditions that prove the objective is met. -->
+<!-- Executable pass/fail conditions -->
+
+- [ ] TODO:
 
 ## Work Items
 
-| # | Item | Owner | Depends on | Advisory write scope | Status |
-|---|---|---|---|---|---|
-| 1 | TODO | TODO | — | TODO: paths this item may modify | pending |
+<!-- Each item carries owner, dependencies, advisory write scope, and a validation command; evidence is proportional to the affected surface — no reflexive full-suite runs -->
 
-Advisory write scopes reduce merge collisions between parallel workers; they do not replace review.
-
-## Validation Commands
-
-Concrete, runnable commands, with the surface each covers. Evidence must be proportional to the affected surface — no reflexive full-suite runs.
-
-| Command | Proves |
-|---|---|
-| TODO | TODO |
+| # | Item | Owner | Depends on | Advisory write scope | Validation command | Status |
+|---|---|---|---|---|---|---|
+| 1 | TODO: | TODO: | TODO: | TODO: | `TODO:` | pending |
 
 ## Rollback / Migration
 
-<!-- How to undo this change; data migration and rollback requirements. -->
+<!-- Data-migration steps, rollback approach, and the trigger conditions for rolling back; write "none" if not applicable -->
 
-## Decisions and Blockers
+TODO:
 
-<!-- Running log of current decisions and blockers. Link durable decisions to ../../notes/. -->
+## Status and Delivery
 
-## Completion Summary
+<!-- Update progress, current decisions, and blockers in place; on completion add the actual delivered result, deviations from plan, leftovers, and the validation commands that passed for the overall close-out -->
 
-<!-- Filled when done: delivered outcome, evidence, deviations from plan. Then move this file to ../completed/. -->
+TODO:

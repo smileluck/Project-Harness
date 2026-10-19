@@ -13,7 +13,7 @@
       "template": "agents-skills/project-pre-push-checks/SKILL.md"
     },
     "AGENTS.md": {
-      "sha256": "ebb5d9430c5a773ad855b9966a423a682444ce4ca7d9b6386b4406a5500854dd",
+      "sha256": "ea879980974ae417427af272826cf62f133adab6992a7d8a6af28c4e7892ab9d",
       "template": "AGENTS.md.tmpl"
     },
     "CLAUDE.md": {
@@ -21,7 +21,7 @@
       "template": "CLAUDE.md"
     },
     "aiDoc/README.md": {
-      "sha256": "805efc312901db6597d2ba99c3b8561d6e33fe650a89a338299b2d24905b36f1",
+      "sha256": "6cafd741c5450d26eedd457ae0943cbae3144efbeeeeb47ac1afb8ad3625a1fb",
       "template": "aidoc/README.md"
     },
     "aiDoc/contracts/boundary.md": {
@@ -33,23 +33,23 @@
       "template": "aidoc/examples/README.md"
     },
     "aiDoc/memory/README.md": {
-      "sha256": "a27efdaf6b806700df6b8c3db14b075d7f8739b6abdc00d2ebbf6da9480e933c",
+      "sha256": "61b128a4791ddfab8eebcc064ef7b57ff6eea964903e27c2067c824f6441b1b3",
       "template": "aidoc/memory/README.md"
     },
     "aiDoc/memory/business/README.md": {
-      "sha256": "af0d8e718311fe76f63dfb900fdbd5671fe2b60465c498a07cc3c7b603c5bdc9",
+      "sha256": "9b256dad5fc0c06e7a457207006442f98a099577de5d178662c91256b2da4d45",
       "template": "aidoc/memory/business/README.md"
     },
     "aiDoc/memory/business/TEMPLATE.md": {
-      "sha256": "47a324ad6d652f45affa17e123692b17b7f20d119f960ae3b3c42699ff2715e5",
+      "sha256": "f1228a52585982feb4ea8cdae25ae50c787aebb0644f21fcd22dcbe2ceafd7a9",
       "template": "aidoc/memory/business/TEMPLATE.md"
     },
     "aiDoc/memory/lessons/README.md": {
-      "sha256": "0e925173aa07810e5a479d7896cdb2fbb49b8e34c4f4e6983b4b66b391916531",
+      "sha256": "85e0ac22531dffc88d8cbb45321a6cfac4efe4add1933ce23e46d1792b0ce563",
       "template": "aidoc/memory/lessons/README.md"
     },
     "aiDoc/memory/lessons/TEMPLATE.md": {
-      "sha256": "6b0e24bab49b9afbbb185b6234018a9c984ef485db618b453936ee07e0193e43",
+      "sha256": "0c9431f94cdc5f9093aae5f86f663039b9909fcd7d8d122cb1414365b391f40b",
       "template": "aidoc/memory/lessons/TEMPLATE.md"
     },
     "aiDoc/memory/long-term/README.md": {
@@ -69,23 +69,23 @@
       "template": "aidoc/modules/module-development.md"
     },
     "aiDoc/notes/README.md": {
-      "sha256": "a5aed1c6eb77b94b18f4de55cc1f93b14bcb03144ccc4dc0bf1344ca7e14ccd3",
+      "sha256": "2d97007d764ca324cfc032a309bd96d8e23660769b2670795d20c1b816634175",
       "template": "aidoc/notes/README.md"
     },
     "aiDoc/notes/TEMPLATE.md": {
-      "sha256": "46d54a57ab26845ec1bd42021fde67437cbdafca380dac925f3fa586c7abaf62",
+      "sha256": "9b5773fb81b07cca6f0490dd03c8d0611ab30830de666b5f70fe289120faf2f3",
       "template": "aidoc/notes/TEMPLATE.md"
     },
     "aiDoc/plans/README.md": {
-      "sha256": "7917ef52a193f9a74850ed8056bb3660ff2d6e7b98668426ec003650e20caccd",
+      "sha256": "77a6805d34fb19a7d7a48fabf8bf6b0d0f9b1a4fcfee6e4665d10f64fb0672c2",
       "template": "aidoc/plans/README.md"
     },
     "aiDoc/plans/change-plan.TEMPLATE.md": {
-      "sha256": "9fa7fb63e0162c91779db431e598f20d1436e8e9ab95ea2fdcdf38d0a77e058e",
+      "sha256": "3446dc1ffd70ddaa4e43a19056b345d901f36f2505d1f26d7ec42b326a397b99",
       "template": "aidoc/plans/change-plan.TEMPLATE.md"
     },
     "aiDoc/plans/handoff.TEMPLATE.md": {
-      "sha256": "3f8b5dbd4ddfdbd3cc072c9a2075042f45ddf1ff8342fedaa74bef2f5bc742f4",
+      "sha256": "c0a66277fd0ce0107804231545d5107274a0be0f53e0caf4f43ec9a0b2c05feb",
       "template": "aidoc/plans/handoff.TEMPLATE.md"
     },
     "aiDoc/relations/development-workflow.md": {

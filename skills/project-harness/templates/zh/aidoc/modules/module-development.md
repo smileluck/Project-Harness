@@ -9,11 +9,11 @@
 - 遵循现有模式：动手前先读一个既有模块（优先功能完整、最近修改的模块）
 - 不引入项目尚未使用的库或模式；确有需要时先写决策记录（见 [../notes/README.md](../notes/README.md)）
 
-<!-- 变体：分层服务模块 / library 功能 / cli 命令，generate 工作流保留匹配变体并删除其余 -->
+<!-- 变体：分层服务模块 / library 功能 / cli 命令，generate 工作流保留匹配变体并删除其余；无前端时删除前端小节 -->
 
 ## 新建分层服务模块
 
-<!-- TODO: 分层服务（典型 Web/后端）项目保留本变体；按真实结构补全每一步的命令与路径 -->
+<!-- TODO: 按真实结构补全每一步的命令与路径 -->
 
 1. 创建模块目录：TODO:
 2. 定义模型：TODO:（参考 [architecture-rules.md](architecture-rules.md) 数据层）
@@ -26,8 +26,6 @@
 
 ## 新建 library 功能
 
-<!-- TODO: library/SDK 项目保留本变体；其余项目删除本变体 -->
-
 1. 设计公开 API 面（函数/类签名）：TODO:
 2. 实现内部逻辑：TODO:
 3. 登记导出（包入口/公开导出路径）：TODO:（导出契约见 [../contracts/boundary.md](../contracts/boundary.md)）
@@ -36,8 +34,6 @@
 
 ## 新建 cli 命令
 
-<!-- TODO: cli 项目保留本变体；其余项目删除本变体 -->
-
 1. 定义命令规格（命令名、参数、选项）：TODO:
 2. 实现命令处理器：TODO:
 3. 注册命令：TODO:
@@ -45,8 +41,6 @@
 5. 补充聚焦测试：TODO:
 
 ## 新建前端功能
-
-<!-- TODO: 无前端时删除本节 -->
 
 1. 定义类型声明：TODO:
 2. 编写 API 封装函数：TODO:（复用规则见 [../frontend/frontend-utils.md](../frontend/frontend-utils.md)）

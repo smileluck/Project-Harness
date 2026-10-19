@@ -12,11 +12,10 @@
 
 ## 契约两侧协作
 
-<!-- TODO: 项目无生产方/消费方两侧结构时删除本节 -->
+<!-- TODO: 按实际结构补联调验证方式；无生产方/消费方两侧结构时删除本节 -->
 
 - 生产方先定义接口契约（见 [../contracts/boundary.md](../contracts/boundary.md)），消费方可并行开发
 - 联调前必须确认契约两侧字段一致
-- TODO: 联调验证方式
 
 ## 分支策略
 
@@ -28,15 +27,14 @@
 
 ## 提交规范
 
-<!-- TODO: 按实际约定填写，如 type(scope): description -->
+<!-- TODO: 格式与允许的 type 列表，如 type(scope): description -->
 
-- 格式：`TODO: type(scope): description`
-- TODO: 允许的 type 列表
+TODO:
 
 ## 环境与依赖
 <!-- scan-fill:env -->
 
-<!-- TODO: 具体的安装、启动、迁移、测试命令，必须可在真实环境运行 -->
+<!-- TODO: 安装、启动、迁移、测试、构建命令，必须可在真实环境运行，删除不适用行 -->
 
 | 操作 | 命令 |
 |---|---|

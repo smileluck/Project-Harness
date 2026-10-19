@@ -755,7 +755,7 @@ LESSON_BODY = """<!-- last-updated: 2026-01-01 -->
 <!-- lesson-meta: status={status} count={count} post=0 target={target} -->
 # 测试 lesson
 
-## 晋升去向
+## 状态与去向
 
 {note}
 """

@@ -62,7 +62,7 @@ LAST_UPDATED_RE = re.compile(
     r"<!--\s*last-updated:\s*\d{4}-\d{2}-\d{2}\s*-->")
 LESSON_META_RE = re.compile(r"<!--\s*lesson-meta:\s*([^>]*?)\s*-->")
 
-# 检查 5：lesson 合法状态（deferred = 显式暂缓晋升，理由写在文件「晋升去向」节）
+# 检查 5：lesson 合法状态（deferred = 显式暂缓晋升，理由写在文件「状态与去向」节）
 LESSON_STATUSES = ("pending", "deferred", "promoted", "dropped")
 
 
@@ -294,7 +294,7 @@ def check_lessons(aidoc: Path) -> tuple[bool, list[str], list[str]]:
             blocking.append(
                 f"pending 且次数 {count}≥2，未晋升也未显式 deferred: {rel}")
         elif status == "deferred":
-            infos.append(f"deferred（暂缓晋升，理由见文件「晋升去向」节）: {rel}")
+            infos.append(f"deferred（暂缓晋升，理由见文件「状态与去向」节）: {rel}")
     return (not blocking), blocking + infos, hints
 
 

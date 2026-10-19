@@ -11,15 +11,14 @@
 
 ## 示例阅读顺序
 
-<!-- TODO: generate 工作流按项目范式与实际生成的示例文件列出阅读顺序 -->
-<!-- 变体：分层服务（如 model → schema → service → endpoint → router）/ library（如 公开 API → 内部实现 → 基础设施）/ cli（如 命令注册 → 命令处理 → 核心逻辑），保留匹配变体并删除其余 -->
+<!-- TODO: 按项目范式与实际生成的示例文件列出阅读顺序，如 model → schema → service → endpoint；保留匹配变体 -->
 
 1. TODO:
 2. TODO:
 
 ## 前端示例阅读顺序
 
-<!-- TODO: 如有前端，按实际生成的前端示例文件列出阅读顺序，如 api → view → utils-usage；无前端时删除本节 -->
+<!-- TODO: 按实际生成的前端示例文件列出，如 api → view → utils-usage；无前端时删除本节 -->
 
 1. TODO:
 2. TODO:

@@ -1,95 +1,111 @@
 <!-- last-updated: {{DATE}} -->
-# Contract Layer
+# Contract Layer (boundary)
 
-Interface contract and responsibility split across this project's public boundary. Both sides of every changed contract must be traced before work is called done.
-
-The body below is organized per paradigm. The generate workflow keeps the variant matching this project and deletes the rest.
-
-<!-- mixed projects: describe the contracts between components (e.g. web frontend ↔ server API, Qt UI ↔ core library interface) -->
+> The single maintained home of shared contracts between producer and consumer. Contract structures must come from real code; keep the variant section matching this project's paradigm (web-api / library / cli) and delete the rest.
 
 ## Responsibility Boundary
 
-TODO: who owns what, stated as producer side vs consumer side. Example rows — replace with the real split:
+<!-- TODO: fill per the actual responsibility split; describe the two sides as "producer side / consumer side" — not limited to frontend/backend -->
 
-| Concern | Producer side | Consumer side |
-|---|---|---|
-| Validation | TODO | TODO |
-| Error presentation | TODO | TODO |
-| State ownership | TODO | TODO |
+| Responsibility | Owner |
+|---|---|
+| TODO: e.g. data validation / business rules / auth | Producer side |
+| TODO: e.g. instant form feedback / display formatting | Consumer side |
+
+<!-- variants: web-api / library / cli — the generate workflow keeps the matching variant and deletes the rest -->
+<!-- mixed projects: describe the contracts between components (e.g. web frontend ↔ server API, Qt UI ↔ core library interface) -->
 
 ## web-api variant: HTTP interface contract
 
-<!-- variant: web-api — the generate workflow keeps the matching variant and deletes the rest -->
-
 ### Unified Response Structure
 
-TODO: paste the real JSON envelope and explain each field. Cite the defining code path.
+<!-- TODO: fill the JSON structure and field explanations from real code, citing the code location that defines the structure -->
 
 ```json
-TODO
+TODO: real response structure example
 ```
 
-| Field | Meaning |
-|---|---|
-| TODO | TODO |
+| Field | Type | Description |
+|---|---|---|
+| TODO: | TODO: | TODO: |
+
+Defined at: TODO: (e.g. `app/schemas/response.py:ResponseModel`)
 
 ### Unified Pagination Structure
 
-TODO: fields and semantics; cite the defining code. Remove this section if the project has no shared pagination shape.
+<!-- TODO: if there is a pagination convention, fill field explanations and code location; otherwise remove this section -->
+
+| Field | Type | Description |
+|---|---|---|
+| TODO: | TODO: | TODO: |
 
 ### Field Naming
 
-TODO: `snake_case` / `camelCase` on the wire, and where any conversion happens (cite the code).
+<!-- TODO: the actual snake_case / camelCase convention, including whether the two sides convert and at which layer the conversion happens -->
+
+TODO:
 
 ### Key Type Bridging
 
-TODO: any non-obvious type conversions across the boundary (e.g. bool ↔ string, decimal ↔ string). For each, document the conversion flow and every code location involved.
+<!-- TODO: special type conversions (e.g. bool ↔ string, Decimal ↔ number, enum ↔ label) must be documented in detail with the conversion flow and every code location involved; write "none" if not applicable -->
+
+TODO:
 
 ### Time Fields
 
-TODO: wire format and timezone handling, if the project has special handling; otherwise remove this section.
+<!-- TODO: format and timezone convention (e.g. ISO 8601 / UTC), including the serialization location; remove this section if there is no special handling -->
+
+TODO:
 
 ## library variant: public API contract
 
-<!-- variant: library — the generate workflow keeps the matching variant and deletes the rest -->
-
 ### Public API Surface
 
-TODO: list the exported symbols that constitute the public API, with their defining paths.
+<!-- TODO: list the public symbols exposed to callers (functions / classes / constants), citing their defining code locations; internal implementation symbols do not belong here -->
+
+TODO:
 
 ### Export Contract
 
-TODO: what is exported from where, naming and stability expectations for each export.
+<!-- TODO: package entry, public export paths, and submodule visibility conventions (which submodules are stable exports) -->
+
+TODO:
 
 ### Version Compatibility Promises
 
-TODO: semantic-versioning policy, deprecation procedure, backward-compatibility guarantees.
+<!-- TODO: semantic-versioning policy, breaking-change criteria, and the deprecation process -->
+
+TODO:
 
 ## cli variant: command-line contract
 
-<!-- variant: cli — the generate workflow keeps the matching variant and deletes the rest -->
-
 ### Command Spec
 
-TODO: one entry per command — name, purpose, defining code path.
+<!-- TODO: list all commands and subcommands with their purpose, citing the defining location (e.g. the command registry) -->
+
+TODO:
 
 ### Argument / IO Contract
 
-TODO: flags, positional arguments, stdin/stdout/stderr expectations, output formats.
+<!-- TODO: naming conventions for arguments and options, input/output formats (stdout/stderr split, machine-readable output conventions) -->
+
+TODO:
 
 ### Exit-Code Conventions
 
-TODO: exit-code meanings and which conditions map to which code.
+<!-- TODO: a complete table of exit-code meanings, citing the code location defining the exit-code constants -->
+
+TODO:
 
 ## Change Rules
 
-- Never change a contract field unilaterally; change producer and consumer in the same change, or in a documented sequence recorded in `../notes/`.
-- Update this file in the same change as any contract change.
-- Record non-obvious contract decisions in `../notes/`.
+1. Adding / renaming / deleting a contract field is an interface change; both sides (producer and consumer) must be synchronized
+2. Contract changes must run typecheck + contract-level tests (see the root `AGENTS.md` operating invariants)
+3. Breaking changes require a decision note first (see [../notes/README.md](../notes/README.md)), describing migration and rollback
 
 ## Pre-Completion Checklist
 
-- [ ] Both sides of the changed contract traced and updated
-- [ ] Field types and naming match this file
-- [ ] Contract tests or real-entry smoke ran and passed
-- [ ] This file updated if the contract changed
+- [ ] Field names, types, and nullability match on both sides
+- [ ] Type bridging happens at the agreed location, not scattered around
+- [ ] Error responses are predictable to the consumer (consistent error code/message structure)
+- [ ] Tests cover the contract change points

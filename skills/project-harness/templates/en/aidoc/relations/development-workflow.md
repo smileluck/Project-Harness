@@ -1,47 +1,51 @@
 <!-- last-updated: {{DATE}} -->
 # Development Workflow
 
-Development process and contribution conventions. Commands listed here must be real and runnable.
+> Development order, collaboration mode, branch and commit conventions, environment commands. Commands must come from real config files — never invent.
 
 ## Recommended Development Order
 
-TODO: derive from the real layering. Typical shape:
+<!-- TODO: design the steps from the real layering, e.g. model → Schema → Service → Endpoint → router registration → migration -->
 
-1. Define or adjust the data model and run migrations
-2. Define schemas/DTOs (the contract)
-3. Implement the service (business logic)
-4. Implement the endpoint/controller
-5. Register routes
-6. Add or update focused tests
+1. TODO:
+2. TODO:
 
 ## Contract Collaboration
 
-- The producer side defines the contract first; the consumer side develops in parallel against the agreed shape.
-- Contract details live in `../contracts/boundary.md`; both sides must match it.
-- Verify integration at the real entry path before calling the work done.
+<!-- TODO: add the integration-verification method per the real structure; remove this section when there is no producer/consumer two-sided structure -->
+
+- The producer side defines the interface contract first (see [../contracts/boundary.md](../contracts/boundary.md)); the consumer side develops in parallel
+- Before integration, confirm both sides of the contract match field-for-field
 
 ## Branch Strategy
 
-TODO: record the real strategy (e.g. `main` / `develop` / `feature/*` / `hotfix/*`).
+<!-- TODO: fill per the real convention, e.g. main/develop/feature/hotfix -->
+
+| Branch | Purpose |
+|---|---|
+| TODO: | TODO: |
 
 ## Commit Conventions
 
-TODO: record the real convention, e.g. `type(scope): description`, and list the types actually in use.
+<!-- TODO: format and allowed type list, e.g. type(scope): description -->
+
+TODO:
 
 ## Environment & Dependencies
 <!-- scan-fill:env -->
 
-TODO: concrete commands, verified to run.
+<!-- TODO: install, start, migrate, test, build commands — must run in the real environment; delete inapplicable rows -->
 
 | Task | Command |
 |---|---|
-| Install dependencies | TODO |
-| Run dev server | TODO |
-| Run migrations | TODO |
-| Run focused tests | TODO |
-| Typecheck / lint | TODO |
-| Build | TODO |
+| Install dependencies | `TODO:` |
+| Start dev server | `TODO:` |
+| Database migration | `TODO:` |
+| Run tests | `TODO:` |
+| Build | `TODO:` |
 
 ## API Documentation
 
-TODO: Swagger / ReDoc / other URL if the project exposes one; otherwise state how the contract is inspected (e.g. read `../contracts/boundary.md` plus the entry-point source).
+<!-- TODO: Swagger/ReDoc URL if any; otherwise remove this section -->
+
+TODO:

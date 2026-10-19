@@ -1,30 +1,27 @@
 <!-- last-updated: {{DATE}} -->
-# <Topic>
+# Decision Note Template
 
-- Lifecycle: proposed | implemented | rejected
-- Class: feature | bug-fix | simplification | architecture | process | testing
-- Date: yyyy-mm-dd
+> Path: `aiDoc/notes/<proposed|implemented|rejected>/<class>/yyyy-mm-dd-topic.md`
+> class ∈ feature / bug-fix / simplification / architecture / process / testing
 
 ## Problem
 
-<!-- What forced a decision: context, constraints, who is affected. -->
+<!-- The problem or motivation: what scenario, what pain point, why handle it now -->
 
 ## Proposal / Decision
 
-<!-- The chosen direction, stated precisely enough to act on. Cite real paths and symbols. -->
+<!-- The chosen option and its key design points. proposed records the proposal; implemented/rejected record the final conclusion; related decisions that were reversed or depended on, and code locations, are linked in this section -->
 
 ## Alternatives Considered
 
-<!-- Only alternatives genuinely considered, each with the concrete reason it lost. Never invent alternatives to fill this section. -->
+<!-- Only alternatives genuinely considered, each with the reason it lost; never invent alternatives -->
 
 ## Acceptance Criteria
 
-<!-- proposed: executable acceptance criteria; implemented: criteria actually met. -->
+<!-- How to tell the decision has landed correctly: an executable verification or an observable behavior -->
+
+- [ ] TODO:
 
 ## Risks and Consequences
 
-<!-- proposed: risks. implemented: consequences and follow-up obligations. rejected: what would have to change to revisit this. -->
-
-## Cross-Links
-
-<!-- Related notes (especially reversals), plans in ../plans/, code paths, and aiDoc documents. -->
+<!-- The costs, constraints, migration/rollback requirements, and limits on later work this decision brings -->

@@ -1,34 +1,42 @@
 <!-- last-updated: {{DATE}} -->
-# Handoff: <Topic>
+# Handoff Template
 
-- Date: yyyy-mm-dd
-- From: TODO
-- To: TODO
+> Use this template when work must be continued by another agent or person. Principle: the successor can safely continue without digging through history; never describe an interrupted command as completed.
 
 ## Task
 
-<!-- One line: what unfinished work this handoff continues. -->
+<!-- One line: what is being done and the goal; path of the related change plan -->
+
+TODO:
 
 ## Exact State
 
-<!-- Where the work stands right now: branch, base, dirty state, what works, what does not. -->
+<!-- Which step the work is at; separate done / in-progress / not-started; interrupted operations are honestly marked "interrupted" -->
+
+TODO:
 
 ## Changed Files
 
-<!-- Every file created or modified, with one line on what changed in each. -->
+<!-- Every file created / modified / deleted, with the nature of each change -->
+
+- TODO:
 
 ## Commands Run and Results
 
-<!-- Exact commands and their outcomes. Separate passed / failed / skipped / unavailable / not-run. Never describe an interrupted command as completed. -->
+<!-- List each command with its real result; separate passed / failed / skipped / unavailable / not-run -->
+
+| Command | Result |
+|---|---|
+| `TODO:` | TODO: |
 
 ## Remaining Work
 
-<!-- Ordered list of what is left. -->
+<!-- Ordered list of what is left -->
 
-## Blockers and Risky Assumptions
+1. TODO:
 
-<!-- What is stuck and why; assumptions the next person must re-verify before trusting. -->
+## Blockers and Next Step
 
-## Next Safe Action
+<!-- Current sticking points and unverified assumptions; the first action the successor can take directly, with the concrete command or file -->
 
-<!-- The single exact next step that can be taken without re-deriving context. -->
+TODO:

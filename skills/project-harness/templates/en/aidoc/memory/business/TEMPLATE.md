@@ -1,6 +1,8 @@
 <!-- last-updated: {{DATE}} -->
 # Business Requirement Template
 
+> Path: `aiDoc/memory/business/yyyy-mm-dd-topic.md`; the date is carried by the filename and is not recorded again.
+
 ## Requirement Description
 
 <!-- Brief description of the requirement -->
@@ -11,28 +13,8 @@
 
 ## Affected Scope
 
-<!-- The generate workflow keeps only the subsections applicable to this project type and deletes the rest. -->
-
-### Backend / Library
-
-<!-- Modules, models, endpoints, or exported symbols involved -->
-
-### Frontend
-
-<!-- Pages, components, APIs involved -->
-
-### CLI
-
-<!-- Commands, flags, IO behavior involved -->
+<!-- Modules, pages, commands, or public APIs involved; write only the parts applicable to this project type -->
 
 ## Constraints and Notes
 
-<!-- Special business rules and limiting conditions -->
-
-## Related Files
-
-<!-- Key file paths involved -->
-
-## Recorded
-
-<!-- yyyy-mm-dd -->
+<!-- Special business rules, limiting conditions, key file paths -->

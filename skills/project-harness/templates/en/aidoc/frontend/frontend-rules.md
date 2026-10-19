@@ -1,56 +1,75 @@
 <!-- last-updated: {{DATE}} -->
 # Frontend Rules
 
+> Rules frontend development must obey. All conventions must come from real code; projects without a frontend do not generate this file.
+
 ## Base Rules
 
-TODO: HTTP request approach (wrapper path), state management, routing — cite real paths.
+<!-- TODO: fill from real code; HTTP requests must go through the unified wrapper — never bypass it -->
+
+- HTTP requests: TODO:
+- State management: TODO:
+- Routing: TODO:
 
 ## Naming Conventions
 
-TODO: fill with the real conventions observed in the codebase.
+<!-- TODO: fill from real code, with real examples -->
 
 | Kind | Convention | Example |
 |---|---|---|
-| Files | TODO | TODO |
-| Components | TODO | TODO |
-| Variables / functions | TODO | TODO |
-| API functions | TODO | TODO |
+| Files | TODO: | TODO: |
+| Components | TODO: | TODO: |
+| Variables / functions | TODO: | TODO: |
+| API functions | TODO: | TODO: |
 
 ## Typing Requirements
 
-TODO: TypeScript strictness expectations, where shared types live, whether `any` is tolerated. Remove this section for non-typed projects.
+<!-- TODO: the actual TypeScript / type-declaration requirements; remove this section if the project uses no type system -->
+
+TODO:
 
 ## Component Rules
 
-TODO: shared vs page component locations, props definition style — cite real paths.
+<!-- TODO: locations of shared/page components, props definition style -->
+
+- Shared components location: TODO:
+- Page components location: TODO:
+- Props definition style: TODO:
 
 ## Page Rules
 
-TODO: steps every new page must complete (route registration, i18n entries, types, etc.).
+<!-- TODO: the checklist of steps every new page must complete -->
+
+1. TODO:
+2. TODO:
 
 ## Style Rules
 
-TODO: CSS solution priority (e.g. utility classes → scoped styles → global), with real paths.
+<!-- TODO: CSS solution priority (e.g. utility classes > component library > custom CSS) -->
+
+TODO:
 
 ## Internationalization
 
-TODO: i18n key conventions and file locations. Remove this section if the project has no i18n.
+<!-- TODO: if i18n exists, fill key naming and where new entries go; otherwise remove this section -->
+
+TODO:
 
 ## Environment Variables
 
-TODO: naming prefix, where defined, which are required.
+<!-- TODO: prefix convention, how they are read, never commit sensitive values -->
+
+TODO:
 
 ## Common Scripts
 
-TODO: verified commands.
+<!-- TODO: from real config such as package.json scripts -->
 
 | Task | Command |
 |---|---|
-| Dev server | TODO |
-| Build | TODO |
-| Typecheck / lint | TODO |
-| Test | TODO |
+| TODO: | `TODO:` |
 
 ## Code Comments
 
-TODO: the project's real comment expectations (when to comment, language, format).
+- By default, no comments explaining "what" — code and naming self-explain
+- Comment only the non-obvious "why"

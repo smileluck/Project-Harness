@@ -1,84 +1,90 @@
 <!-- last-updated: {{DATE}} -->
 # aiDoc
 
-`aiDoc/` is the structured AI documentation layer of this repository. It extracts long-lived project context out of tool-private directories and splits it into maintainable constraint documents by topic.
+`aiDoc/` is this repository's structured AI documentation layer (the L1 routing layer): it extracts long-lived project context out of tool directories and splits it into maintainable constraint documents by topic.
 
 ## How to Use
 
-1. `AGENTS.md` is auto-loaded via the root `CLAUDE.md` (L0) and always in effect.
-2. On receiving a task, consult the "Task → Must-Read Docs" routing table below first (L1).
-3. When unsure what a document covers, look it up in the "Common Entries" dictionary (L1).
-4. Open the concrete `aiDoc/` child documents the routing table points to for deep reading (L2).
+1. `AGENTS.md` is auto-loaded via the root `CLAUDE.md @AGENTS.md` (L0) and always in effect
+2. On receiving a task, consult the "Task → Must-Read Docs" routing table below first to decide the must-read docs (L1)
+3. When unsure what a document covers, look it up in the "Common Entries" dictionary (L1)
+4. Open the concrete `aiDoc/` child documents the routing table points to for deep reading (L2)
+5. The record layer (`memory/`, `notes/`, `plans/`) body text is not auto-loaded with the session; read or write it on demand only when the routing table hits or a record is needed
 
-Project-level rules are never copied into tool-private directories; Claude Code uses `@import`, other tools use thin adapter pointers (see "Tool Loading" in `../AGENTS.md`).
+Project-level rules are never copied into tool-private directories; tools supporting `@import` use `@AGENTS.md`, the rest use thin adapter pointers (see "Tool Loading" in `AGENTS.md`).
 
 ## Ownership Map
 
 One fact has one maintained home; other places only link.
 
-| Information type | Maintained home |
+| Information type | Sole maintained home |
 |---|---|
-| Rules needed in every task | `../AGENTS.md` |
-| Doc index and task routing | this file |
-| Repo structure, tech stack, workflow | `relations/` (incl. machine-generated `code-index.md`, never hand-edited) |
-| Architecture and module rules | `modules/` |
-| Contract layer | `contracts/` |
-| Frontend rules | `frontend/` |
-| Per-layer explanatory examples | `examples/` |
-| Stable user preferences, business requirement records | `memory/` |
-| Pitfalls and recurring patterns pending promotion | `memory/lessons/` |
-| Why a non-trivial decision won | `notes/<lifecycle>/<class>/` |
-| Current execution checklist for a change | `plans/active/` |
-| Reusable situational procedure | `../.agents/skills/<workflow>/SKILL.md` |
-
-Never duplicate the same rule across tiers; put a short link at the point of use.
+| High-level rules and invariants every task needs | `/AGENTS.md` |
+| Doc index and "task → must-read docs" routing table | `aiDoc/README.md` (this file) |
+| Project positioning, tech stack, directory responsibilities | `relations/repo-profile.md`, `relations/system-map.md` |
+| Component inventory, language composition, module list, entry points, command index | `relations/code-index.md` (machine-generated, never hand-edited) |
+| Development process, branch and commit conventions, environment commands | `relations/development-workflow.md` |
+| Architecture and module organization constraints | `modules/architecture-rules.md` |
+| Steps for creating a module / feature / command | `modules/module-development.md` |
+| Shared contracts, field naming, type bridging | `contracts/boundary.md` |
+| Frontend development rules | `frontend/frontend-rules.md` |
+| Frontend utility reuse | `frontend/frontend-utils.md` |
+| Per-layer code organization standards (explanatory) | `examples/` |
+| Long-term stable collaboration preferences | `memory/long-term/` |
+| One record per business requirement | `memory/business/` |
+| Lessons from pitfalls and recurring patterns (pending promotion) | `memory/lessons/` |
+| Why a non-trivial decision was made | `notes/<proposed\|implemented\|rejected>/<class>/` |
+| Execution checklist for in-progress changes | `plans/active/` |
+| Reusable situational workflows | `.agents/skills/<workflow>/SKILL.md` |
+| Work handoff and resuming interrupted work | handoff documents under `plans/` |
 
 ## Common Entries
 
 | Document | Purpose |
 |---|---|
-| `relations/repo-profile.md` | Project positioning and tech stack |
-| `relations/development-workflow.md` | Development order, branches, commits, commands |
-| `relations/system-map.md` | Architecture and component relationships |
+| `relations/repo-profile.md` | Project positioning and tech stack quick reference |
+| `relations/development-workflow.md` | Development process, commit conventions, environment commands |
+| `relations/system-map.md` | System architecture and component relationships |
 | `relations/code-index.md` | Component inventory, language composition, entry points, command index (machine-generated, never hand-edited) |
-| `modules/architecture-rules.md` | Architecture and per-layer constraints |
-| `modules/module-development.md` | Step-by-step module creation guide |
-| `contracts/boundary.md` | Contract layer: interface contract and responsibility split |
+| `modules/architecture-rules.md` | Constraints each architecture layer must obey |
+| `modules/module-development.md` | Complete steps for creating a module / feature / command |
+| `contracts/boundary.md` | Shared contracts between producer and consumer |
 | `frontend/frontend-rules.md` | Frontend development rules |
-| `frontend/frontend-utils.md` | Utility reuse rules |
-| `examples/README.md` | How to use the example layer |
+| `frontend/frontend-utils.md` | Frontend utility reuse list |
+| `examples/README.md` | Entry to the explanatory examples |
 | `memory/README.md` | Memory-layer overview and usage rules |
-| `memory/long-term/README.md` | Rules for stable long-term preferences |
-| `memory/business/README.md` | Business-requirement record rules (index solely in project-memory.md) |
-| `memory/project-memory.md` | Memory index |
-| `memory/lessons/README.md` | Lesson capture and promotion discipline |
-| `notes/README.md` | Decision-record lifecycle and naming rules |
-| `plans/README.md` | Change-plan lifecycle rules |
+| `memory/long-term/README.md` | Rules for settling long-term stable preferences |
+| `memory/business/README.md` | Business-requirement record rules (index solely maintained in project-memory.md) |
+| `memory/project-memory.md` | Memory-layer index |
+| `memory/lessons/README.md` | Capture and promotion discipline for lessons |
+| `notes/README.md` | Classification and maintenance discipline for decision records |
+| `plans/README.md` | Change-plan lifecycle and when a plan is needed |
 
 ## Task → Must-Read Docs
 
-Paths are relative to `aiDoc/`. TODO: complete for every task type that exists in this project.
+<!-- TODO: the generate workflow completes every task type for the aiDoc child docs this project actually has. Paths are relative to aiDoc/ -->
 
 | Task type | Must-read docs |
 |---|---|
-| New module / feature / command | `modules/module-development.md`, `modules/architecture-rules.md`, `examples/` |
+| New module / feature / command | `modules/module-development.md`, `modules/architecture-rules.md`, `examples/README.md` |
 | Modify existing logic | `modules/architecture-rules.md`, `relations/system-map.md` |
-| New frontend page / feature | `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/` (frontend examples) |
-| Contract / field alignment | `contracts/boundary.md` |
+| New frontend page / feature | `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/README.md` |
+| Contract / interface alignment | `contracts/boundary.md` |
 | Understand repo structure / stack / workflow | `relations/repo-profile.md`, `relations/system-map.md`, `relations/development-workflow.md` |
 | Look up components / entry points / command index | `relations/code-index.md` (machine-generated, never hand-edited) |
 | New business requirement from user | `memory/business/TEMPLATE.md`, `memory/project-memory.md` (index must be updated) |
 | Recording a pitfall / recurring pattern | `memory/lessons/README.md`, `memory/lessons/TEMPLATE.md` (index must be updated) |
-| Multi-step / cross-component change | `plans/README.md`, `plans/change-plan.TEMPLATE.md` |
-| Interrupted work or handoff to another agent | `plans/handoff.TEMPLATE.md` |
-| Recording a non-trivial decision | `notes/README.md`, `notes/TEMPLATE.md` |
+| Non-trivial decision (behavior / architecture / contract / process change) | `notes/README.md`, `notes/TEMPLATE.md` |
+| Multi-step / cross-component / risky change | `plans/README.md`, `plans/change-plan.TEMPLATE.md` |
+| Interrupted work or handoff | `plans/handoff.TEMPLATE.md` |
 | Code review | `../.agents/skills/project-code-review/SKILL.md` |
-| Pre-push verification | `../.agents/skills/project-pre-push-checks/SKILL.md` |
+| Pre-push checks | `../.agents/skills/project-pre-push-checks/SKILL.md` |
 
 ## Maintenance Principles
 
-- Stable rules live here, not in tool-private directories.
-- Temporary session drafts are never committed.
-- Project-level rules go into `../AGENTS.md` first; details split into `aiDoc/`.
-- When a child doc is added or removed, update "Common Entries" and the routing table in the same change — otherwise the document is not in the system.
-- Keep the ownership map honest: when a fact moves to a new home, update every link to it.
+- Stable rules live here, not in tool-private directories
+- Temporary session drafts are never committed
+- Project-level rules go into `/AGENTS.md` first; details split into `aiDoc/`
+- When an `aiDoc/` child doc is added or removed, update this file's "Common Entries" and routing table in the same change — otherwise the document is not in the system
+- When facts change, update the owning document's body in place; never append a changelog at the tail
+- Conflict priority: `/AGENTS.md` > this file > aiDoc child docs > tool adapter files
