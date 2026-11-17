@@ -7,10 +7,9 @@
 
 ## 加载模型
 
-- **L0 自动加载**：根 `CLAUDE.md` 通过 `@AGENTS.md` 在每次会话自动 import 本文件。本文件只承载项目约束与不变量，不展开细节、不列完整文档清单。
-- **L1 任务路由**：`aiDoc/README.md` 是文档索引 + 「任务→必读文档」路由表的唯一真源。接到任务先查路由表，决定本次读哪些子文档。
-- **L2 按需深读**：路由表指向的 `aiDoc/` 具体子文档。
-- **记录层不自动加载**：`aiDoc/memory/`、`aiDoc/notes/`、`aiDoc/plans/` 的正文不随会话加载，仅在路由表命中或需要记录时按需读写。
+- **L0 常驻**：本文件与适用目录的规则。工具入口见下表。
+- **L1 任务路由**：需要定位代码、确认约束或留痕时，查 `aiDoc/README.md`。
+- **L2 按需读取**：定位实际变更的路径、组件或接口，只打开相关文档或章节。记录正文按当前任务检索。
 - **冲突优先级**（仓库内任务）：`AGENTS.md` > `aiDoc/README.md` > aiDoc 子文档 > 工具适配文件。
 
 ## 各工具加载方式
@@ -18,6 +17,7 @@
 | 工具 | 加载方式 |
 |---|---|
 | Claude Code | 根 `CLAUDE.md @AGENTS.md` 原生 import；工具目录只放项目命令，不放规则副本 |
+| Codex | 原生发现 `AGENTS.md` |
 | Trae | 薄适配文件指向 `AGENTS.md`（只写入口指针） |
 | Cursor / Copilot / 其他 | 若不支持 `@import`，参照薄适配模板新建适配文件，只写入口指针，不复制规则正文 |
 
@@ -41,9 +41,7 @@ TODO: 一句话说明架构组织方式，细节路由到 `aiDoc/modules/archite
 
 ### 契约
 
-<!-- TODO: 按项目范式（web-api / library / cli）与实际契约约定填写，细节路由到 aiDoc/contracts/boundary.md -->
-
-TODO: 一句话说明契约约定（如统一响应结构、公开 API 面、命令规格），细节路由到 `aiDoc/contracts/boundary.md`。
+涉及共享接口或类型时，从 `aiDoc/contracts/boundary.md` 定位受影响的契约。
 
 ### 模块与目录
 
@@ -57,7 +55,7 @@ TODO: 一句话说明模块组织原则，细节路由到 `aiDoc/modules/module-
 
 ### 文档维护
 
-高层规则在 `AGENTS.md`，细节在 `aiDoc/`。本文件只保留「任务族→aiDoc 区域」的高层速查指针；「任务→必读文档」详细路由表唯一维护于 `aiDoc/README.md`，不在本文件罗列完整清单，避免双份维护导致口径漂移。新增/删除 aiDoc 子文档时，必须同步更新 `aiDoc/README.md` 的索引与路由表。
+高层规则在本文件，详细路由由 `aiDoc/README.md` 维护。文档增删时同步其所属索引。
 
 ### 代码读取约束
 
@@ -88,8 +86,6 @@ TODO: 一句话说明模块组织原则，细节路由到 `aiDoc/modules/module-
 
 ## 文档索引与任务路由
 
-### 高层速查（任务族 → aiDoc 区域）
-
 | 任务族 | 优先查阅区域 |
 |---|---|
 | 模块/功能/命令开发 | `aiDoc/modules/`、`aiDoc/examples/` |
@@ -99,12 +95,6 @@ TODO: 一句话说明模块组织原则，细节路由到 `aiDoc/modules/module-
 | 业务需求记录 | `aiDoc/memory/business/` |
 | 决策记录 | `aiDoc/notes/` |
 | 变更计划与交接 | `aiDoc/plans/` |
-
-只做高层指向；详细到具体文件的「任务→必读文档」路由表见 `aiDoc/README.md`。
-
-### 详细路由
-
-「任务→必读文档」详细路由表、常用入口字典统一维护在 `aiDoc/README.md`。本文件只放高层速查，避免双份维护导致口径漂移。冲突时以本文件为准。
 
 ## 何时重新生成 aiDoc
 

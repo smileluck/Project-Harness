@@ -1,4 +1,4 @@
-<!-- last-updated: 2026-09-15 -->
+<!-- last-updated: 2026-11-17 -->
 # 项目记忆索引
 
 ## 长期记忆
@@ -20,6 +20,7 @@
 - `business/2026-10-04-update-project-set.md`：项目集更新（update-set）——`--refresh` 机械刷新根 AGENTS.md 成员索引（增删成员+简介列），不动成员 harness，已完成
 - `business/2026-10-04-flutter-scan-misdetection.md`：scan_repo 修复 Flutter 工程误判 Java Gradle——新增 flutter-app 探测与脚手架 gradle 抑制，已完成
 - `business/2026-10-04-mobile-framework-detection.md`：scan_repo 新增 React Native / uni-app / uni-app x 探测（含伴随 react/vue 的 web-frontend 误判抑制），已完成
+- `business/2026-11-17-progressive-context.md`：按变更范围加载上下文，分册契约并按主题查阅历史记录，工具包已完成
 
 ## 经验记忆（lessons）
 
@@ -29,6 +30,8 @@
 - `lessons/2026-09-15-relpath-form-mismatch.md`：跨常量做键匹配前先核对两侧路径的相对基准（pending，1 次；selftest 收敛断言当场拦截）
 - `lessons/2026-09-15-detector-efficacy-blind-spots.md`：检测器自身的有效性需要负例回归保护——断言只看输出、逐字节锁死合法分化、检测器无负例三形态（pending，1 次）
 - `lessons/2026-10-04-full-repo-relative-paths-in-aidoc.md`：aiDoc 文档引用仓库内文件必须用根相对全路径（promoted，2 次 → `aiDoc/README.md` 维护原则）
+- `lessons/2026-11-17-broad-context-entry.md`：沿代表性任务路由检查实际读取量（pending，1 次）
+- `lessons/2026-11-17-legacy-manifest-shape.md`：升级兼容用真实旧版 manifest 验证保守接管（pending，1 次）
 
 新增/晋升/累加 lesson 时必须同步本区索引，规则见 `lessons/README.md`。
 

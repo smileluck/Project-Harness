@@ -48,7 +48,7 @@ python3 skills/project-harness/scripts/check_sync.py .
 
 - [ ] 涉及行为/架构/契约/流程/测试策略变更 → `aiDoc/notes/` 已有对应决策记录
 - [ ] 多步骤变更 → `aiDoc/plans/active/` 计划已更新到当前状态
-- [ ] 新增/删除 aiDoc 子文档 → `aiDoc/README.md` 索引与路由表已同步
+- [ ] aiDoc 文档增删或移动后已同步所属索引与受影响路由
 - [ ] 用户新提出的业务需求 → `aiDoc/memory/business/` 已记录并更新索引
 
 ### 5. 出口报告

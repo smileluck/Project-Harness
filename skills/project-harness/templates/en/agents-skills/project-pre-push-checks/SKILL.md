@@ -50,7 +50,7 @@ Confirm against the actual change:
 
 - [ ] Behavior / architecture / contract / process / testing-strategy change → a matching decision record exists in `aiDoc/notes/`
 - [ ] Multi-step change → the plan in `aiDoc/plans/active/` is up to date
-- [ ] aiDoc sub-documents added/removed → `aiDoc/README.md` index and routing table synchronized
+- [ ] Adding, removing, or moving aiDoc pages updates their owning indexes and affected routes
 - [ ] New business requirement from the user → recorded in `aiDoc/memory/business/` with the index updated
 
 ### 5. Outgoing report

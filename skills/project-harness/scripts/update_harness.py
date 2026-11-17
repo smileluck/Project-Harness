@@ -18,9 +18,8 @@
     目标存在且与期望一致 -> 仅补登记基线（内容不动）
     目标存在且内容不同  -> 报告冲突，不覆盖不登记，交语义层处理
 
-无 manifest 的旧仓库进入 adopt 模式：与期望内容比对（忽略 last-updated 行，
-消除日期漂移），一致的登记基线；含 auto-scan 标记的扫描填充产物直接登记；
-其余视为项目已改不登记——adopt 只建立基线。
+无 manifest 或旧版仅保存哈希的仓库进入 adopt 模式：忽略日期头部比对期望内容，
+一致的登记基线。仅无 manifest 时可直接登记含 auto-scan 标记的扫描填充产物。
 
 版本相同且未 --force 时直接报告"已是最新"。code-index.md 是机器产物，
 总是重新生成。
@@ -33,6 +32,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import sys
 from datetime import date, datetime
@@ -60,9 +60,11 @@ def _sha256(path: Path) -> str:
 
 
 def _normalized(text: str) -> str:
-    """忽略 last-updated 行（{{DATE}} 渲染差异），用于 adopt 模式比对。"""
-    return "\n".join(ln for ln in text.splitlines()
-                     if "last-updated:" not in ln)
+    """仅忽略首行日期头部，用于 adopt 模式比对。"""
+    header, _, body = text.partition("\n")
+    if re.fullmatch(r"<!-- last-updated: \d{4}-\d{2}-\d{2} -->", header):
+        return body
+    return text
 
 
 def _load_manifest(repo: Path) -> dict | None:
@@ -70,9 +72,10 @@ def _load_manifest(repo: Path) -> dict | None:
     if not f.is_file():
         return None
     try:
-        return json.loads(f.read_text(encoding="utf-8"))
+        data = json.loads(f.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
+    return data if isinstance(data, dict) and isinstance(data.get("files"), dict) else None
 
 
 def iter_managed(templates: Path) -> list[tuple[str, str]]:
@@ -163,8 +166,8 @@ def _write_with_backup(dst: Path, rel: str, new_text: str,
 
 def adopt(repo: Path, templates_lang: Path, render_ctx: dict,
           backup_root: Path, *, fill_map: dict, skip_set: set[str],
-          dry_run: bool) -> dict:
-    """无 manifest 的旧仓库：建立基线。返回 manifest 的 files 字典。"""
+          dry_run: bool, trust_scan_markers: bool) -> dict:
+    """按当前模板建立基线。返回 manifest 的 files 字典。"""
     files: dict[str, dict] = {}
     adopted: list[str] = []
     user_modified: list[str] = []
@@ -182,7 +185,7 @@ def adopt(repo: Path, templates_lang: Path, render_ctx: dict,
         except (OSError, UnicodeDecodeError):
             continue
         expected = _expected_content(src, rel, render_ctx, fill_map, skip_set)
-        if init_project.AUTO_SCAN_MARK in cur_text:
+        if trust_scan_markers and init_project.AUTO_SCAN_MARK in cur_text:
             # init 扫描填充产物：机械事实由扫描再生成，直接登记当前内容为基线
             target_text = None
         elif expected is None or _normalized(cur_text) != _normalized(expected):
@@ -239,6 +242,9 @@ def main(argv: list[str] | None = None, *,
 
     version = init_project.harness_version()
     manifest = _load_manifest(repo)
+    legacy_manifest = manifest is not None and any(
+        not isinstance(info, dict) for info in manifest["files"].values()
+    )
     if args.lang == "auto":
         lang = detect_doc_lang(repo)
     else:
@@ -259,15 +265,16 @@ def main(argv: list[str] | None = None, *,
     print(f"工具包版本: {version}  模板语言: {lang}"
           f"{'  (dry-run)' if args.dry_run else ''}")
 
-    if manifest is None:
+    if manifest is None or legacy_manifest:
         # adopt 模式：首次仅建立基线
-        print("未找到 manifest，进入 adopt 模式（建立基线）。")
-        project_name = repo.name
+        reason = "旧版或不受支持的 manifest 文件条目" if legacy_manifest else "无可用 manifest"
+        print(f"{reason}，进入 adopt 模式（建立基线）。")
+        project_name = (manifest or {}).get("project_name") or repo.name
         render_ctx = init_project.make_render_ctx(project_name, today)
         fill_map = dict(init_project._fill_specs(scan, lang, project_name))
         files = adopt(repo, templates_lang, render_ctx, backup_root,
                       fill_map=fill_map, skip_set=skip_set,
-                      dry_run=args.dry_run)
+                      dry_run=args.dry_run, trust_scan_markers=not legacy_manifest)
         new_manifest = {"harness_version": version,
                         "project_name": project_name, "lang": lang,
                         "generated": today, "files": files}

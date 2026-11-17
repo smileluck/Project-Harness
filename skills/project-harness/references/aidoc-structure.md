@@ -8,7 +8,7 @@ This file is the single maintained source for the target repository's `AGENTS.md
 AGENTS.md                        # L0 sole source of standing rules
 CLAUDE.md                        # one line: @AGENTS.md
 aiDoc/
-  README.md                      # L1 index + task→required-docs routing table
+  README.md                      # L1 routing by change scope + common entries
   relations/
     repo-profile.md              # project identity & tech stack
     development-workflow.md      # dev flow, branches, commits, commands
@@ -18,7 +18,7 @@ aiDoc/
     architecture-rules.md        # architecture & module organization rules
     module-development.md        # step-by-step module/feature guide
   contracts/
-    boundary.md                  # contract layer: web-api / library / cli variant
+    boundary.md                  # shared contract conventions + optional index of sibling pages
   frontend/
     frontend-rules.md            # frontend conventions (frontend projects only)
     frontend-utils.md            # shared-utils reuse rules (frontend projects only)
@@ -65,20 +65,18 @@ Every generated file starts with `<!-- last-updated: YYYY-MM-DD -->`.
 ### `AGENTS.md` (root, L0)
 
 - States it is the sole source of agent collaboration rules, carrying only the minimal high-level rules every agent must always know; details route to `aiDoc/`.
-- Documents the load model: L0 auto-load (via `CLAUDE.md @AGENTS.md` where supported), L1 routing via `aiDoc/README.md`, L2 deep reads; **record layers (`memory/`, `notes/`, `plans/`) are never auto-loaded** — they are read/written on demand only when the routing table hits or a record must be created; and the conflict priority chain (single source: [SKILL.md](../SKILL.md#operating-invariants)).
+- Documents the load model: L0 standing rules, L1 routing via `aiDoc/README.md`, and L2 reading scoped to affected files or sections. Record bodies (`memory/`, `notes/`, `plans/`) are looked up on demand. The conflict priority chain is defined in [SKILL.md](../SKILL.md#operating-invariants).
 - Contains a **tool loading table** (see [tool-adapters.md](tool-adapters.md)) — the sole registry of adapter state.
-- Repository overview: top-level directories by responsibility, from real probing. Tool-private directories are not listed here; their loading is covered by the tool table.
-- Engineering rules (architecture layering, API contract, module/directory conventions), each traceable to real code.
-- Fixed short sections: examples layer purpose, doc maintenance rule (routing table maintained only in `aiDoc/README.md` — AGENTS.md keeps only a coarse "task family → aiDoc area" quick-reference, never a duplicated detailed list), code-reading exclusions (`node_modules/`, `.venv/`, `__pycache__/`, `vendor/`, …). Record-keeping disciplines (memory, notes, plans) are **not** fixed sections here — L0 carries only one-line pointers to their `aiDoc/` homes.
+- Keep the overview to major code entry points. The full directory map belongs in the system map.
+- Keep engineering rules that apply across tasks and cite real code. Detailed architecture, transport, and module conventions are routed from L1.
+- Keep short pointers to examples, code-reading exclusions, records, and the L1 routing table. Use normal Markdown paths for L1/L2 so they stay outside automatic imports.
 - A "when to regenerate aiDoc" section listing the trigger conditions for the `generate` workflow (architecture change, module/page added or removed, routing table drift, example drift), noting small changes only need `--incremental` or `--scope`.
 
 ### `aiDoc/README.md` (L1 routing layer)
 
-- Explains the load model (L0/L1/L2) in 3-4 steps, plus the rule that record layers (`memory/`, `notes/`, `plans/`) are not auto-loaded and are read on demand only.
-- One-line description per directory.
-- **Common entries** dictionary: every aiDoc file, one line each — path + one-sentence purpose.
-- **Task → required-docs routing table**: every task type the project supports, paths relative to `aiDoc/`. This table is the sole detailed routing index; AGENTS.md must not duplicate it.
-- Maintenance rules: stable rules live here, not in tool-private dirs; session drafts are not committed; **adding/removing any aiDoc sub-document requires updating this file's entries and routing table in the same change** — otherwise the document is not checked in.
+- Put the **change-scope routing table** first. Match the affected path, component, interface, or operation. A local fix starts with relevant code and tests; architecture, interface, release, and record-keeping guidance is opened when the task touches those concerns. When scope grows, revisit the affected routes.
+- **Common entries**: register area READMEs and direct documentation files under `relations/`, `modules/`, `contracts/`, `frontend/`, and `memory/`. Contract pages linked from `contracts/boundary.md` are registered there. Keep examples and historical records in their owning indexes. Use paths relative to `aiDoc/`.
+- For long documents or growing indexes, search by path, symbol, heading, or topic and read the matching passages. Update the owning index in the same change when pages are added, removed, or moved.
 
 ### `aiDoc/relations/repo-profile.md`
 
@@ -116,7 +114,9 @@ Complete steps for adding a unit of work in the project's paradigm: a backend mo
 
 ### `aiDoc/contracts/boundary.md`
 
-The contract layer between the project and its consumers. Variant per project type:
+The contract entry point between the project and its consumers. Small projects can keep a single document. Where surfaces change independently, keep shared conventions here and move each surface's details into a sibling Markdown page. Link each page from this entry using `./<surface>.md` (ASCII letters, digits, hyphens, or underscores in the filename) and label it with lookup keys such as a route prefix, public symbol, component pair, or subcommand. Link any shared conventions the surface relies on. Open only the affected pages or sections, then trace the corresponding producer and consumer. Each rule has one maintained home.
+
+Contract content by project type:
 
 - **web-api variant** (fullstack / backend / frontend): responsibility table per side; the actual unified response structure (JSON + field meanings); pagination structure if any; field naming convention (snake_case/camelCase); type bridging with conversion flow and code locations for any non-obvious conversion; time-field format/timezone if special; change rules and a pre-completion checklist. Single-sided projects document the producer or consumer contract only.
 - **library variant**: the public API surface (exported symbols and their re-export locations); export/visibility contract (public vs internal); stability and version-compatibility rules (deprecation policy, SemVer mapping); change rules and a pre-completion checklist.

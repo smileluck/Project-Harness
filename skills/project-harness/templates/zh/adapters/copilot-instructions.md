@@ -12,8 +12,8 @@ structured_context: /aiDoc
 ## 真实规则入口
 
 1. `/AGENTS.md`
-2. `/aiDoc/README.md`（含「任务→必读文档」路由表，先查表再深读）
-3. 路由表指向的 `/aiDoc/` 子文档
+2. `/aiDoc/README.md`（按变更范围选读）
+3. 受影响的 `/aiDoc/` 文档或章节
 
 ## 适配层约束
 

@@ -1,19 +1,19 @@
 {
-  "harness_version": "991451b-dirty",
+  "harness_version": "11434f8-dirty",
   "project_name": "Project-Harness",
   "lang": "zh",
-  "generated": "2026-09-15",
+  "generated": "2026-11-17",
   "files": {
     ".agents/skills/project-code-review/SKILL.md": {
       "sha256": "85e629c77d5e4a31fb3336e49b89ac893a4276f13bb6edc68bdd83e958fc4bad",
       "template": "agents-skills/project-code-review/SKILL.md"
     },
     ".agents/skills/project-pre-push-checks/SKILL.md": {
-      "sha256": "f693c09c74a692a3ccd5b1de88c8336cabc04d0ce54598031dd2fae366b3a087",
+      "sha256": "262a559a876d7b4970dce42e9ee81b892fe84d6fb7b03d2723445321c05fc6f9",
       "template": "agents-skills/project-pre-push-checks/SKILL.md"
     },
     "AGENTS.md": {
-      "sha256": "ea879980974ae417427af272826cf62f133adab6992a7d8a6af28c4e7892ab9d",
+      "sha256": "04388aa0cdcf32a99c8c011aaed4290e40ffb2345e490b1945c09f4a302ca49a",
       "template": "AGENTS.md.tmpl"
     },
     "CLAUDE.md": {
@@ -21,11 +21,11 @@
       "template": "CLAUDE.md"
     },
     "aiDoc/README.md": {
-      "sha256": "6cafd741c5450d26eedd457ae0943cbae3144efbeeeeb47ac1afb8ad3625a1fb",
+      "sha256": "cdd2b2ddf0f71cb8d5f989fc2a93bf8be3152ca4b40397aa6b4c14b50418d5c2",
       "template": "aidoc/README.md"
     },
     "aiDoc/contracts/boundary.md": {
-      "sha256": "14acc16ef8fd4dd2952eb8f1f125e17e0a690ace8978822d7a2b33d7ebe3f121",
+      "sha256": "9917b3c5b0ccdcad41e3964201b62107d13ba7ee0cfb3b2bdf882fbce9cf3d74",
       "template": "aidoc/contracts/boundary.md"
     },
     "aiDoc/examples/README.md": {
@@ -57,7 +57,7 @@
       "template": "aidoc/memory/long-term/README.md"
     },
     "aiDoc/memory/project-memory.md": {
-      "sha256": "427cbef2dad32c5029778dc691b13f57fd1da87bcb112bddf8c586a4bdf9a071",
+      "sha256": "65b04fccb9747573b79eab0ead8cd38217508716b843bcb66482f869db8ecc36",
       "template": "aidoc/memory/project-memory.md"
     },
     "aiDoc/modules/architecture-rules.md": {

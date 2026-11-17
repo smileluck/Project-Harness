@@ -12,8 +12,8 @@ This file exists only to be compatible with GitHub Copilot's automatic instructi
 ## Real Rule Entry Points
 
 1. `/AGENTS.md`
-2. `/aiDoc/README.md` (holds the "task → must-read docs" routing table — consult the table first, then deep-read)
-3. The `/aiDoc/` child documents the routing table points to
+2. `/aiDoc/README.md` (look up guidance by change scope)
+3. The affected `/aiDoc/` pages or sections
 
 ## Adapter Constraints
 

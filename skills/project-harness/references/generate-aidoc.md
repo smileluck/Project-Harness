@@ -11,7 +11,7 @@ Parse `$ARGUMENTS`:
 | (empty) | Full generation: probe the project, generate/refresh all aiDoc files |
 | `--incremental` | Read existing aiDoc, compare with code changes, regenerate only stale files |
 | `--scope modules` | Regenerate `modules/architecture-rules.md`, `modules/module-development.md`, and module-layer examples under `examples/` |
-| `--scope contracts` | Regenerate `contracts/boundary.md` |
+| `--scope contracts` | Update `contracts/boundary.md` and affected contract pages |
 | `--scope frontend` | Regenerate `frontend/frontend-rules.md`, `frontend/frontend-utils.md`, `examples/frontend/` |
 | `--scope relations` | Regenerate the hand-written files under `relations/` (`code-index.md` is machine-owned; regenerate it via the command in [aidoc-structure.md](aidoc-structure.md)) |
 | `--scope memory` | Regenerate files under `memory/` (preserve user-written records) |
@@ -115,7 +115,7 @@ Generate files per [aidoc-structure.md](aidoc-structure.md), which defines the t
 | 2 | — | `aiDoc/README.md` |
 | 3 | A | `aiDoc/relations/` (hand-written files; `code-index.md` is machine-owned) |
 | 4 | B | `aiDoc/modules/` (2 files) |
-| 5 | C | `aiDoc/contracts/` + `aiDoc/frontend/` (≤3 files) |
+| 5 | C | `aiDoc/contracts/` + `aiDoc/frontend/` |
 | 6 | D | `aiDoc/examples/` layered examples (paradigm per file type is owned by [aidoc-structure.md](aidoc-structure.md) §examples; when no layer applies, register real reference files in `examples/README.md` only) |
 | 7 | E | `aiDoc/examples/README.md` |
 | 8 | F | `aiDoc/memory/` (all) |
@@ -125,10 +125,9 @@ Report brief progress after each group.
 ## Incremental update rules (`--incremental`)
 
 - Every file carries a `<!-- last-updated: YYYY-MM-DD -->` header; update it on regeneration.
-- Read existing aiDoc files first; use `git diff` since each file's last update to decide which code areas changed; regenerate only affected files.
+- Locate the changed code with the task scope or `git diff`, then read the affected aiDoc files or sections. Regenerate those files only.
 - Preserve user-tuned content (sections not AI-generated) wherever possible.
-- The routing table is cross-file metadata: if any file under `aiDoc/` was added or removed, regenerate `aiDoc/README.md`'s entries and routing table even when its own content is otherwise unchanged.
-- Keep `AGENTS.md`'s call logic in sync: its "task family → aiDoc area" quick-reference and "when to regenerate aiDoc" sections must be updated whenever aiDoc areas are added/removed, even if AGENTS.md itself is otherwise unchanged.
+- Update the owning index when the file set changes, per [aidoc-structure.md](aidoc-structure.md). Update root pointers when their destinations change.
 
 ## Phase 3: Tool loading adaptation
 
@@ -150,7 +149,7 @@ Run the drift checker (relative to this skill directory):
 python3 <skill-dir>/scripts/check_sync.py <repo-root>
 ```
 
-It verifies mechanically checkable facts: aiDoc index completeness (every path in the `aiDoc/README.md` routing table and entries exists), referenced code paths exist, example "real reference files" exist.
+It verifies mechanically checkable facts including indexed documentation paths, contract sibling links, and referenced code paths.
 
 ### Semantic (agent self-check)
 

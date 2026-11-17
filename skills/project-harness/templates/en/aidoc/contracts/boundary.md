@@ -1,7 +1,11 @@
 <!-- last-updated: {{DATE}} -->
 # Contract Layer (boundary)
 
-> The single maintained home of shared contracts between producer and consumer. Contract structures must come from real code; keep the variant section matching this project's paradigm (web-api / library / cli) and delete the rest.
+> Entry point for producer and consumer contracts. Use real code to document the conventions that apply to this project's paradigm.
+
+## Contract Surface Index
+
+<!-- Small projects can use one file. When surfaces change independently, move their details into sibling pages and keep shared conventions here. Index each page with its route prefix, public symbol, or subcommand and a link such as [Surface name](./<file>.md). -->
 
 ## Responsibility Boundary
 

@@ -59,7 +59,7 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 | `generate [--incremental\|--scope <area>\|--dry-run] [--lang zh\|en]` | Agent-driven: probes the codebase and writes the real content of `AGENTS.md` + `aiDoc/` from actual code — layering rules, API contracts, examples, routing tables. Supports incremental and scoped regeneration. |
 | `sync` | Drift detection: `check_sync.py` runs 9 mechanical checks — index integrity, referenced code paths, `last-updated` headers, area consistency, lesson-promotion gates, plus hint-level checks for residual `TODO:` placeholders in `.agents/skills/` and manifest-baseline drift; the agent then resolves semantic drift. It also runs as a mandatory completion gate on every change, sweeping due lessons (count ≥ 2) for promotion. |
 | `record [note\|plan\|handoff\|lesson]` | Create decision notes, change plans, handoffs, or lesson records following the lifecycle discipline (no invented alternatives; implemented notes updated in place; reversals get new cross-linked notes; lessons capture pitfalls and recurring patterns, promoted into constraint docs at the second occurrence). |
-| `update [--dry-run] [--force]` | Managed-file refresh: `update_harness.py` compares the `aiDoc/.harness-manifest.json` baseline against current templates — untouched files are refreshed in place (with backups), project-modified files are skipped for the semantic layer, repos without a manifest enter adopt mode (baseline only). |
+| `update [--dry-run] [--force]` | Managed-file refresh: `update_harness.py` compares the `aiDoc/.harness-manifest.json` baseline against current templates — untouched files are refreshed in place (with backups), project-modified files are skipped for the semantic layer, repos without a usable manifest or with bare-hash entries enter adopt mode (baseline only). |
 
 ## What a target repo gets
 
@@ -68,10 +68,10 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 ├── AGENTS.md                # L0 single source of truth: rules, invariants, DoD, routing
 ├── CLAUDE.md                # one line: @AGENTS.md
 ├── aiDoc/
-│   ├── README.md            # L1 routing: index, task→must-read table, ownership map
+│   ├── README.md            # L1 routing by change scope + common entries
 │   ├── relations/           # repo profile, dev workflow, system map, code-index.md (machine-generated)
 │   ├── modules/             # architecture & module rules, module dev guide
-│   ├── contracts/           # contract layer: web-api / library / cli variant
+│   ├── contracts/           # boundary.md and optional pages for individual contract surfaces
 │   ├── frontend/            # frontend rules, utils reuse (frontend projects only)
 │   ├── examples/            # explanatory examples per layer
 │   ├── memory/              # long-term preferences + business records + lessons (pitfall/pattern staging, promoted into constraint docs)
@@ -83,6 +83,8 @@ Invoke the skill in your agent (e.g. Kimi Code: `/skill:project-harness <args>`)
 │   └── project-pre-push-checks/   # smallest credible outgoing checks
 └── thin tool adapters       # only for tool dirs that already exist (.trae, .cursor, copilot, ...)
 ```
+
+Start local fixes with the relevant code and tests. Use the aiDoc route for the scope you touch, and follow `boundary.md` to the affected contract surface for API or cross-component changes. Existing repositories can adopt this through the [update workflow](skills/project-harness/references/update-harness.md).
 
 ## Safety model
 

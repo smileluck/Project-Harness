@@ -659,6 +659,43 @@ def test_check_sync_negative(tmp: Path) -> None:
           and "AGENTS.md" in r.stdout, (r.stdout + r.stderr)[-300:])
 
 
+def test_contract_index(tmp: Path) -> None:
+    print("\n[2h2] 契约分册索引")
+    repo = make_fixture(tmp / "contract-index", "python-cli")
+    result = run_init(repo)
+    check("契约 fixture init exit 0", result.returncode == 0, result.stderr)
+    aidoc = repo / "aiDoc"
+    index = aidoc / "contracts" / "boundary.md"
+    original = index.read_text(encoding="utf-8")
+    page = index.with_name("public-api.md")
+    body = "<!-- last-updated: 2026-01-01 -->\n# Public API\n"
+    write(page, body)
+    command = [PY, str(SCRIPTS / "check_sync.py"), str(repo)]
+
+    result = subprocess.run(command, capture_output=True, text=True)
+    check("孤立契约分册 → exit 1", result.returncode == 1
+          and "未登记于常用入口字典: aiDoc/contracts/public-api.md" in result.stdout,
+          result.stdout)
+
+    write(index, original + "\n- [Public API](./public-api.md#public-api)\n")
+    result = subprocess.run(command, capture_output=True, text=True)
+    check("仅在 boundary 登记的分册 → exit 0", result.returncode == 0, result.stdout)
+
+    page.unlink()
+    result = subprocess.run(command, capture_output=True, text=True)
+    check("契约索引链接失效 → exit 1", result.returncode == 1
+          and "契约入口链接缺失: aiDoc/contracts/public-api.md" in result.stdout,
+          result.stdout)
+
+    write(index, original)
+    write(page, body)
+    root_index = aidoc / "README.md"
+    write(root_index, root_index.read_text(encoding="utf-8")
+          + "\n| `contracts/public-api.md` | Public API |\n")
+    result = subprocess.run(command, capture_output=True, text=True)
+    check("兼容存量一级契约入口 → exit 0", result.returncode == 0, result.stdout)
+
+
 def test_install(tmp: Path) -> None:
     print("\n[2i] install.py 行为")
     home = tmp / "home"
@@ -918,6 +955,46 @@ def test_update_flow(tmp: Path) -> None:
           rc == 0 and snapshot_files(repo) == before)
 
 
+def test_update_legacy_manifest(tmp: Path) -> None:
+    print("\n[3u2] 旧版 manifest 迁移")
+    repo = make_fixture(tmp / "legacy-manifest", "python-cli")
+    run_init(repo, "--project-name", "Legacy CLI", "--lang", "en")
+    custom = repo / "aiDoc" / "contracts" / "boundary.md"
+    custom_text = custom.read_text(encoding="utf-8") + f"\n{init_project.AUTO_SCAN_MARK}\nCustom contracts\n"
+    write(custom, custom_text)
+    memory = repo / "aiDoc" / "memory" / "README.md"
+    memory_text = memory.read_text(encoding="utf-8") + "\nlast-updated: project metadata\n"
+    write(memory, memory_text)
+
+    manifest_path = repo / "aiDoc" / ".harness-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["files"] = {
+        rel: hashlib.sha256((repo / rel).read_bytes()).hexdigest()
+        for rel in manifest["files"]
+    }
+    write(manifest_path, json.dumps(manifest))
+
+    command = [PY, str(SCRIPTS / "update_harness.py"), str(repo)]
+    before = snapshot_files(repo)
+    result = subprocess.run([*command, "--dry-run"], capture_output=True, text=True)
+    check("旧版 manifest 可零写入预览", result.returncode == 0
+          and "进入 adopt 模式" in result.stdout
+          and snapshot_files(repo) == before, result.stdout + result.stderr)
+
+    result = subprocess.run(command, capture_output=True, text=True)
+    check("旧版 manifest 可升级", result.returncode == 0, result.stdout + result.stderr)
+    upgraded = json.loads(manifest_path.read_text(encoding="utf-8"))
+    check("升级保留名称和语言并登记匹配模板的文件",
+          upgraded["project_name"] == "Legacy CLI" and upgraded["lang"] == "en"
+          and isinstance(upgraded["files"].get("CLAUDE.md"), dict), str(upgraded))
+    check("有旧哈希或扫描标记的定制契约仍保留",
+          "aiDoc/contracts/boundary.md" not in upgraded["files"]
+          and custom.read_text(encoding="utf-8") == custom_text)
+    check("文档正文中的 last-updated 条目仍保留",
+          "aiDoc/memory/README.md" not in upgraded["files"]
+          and memory.read_text(encoding="utf-8") == memory_text)
+
+
 # ---------------------------------------------------------------- 4. zh/en 镜像
 
 def _heading_levels(text: str) -> list[int]:
@@ -1117,9 +1194,11 @@ def main() -> int:
         test_no_scan(tmp)
         test_frontend_prune(tmp)
         test_check_sync_negative(tmp)
+        test_contract_index(tmp)
         test_install(tmp)
         test_lessons_gate(tmp)
         test_update_flow(tmp)
+        test_update_legacy_manifest(tmp)
     test_template_mirror()
     test_repo_agents_skills_rendered()
     test_boilerplate_consistency()

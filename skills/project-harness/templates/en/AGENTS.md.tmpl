@@ -7,10 +7,9 @@ This file is the single source of truth for AI collaboration rules in this repos
 
 ## Loading Model
 
-- **L0 auto-loaded**: the root `CLAUDE.md` imports this file via `@AGENTS.md` in every session. This file carries only project constraints and invariants — it never expands details and never lists the full document inventory.
-- **L1 task routing**: `aiDoc/README.md` is the sole maintained home of the doc index and the "task → must-read docs" routing table. On receiving a task, consult that routing table first to decide which child docs to read.
-- **L2 on-demand deep read**: the concrete `aiDoc/` child documents the routing table points to.
-- **Record layer not auto-loaded**: the bodies of `aiDoc/memory/`, `aiDoc/notes/`, and `aiDoc/plans/` do not load with the session; they are read or written on demand only when the routing table hits or a record is needed.
+- **L0 standing rules**: this file and applicable directory-level rules. See the tool entry points below.
+- **L1 task routing**: use `aiDoc/README.md` when locating code, confirming constraints, or recording a change.
+- **L2 on-demand reading**: identify the affected path, component, or interface and open the relevant pages or sections. Look up record bodies for the current task as needed.
 - **Conflict priority** (for in-repo tasks): `AGENTS.md` > `aiDoc/README.md` > aiDoc child docs > tool adapter files.
 
 ## Tool Loading
@@ -18,6 +17,7 @@ This file is the single source of truth for AI collaboration rules in this repos
 | Tool | Loading mechanism |
 |---|---|
 | Claude Code | Root `CLAUDE.md` natively imports `@AGENTS.md`; tool directories hold project commands only, never rule copies |
+| Codex | Discovers `AGENTS.md` natively |
 | Trae | Thin adapter points to `AGENTS.md` (entry pointer only) |
 | Cursor / Copilot / other | If `@import` is unsupported, create a thin adapter from the template: entry pointers only, never copied rule bodies |
 
@@ -41,9 +41,7 @@ TODO: one sentence on how the architecture is organized; details route to `aiDoc
 
 ### Contract
 
-<!-- TODO: fill per the project paradigm (web-api / library / cli) and the actual contract conventions; details route to aiDoc/contracts/boundary.md -->
-
-TODO: one sentence on the contract conventions (e.g. unified response structure, public API surface, command spec); details route to `aiDoc/contracts/boundary.md`.
+For changes to shared interfaces or types, find the affected contract via `aiDoc/contracts/boundary.md`.
 
 ### Modules and Directories
 
@@ -57,7 +55,7 @@ TODO: one sentence on the module organization principle; details route to `aiDoc
 
 ### Doc Maintenance
 
-High-level rules live in `AGENTS.md`; details live in `aiDoc/`. This file keeps only coarse "task family → aiDoc area" pointers; the detailed "task → must-read docs" routing table is maintained solely in `aiDoc/README.md` — never list the full inventory here, or the two copies drift. When aiDoc child docs are added or removed, the index and routing table in `aiDoc/README.md` must be updated in sync.
+High-level rules live here. Detailed routing lives in `aiDoc/README.md`. Update the owning index when adding or removing a document.
 
 ### Code-Reading Constraints
 
@@ -88,8 +86,6 @@ A change is complete only when all of the following hold:
 
 ## Doc Index and Task Routing
 
-### Quick Reference (task family → aiDoc area)
-
 | Task family | Read first |
 |---|---|
 | Module / feature / command development | `aiDoc/modules/`, `aiDoc/examples/` |
@@ -100,17 +96,11 @@ A change is complete only when all of the following hold:
 | Decision records | `aiDoc/notes/` |
 | Change plans and handoffs | `aiDoc/plans/` |
 
-Coarse pointers only; the detailed file-level "task → must-read docs" routing table lives in `aiDoc/README.md`.
-
-### Detailed Routing
-
-The detailed "task → must-read docs" routing table and the common-entries dictionary are maintained solely in `aiDoc/README.md`. This file keeps only the quick reference, avoiding a duplicated inventory that would drift. On conflict, this file wins.
-
 ## When to Regenerate aiDoc
 
 Regenerate or incrementally update the doc system via the generate workflow when:
 
 - Architecture changes materially, or modules / features / commands (including frontend pages) are added or removed, leaving `aiDoc/` out of sync with the code
-- `aiDoc/` child docs are added or removed, invalidating the routing table in `aiDoc/README.md` and the quick reference above; or routing tables / examples drift visibly from the real code
+- A document addition or removal invalidates its owning index, or routing and examples drift from the code
 
 Small changes (a single endpoint or page) need no full regeneration — update incrementally or by area. After regeneration, verify index and path consistency.

@@ -18,9 +18,8 @@
        均为失败项。
     6. lessons 可扫描性（提示级别，不影响退出码）: 缺 lesson-meta 标记的 lesson、
        post≥1（晋升后仍复发）的条目，列出但不拦截。
-    7. 常用入口完整性: 文档型 aiDoc .md（各区域 README + relations/modules/
-       contracts/frontend/memory 的直接子文档）必须在 aiDoc/README.md 的
-       常用入口字典中登记——未登记 = 文档未入库。
+    7. 常用入口完整性: 文档型 aiDoc .md 必须在 aiDoc/README.md 登记；
+       contracts/ 的分册可由 boundary.md 的同目录链接登记，同时校验链接目标。
     8. agents-skills 占位解析（提示级别，不影响退出码）: .agents/skills/ 下的
        .md 不应残留 `TODO:` 占位（init 生成的验证命令表等需按项目实情填写）。
     9. manifest 基线一致性（提示级别，不影响退出码）: 若存在
@@ -304,6 +303,8 @@ def check_lessons(aidoc: Path) -> tuple[bool, list[str], list[str]]:
 # notes/plans 是档案区（记录非文档）、examples 分层示例由 examples/README 索引，
 # 均不在字典职责内；任意层级的 README.md 都属文档型，必须登记。
 DICT_DOC_AREAS = ("relations", "modules", "contracts", "frontend", "memory")
+CONTRACT_INDEX = "contracts/boundary.md"
+CONTRACT_LINK_RE = re.compile(r"\]\(\./([A-Za-z0-9_-]+\.md)(?:#[^\s)]*)?\)")
 
 
 def _is_dict_doc(rel: str) -> bool:
@@ -318,10 +319,20 @@ def check_dict_coverage(aidoc: Path) -> tuple[bool, list[str]]:
     if not readme.is_file():
         return True, []
     text = read_text_relaxed(readme) or ""
-    missing: list[str] = []
+    contract_index = aidoc / CONTRACT_INDEX
+    contract_text = read_text_relaxed(contract_index) if contract_index.is_file() else ""
+    contract_pages = {
+        f"contracts/{name}" for name in CONTRACT_LINK_RE.findall(contract_text or "")
+    }
+    missing = [
+        f"契约入口链接缺失: aiDoc/{rel}  (引用于 aiDoc/{CONTRACT_INDEX})"
+        for rel in sorted(contract_pages) if not (aidoc / rel).is_file()
+    ]
     for f in iter_aidoc_md(aidoc):
         rel = f.relative_to(aidoc).as_posix()
         if rel == "README.md" or _is_template_file(f):
+            continue
+        if rel != CONTRACT_INDEX and rel in contract_pages:
             continue
         if _is_dict_doc(rel) and f"`{rel}`" not in text:
             missing.append(f"未登记于常用入口字典: aiDoc/{rel}")
@@ -420,7 +431,7 @@ def main(argv: list[str] | None = None) -> int:
                not hints, hints, hint_only=True)
 
     ok, details = check_dict_coverage(aidoc)
-    report.add("常用入口完整性 (文档型 aiDoc 文档已登记于 README 字典)",
+    report.add("常用入口完整性 (README 字典与契约分册登记)",
                ok, details)
 
     ok, details = check_agents_skills_todo(repo)

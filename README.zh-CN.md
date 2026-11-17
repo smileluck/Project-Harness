@@ -59,7 +59,7 @@ python3 install.py --tool all       # 以上全部
 | `generate [--incremental\|--scope <区域>\|--dry-run] [--lang zh\|en]` | Agent 驱动：探测代码库并基于真实代码撰写 `AGENTS.md` + `aiDoc/` 内容——分层规则、API 契约、示例、路由表。支持增量与局部再生成。 |
 | `sync` | 漂移检测：`check_sync.py` 跑 9 项机械检查——索引完整性、引用代码路径、`last-updated` 头部、区域一致性、lessons 晋升闸门，外加提示级的 `.agents/skills/` 残留 `TODO:` 占位与 manifest 基线漂移；agent 再处理语义漂移。同时是每次变更收尾的强制自检闸门，并兜底晋升到期 lessons（出现次数 ≥2）。 |
 | `record [note\|plan\|handoff\|lesson]` | 按生命周期纪律创建决策记录 / 变更计划 / 交接 / 经验记录（不编造备选方案；implemented 就地更新；推翻旧决策新建交叉链接 note；lesson 记录踩坑与反复模式，第二次出现时晋升进约束层）。 |
-| `update [--dry-run] [--force]` | 托管文件刷新：`update_harness.py` 按 `aiDoc/.harness-manifest.json` 基线比对当前模板——未改过的文件原地刷新（含备份），项目已改的文件跳过交语义层合入；无 manifest 的旧仓库进入 adopt 模式（只建基线）。 |
+| `update [--dry-run] [--force]` | 托管文件刷新：`update_harness.py` 按 `aiDoc/.harness-manifest.json` 基线比对当前模板——未改过的文件原地刷新（含备份），项目已改的文件跳过交语义层合入；无可用 manifest 或仅登记裸哈希的旧仓库进入 adopt 模式（只建基线）。 |
 
 ## 目标仓库会得到什么
 
@@ -68,10 +68,10 @@ python3 install.py --tool all       # 以上全部
 ├── AGENTS.md                # L0 唯一真源：规则、操作不变量、DoD、路由
 ├── CLAUDE.md                # 仅一行：@AGENTS.md
 ├── aiDoc/
-│   ├── README.md            # L1 路由：索引、任务→必读路由表、信息归属表
+│   ├── README.md            # L1 按变更范围路由与常用入口
 │   ├── relations/           # 仓库画像、开发流程、系统地图、code-index.md（机器生成）
 │   ├── modules/             # 架构与模块组织规则、模块开发指南
-│   ├── contracts/           # 契约层：web-api / library / cli 变体
+│   ├── contracts/           # boundary.md 契约入口与可选的契约分册
 │   ├── frontend/            # 前端规范、工具复用（仅前端项目生成）
 │   ├── examples/            # 各层讲解型示例
 │   ├── memory/              # 长期偏好 + 业务需求 + lessons（踩坑/模式 staging，晋升进约束层）
@@ -83,6 +83,8 @@ python3 install.py --tool all       # 以上全部
 │   └── project-pre-push-checks/   # 最小可信出口检查
 └── 工具薄适配文件            # 只对已存在的工具目录生成（.trae、.cursor、copilot 等）
 ```
+
+局部修复从相关代码和测试开始。需要确认约束时按变更范围查 aiDoc；改 API 或跨组件行为时，从 `boundary.md` 定位受影响契约。已有项目通过 [update 工作流](skills/project-harness/references/update-harness.md) 迁移。
 
 ## 安全模型
 
